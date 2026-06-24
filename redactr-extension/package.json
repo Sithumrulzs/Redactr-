@@ -1,0 +1,20 @@
+{
+  "name": "redactr-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build tooling for Redactr's Tier-2 (on-device NER) bundle.",
+  "scripts": {
+    "build:offscreen": "esbuild offscreen/offscreen.src.js --bundle --outfile=offscreen/offscreen.bundle.js --platform=browser --target=chrome110",
+    "build:background": "esbuild background/background.src.js --bundle --outfile=background/background.bundle.js --platform=browser --target=chrome110 --format=esm",
+    "build": "npm run build:offscreen && npm run build:background",
+    "postbuild": "node scripts/copy-ort-assets.js",
+    "watch": "npm run build -- --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.0.0",
+    "firebase": "^11.0.0"
+  }
+}

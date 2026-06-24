@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redactr — Shadow AI Data-Leak Protection</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/branding/favicon.svg" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html"><img src="assets/branding/redactr-logo-reverse.svg" alt="Redactr" /></a>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="pages/pricing.html">Pricing</a>
+      <a href="pages/contact.html">Contact</a>
+      <span id="auth-area"></span>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Stop secrets before they hit ChatGPT.</h1>
+      <p>
+        Redactr scans every prompt your team sends to ChatGPT, Claude, and Gemini — on-device,
+        in real time — and blocks API keys, credit cards, and PII before they ever leave the
+        browser.
+      </p>
+      <a class="btn" href="pages/pricing.html">See plans</a>
+    </section>
+
+    <section class="feature-grid">
+      <div class="card">
+        <h3>Browser extension</h3>
+        <p>Intercepts the send action on chatbot pages and flags risky prompts before they're submitted.</p>
+      </div>
+      <div class="card">
+        <h3>On-device detection</h3>
+        <p>Regex + Luhn-validated pattern matching runs entirely client-side. Nothing leaves the machine.</p>
+      </div>
+      <div class="card">
+        <h3>Manager oversight app</h3>
+        <p>A mobile dashboard shows the team's risk score and lets managers approve or deny flagged events.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    &copy; 2026 Redactr. Class assignment project — not for commercial use.
+  </footer>
+
+  <script type="module">
+    import { mountAuthUI } from "./js/auth.js";
+    mountAuthUI();
+  </script>
+</body>
+</html>

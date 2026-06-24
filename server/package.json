@@ -1,0 +1,18 @@
+{
+  "name": "redactr-server",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Plain Express port of firebase/functions/index.js, hosted on Render's free tier (no Blaze plan required). Same firebase-admin logic, just running outside Firebase's own infrastructure.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "firebase-admin": "^12.6.0"
+  }
+}

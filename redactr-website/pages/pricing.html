@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="../assets/branding/favicon.svg" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="../index.html"><img src="../assets/branding/redactr-logo-reverse.svg" alt="Redactr" /></a>
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html">Contact</a>
+      <span id="auth-area"></span>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Pick a plan</h1>
+    <p>Pick a plan below — your selection is saved and carried through to checkout.</p>
+
+    <div class="pricing-grid">
+      <div class="plan-card" data-plan="starter" data-price="9">
+        <h3>Starter</h3>
+        <div class="price">$9<span>/mo</span></div>
+        <ul>
+          <li>1 seat</li>
+          <li>Tier-1 detection</li>
+          <li>Chrome extension</li>
+        </ul>
+        <button class="btn btn-secondary select-plan">Select Starter</button>
+      </div>
+
+      <div class="plan-card" data-plan="team" data-price="29">
+        <h3>Team</h3>
+        <div class="price">$29<span>/mo</span></div>
+        <ul>
+          <li>Up to 10 seats</li>
+          <li>Tier-1 detection</li>
+          <li>Manager oversight app</li>
+        </ul>
+        <button class="btn btn-secondary select-plan">Select Team</button>
+      </div>
+
+      <div class="plan-card" data-plan="enterprise" data-price="99">
+        <h3>Enterprise</h3>
+        <div class="price">$99<span>/mo</span></div>
+        <ul>
+          <li>Unlimited seats</li>
+          <li>Tier-1 + Tier-2 NER detection</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="btn btn-secondary select-plan">Select Enterprise</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <a id="checkout-link" class="btn hidden" href="checkout.html">Continue to checkout</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    &copy; 2026 Redactr. Class assignment project — not for commercial use.
+  </footer>
+
+  <script type="module">
+    import { mountAuthUI } from "../js/auth.js";
+    mountAuthUI();
+  </script>
+  <script src="../js/cart.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const checkoutLink = document.getElementById("checkout-link");
+      const cards = document.querySelectorAll(".plan-card");
+
+      function highlightSelected(planId) {
+        cards.forEach((card) => {
+          card.classList.toggle("selected", card.dataset.plan === planId);
+        });
+      }
+
+      const existing = RedactrCart.getPlan();
+      if (existing) {
+        highlightSelected(existing.id);
+        checkoutLink.classList.remove("hidden");
+      }
+
+      cards.forEach((card) => {
+        card.querySelector(".select-plan").addEventListener("click", () => {
+          const plan = {
+            id: card.dataset.plan,
+            name: card.querySelector("h3").textContent,
+            price: Number(card.dataset.price),
+          };
+          RedactrCart.setPlan(plan);
+          highlightSelected(plan.id);
+          checkoutLink.classList.remove("hidden");
+        });
+      });
+    });
+  </script>
+</body>
+</html>

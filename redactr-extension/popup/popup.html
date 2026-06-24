@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Redactr</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <img class="logo" src="../icons/svg/redactr-logo-reverse.svg" alt="Redactr" height="22" />
+    <label class="toggle">
+      <input type="checkbox" id="enabled-toggle" />
+      <span class="slider"></span>
+    </label>
+  </header>
+
+  <main>
+    <div class="auth-card" id="auth-signed-out">
+      <p class="auth-hint">Sign in to sync blocked-prompt metadata to your team's dashboard.</p>
+      <button id="sign-in-button" class="btn-google">Sign in with Google</button>
+      <p class="auth-error" id="auth-error"></p>
+    </div>
+
+    <div class="auth-card hidden" id="auth-signed-in">
+      <div class="auth-row">
+        <div>
+          <div class="auth-name" id="auth-name"></div>
+          <div class="auth-email" id="auth-email"></div>
+        </div>
+        <button id="sign-out-button" class="btn-text">Sign out</button>
+      </div>
+    </div>
+
+    <div class="counter-card">
+      <div class="counter-value" id="counter-value">0</div>
+      <div class="counter-label">leaks prevented</div>
+    </div>
+    <p class="status" id="status-text">Protection is active on ChatGPT, Claude, and Gemini.</p>
+
+    <div class="tier2-card">
+      <div class="tier2-row">
+        <div>
+          <div class="tier2-title">AI name/address detection</div>
+          <div class="tier2-sub" id="tier2-status">Off</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="tier2-toggle" />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="tier2-hint">
+        Beta. Runs a small NER model fully on-device to catch names/addresses Tier-1 can't.
+        First use downloads the model once (needs internet); after that it works offline.
+      </p>
+    </div>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

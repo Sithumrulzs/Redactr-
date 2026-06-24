@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// Phase 1 data model — see ../../shared (project root) plan notes.
+// Principle: clients can only ever READ within their own company. All
+// writes that matter (creating a company, joining one, changing
+// subscription state, approving/denying alerts) go through Cloud
+// Functions using the Admin SDK, which bypasses these rules entirely —
+// so a compromised/malicious client cannot grant itself access, change
+// its own role, or fake a paid plan. That's the "risk-free" guarantee.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function myUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function myCompanyId() {
+      return myUser().companyId;
+    }
+
+    function isAdmin() {
+      return myUser().role == 'admin';
+    }
+
+    // A user can read their own profile (the app uses this to check
+    // "do I already have a company?" right after sign-in). role/companyId
+    // assignment stays server-side (claimOrJoinCompany), but Phase 3 lets a
+    // signed-in user write their own FCM token directly — and ONLY that
+    // field, enforced below — so push notifications don't need a Function
+    // round-trip just to register a device.
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken']);
+      allow create, delete: if false;
+    }
+
+    // Phase 1: invite writes are server-side only (claimOrJoinCompany /
+    // inviteEmployee Cloud Functions). Phase 3: an admin can read invites
+    // for their own company, so the app can show a "pending invites" list
+    // without a dedicated callable Function just for reading.
+    match /invites/{email} {
+      allow read: if signedIn() && isAdmin() && resource.data.companyId == myCompanyId();
+      allow write: if false;
+    }
+
+    match /companies/{companyId} {
+      allow read: if signedIn() && myCompanyId() == companyId;
+      allow write: if false;
+
+      match /alerts/{alertId} {
+        // Phase 2: alerts are created by a Cloud Function the extension
+        // calls. Reads are scoped to your own company now so the rule
+        // is ready before that data exists.
+        allow read: if signedIn() && myCompanyId() == companyId;
+        allow update: if signedIn() && myCompanyId() == companyId && isAdmin();
+        allow create, delete: if false;
+      }
+
+      match /subscription/{document=**} {
+        // Phase 3: only the PayPal-webhook Cloud Function (Admin SDK)
+        // may write this — no client write rule exists for it at all.
+        allow read: if signedIn() && myCompanyId() == companyId;
+        allow write: if false;
+      }
+    }
+  }
+}

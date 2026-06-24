@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="../assets/branding/favicon.svg" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="../index.html"><img src="../assets/branding/redactr-logo-reverse.svg" alt="Redactr" /></a>
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html">Contact</a>
+      <span id="auth-area"></span>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Checkout</h1>
+
+    <div id="no-plan-notice" class="checkout-summary hidden">
+      <p>No plan selected yet.</p>
+      <a class="btn" href="pricing.html">Choose a plan</a>
+    </div>
+
+    <div id="plan-summary" class="checkout-summary hidden">
+      <h3 id="summary-name"></h3>
+      <p>Monthly subscription: <strong id="summary-price"></strong></p>
+    </div>
+
+    <div id="sign-in-notice" class="checkout-summary hidden">
+      <p>Sign in with the Google account you used to set up your company before subscribing.</p>
+      <button id="checkout-sign-in" class="btn">Sign in with Google</button>
+    </div>
+
+    <div id="paypal-button-container"></div>
+
+    <div id="invoice" class="invoice hidden"></div>
+  </main>
+
+  <footer class="site-footer">
+    &copy; 2026 Redactr. Class assignment project — not for commercial use.
+    This checkout uses the PayPal <strong>sandbox</strong> environment only; no real payment is processed.
+  </footer>
+
+  <script type="module">
+    import { mountAuthUI } from "../js/auth.js";
+    mountAuthUI();
+  </script>
+  <!-- PayPal sandbox client id (test credentials, no real money moves) -->
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+  <script src="../js/cart.js"></script>
+  <script type="module" src="../js/checkout.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Dependencies / build output
+node_modules/
+**/node_modules/
+**/build/
+**/.dart_tool/
+**/*.bundle.js
+
+# Secrets — never commit these
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase-service-account*.json
+**/*.pem
+**/*.key
+.env
+.env.*
+
+# Android/Flutter local config (machine-specific)
+**/android/local.properties
+**/*.iml
+**/.idea/
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+
+# Flutter
+**/.flutter-plugins
+**/.flutter-plugins-dependencies

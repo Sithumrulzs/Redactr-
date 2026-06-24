@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="../assets/branding/favicon.svg" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="../index.html"><img src="../assets/branding/redactr-logo-reverse.svg" alt="Redactr" /></a>
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html">Contact</a>
+      <span id="auth-area"></span>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Contact us</h1>
+    <p>ABN: 12 345 678 901 &nbsp;|&nbsp; ACN: 123 456 789 <em>(temporary placeholder for assignment submission)</em></p>
+
+    <form class="contact-form" onsubmit="event.preventDefault(); alert('Thanks — this is a demo form, no message was actually sent.');">
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" required />
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required />
+
+      <label for="message">Message</label>
+      <textarea id="message" name="message" rows="5" required></textarea>
+
+      <button class="btn" type="submit">Send message</button>
+    </form>
+
+    <div class="map-embed">
+      <iframe
+        src="https://www.google.com/maps?q=Sydney%20Australia&output=embed"
+        width="100%"
+        height="300"
+        style="border:0;"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+
+    <div class="disclaimer">
+      This website is a class assignment project created for educational purposes only. It is not
+      a registered commercial product or business, and the ABN/ACN shown above are temporary
+      placeholders used solely for assignment submission requirements.
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    &copy; 2026 Redactr. Class assignment project — not for commercial use.
+  </footer>
+
+  <script type="module">
+    import { mountAuthUI } from "../js/auth.js";
+    mountAuthUI();
+  </script>
+</body>
+</html>
