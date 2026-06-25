@@ -47,6 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
         label:  'pay'
       },
 
+      // Validates before PayPal's popup even opens — without this, someone
+      // could pay with no business email/company name, /createSubscription
+      // would fail server-side, and they'd see a "Payment successful"
+      // invoice with a download button that silently never works.
+      onClick: (data, actions) => {
+        const email = document.getElementById('billingEmail')?.value.trim();
+        const company = document.getElementById('billingCompany')?.value.trim();
+        if (!email || !company) {
+          showToast('Enter your business email and company name before paying.', 'warning');
+          return actions.reject();
+        }
+        return actions.resolve();
+      },
+
       createOrder: (data, actions) => {
         return actions.order.create({
           purchase_units: [{
@@ -219,9 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div style="margin-top:20px;font-size:0.75rem;color:#94A3B8;text-align:center;border-top:1px solid rgba(0,209,178,0.1);padding-top:16px;">
         ⚠️ This website is for a class assignment project and not for commercial purpose.
-      </div>
-      <div style="margin-top:12px;font-size:0.75rem;color:#94A3B8;text-align:center;">
-        Debug: subscription records are written to the local server file when testing locally.
       </div>
     `;
 
