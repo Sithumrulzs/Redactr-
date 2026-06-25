@@ -1,247 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Redactr — Redact Before You Send</title>
-<meta name="description" content="Redactr automatically detects and redacts sensitive information before employees send prompts to ChatGPT, Claude, Gemini and other AI tools." />
-<link rel="icon" href="assets/Logo.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-
-<style>
-  :root {
-    --bg: #050505;
-    --accent-from: #173622;
-    --accent-to: #d7ff3f;
-    --accent-grad: linear-gradient(135deg, var(--accent-from), var(--accent-to));
-    --danger: #ffb020;
-  }
-
-  * { box-sizing: border-box; }
-  html, body { background: var(--bg); }
-  body { font-family: 'Inter', sans-serif; color: #f5f5f5; overflow-x: hidden; }
-  .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; }
-
-  .accent-grad-bg { background: var(--accent-grad); }
-  .accent-grad-text {
-    background: var(--accent-grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(22px);
-    -webkit-backdrop-filter: blur(22px);
-    border: 1px solid rgba(215, 255, 63, 0.18);
-    box-shadow: 0 0 40px rgba(215, 255, 63, 0.06), inset 0 1px 0 rgba(255,255,255,0.04);
-  }
-
-  .glow-text { text-shadow: 0 0 18px rgba(215, 255, 63, 0.55); }
-  .glow-danger { text-shadow: 0 0 18px rgba(255, 176, 32, 0.6); }
-
-  /* height set here, not via Tailwind's h-screen utility — Tailwind's CDN
-     build injects its generated CSS asynchronously, and ScrollTrigger
-     measures each scene's layout on DOMContentLoaded; if that injection
-     hasn't landed yet, every pin distance gets computed against a
-     collapsed (0-height) element. */
-  .scene { background: var(--bg); height: 100vh; }
-
-  .noise-bg {
-    background-image: radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px);
-    background-size: 28px 28px;
-  }
-
-  #s1-code {
-    width: 0ch;
-    border-right: 2px solid rgba(215, 255, 63, 0.7);
-  }
-
-  .plan-card {
-    text-align: left;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 1rem;
-    padding: 1.25rem;
-    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.35s ease, background 0.35s ease;
-  }
-  .plan-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(215, 255, 63, 0.4);
-    background: rgba(255,255,255,0.05);
-  }
-  .plan-card.popular { border-color: rgba(215,255,63,0.45); }
-
-  .particle {
-    position: absolute;
-    width: 4px; height: 4px;
-    border-radius: 50%;
-    background: var(--danger);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  @keyframes orbPulse {
-    0%, 100% { transform: scale(1); opacity: 0.55; }
-    50%      { transform: scale(1.15); opacity: 0.85; }
-  }
-  .orb-pulse { animation: orbPulse 3.2s ease-in-out infinite; }
-
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: rgba(215,255,63,0.5); border-radius: 3px; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .orb-pulse { animation: none; }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redactr — Redact Before You Send</title>
+  <meta name="description" content="Redactr automatically detects and redacts sensitive information before employees send prompts to ChatGPT, Claude, Gemini and other AI tools." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="assets/Logo.png" />
+  <!-- This page only: no-JS visitors still see every scene, stacked
+       normally, instead of a permanently blank black page — .scene is
+       opacity:0/visibility:hidden by default so GSAP can drive each
+       entrance/exit itself (see js/main.js's initCinematicJourney). -->
+  <noscript>
+    <style>
+      .scene { opacity: 1 !important; visibility: visible !important; position: relative !important; height: auto !important; min-height: 100vh; }
+      .cinematic-pin { height: auto !important; overflow: visible !important; }
+    </style>
+  </noscript>
 </head>
-<body class="bg-[#050505]">
+<body class="cinematic-page">
 
-<!-- ══════════════════════════════════════════════
-     NAV — fixed, minimal, stays usable through the whole journey
-══════════════════════════════════════════════ -->
-<nav class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-5 backdrop-blur-md bg-black/30 border-b border-white/5">
-  <a href="index.html" class="flex items-center gap-2 font-display font-bold text-lg">
-    <img src="assets/Logo.png" alt="Redactr" class="w-8 h-8 rounded-lg" />
-    <span>Redact<span class="accent-grad-text">r</span></span>
-  </a>
-  <div class="hidden md:flex items-center gap-8 text-sm text-white/70">
-    <a href="pages/how-it-works.html" class="hover:text-white transition">How It Works</a>
-    <a href="pages/pricing.html" class="hover:text-white transition">Pricing</a>
-    <a href="pages/contact.html" class="hover:text-white transition">Contact</a>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/Logo.png" alt="Redactr logo" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="pages/how-it-works.html">How It Works</a>
+      <a href="pages/pricing.html">Pricing</a>
+      <a href="pages/contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="pages/pricing.html" class="btn btn-outline btn-sm">View Plans</a>
+      <a href="pages/pricing.html" class="btn btn-primary btn-sm cinema-cta">Start Free Trial</a>
+    </div>
+    <button class="nav-menu-btn" aria-label="Toggle menu" aria-expanded="false">☰</button>
   </div>
-  <a href="pages/pricing.html" class="text-sm font-semibold px-4 py-2 rounded-lg accent-grad-bg text-black">Start Free Trial</a>
+</nav>
+
+<nav class="nav-mobile">
+  <a href="index.html">Home</a>
+  <a href="pages/how-it-works.html">How It Works</a>
+  <a href="pages/pricing.html">Pricing</a>
+  <a href="pages/contact.html">Contact</a>
+  <a href="pages/pricing.html" class="btn btn-primary btn-sm cinema-cta" style="margin-top:12px;">Start Free Trial</a>
 </nav>
 
 <!-- ══════════════════════════════════════════════
-     SCENE 1 — THE LAUNCH
+     THE SINGLE-SHOT CINEMATIC JOURNEY
+     One ScrollTrigger pins #cinematic-pin for the whole sequence; the
+     four .scene panels are absolutely stacked inside #smooth-wrapper
+     and shown/hidden purely by the master timeline in js/main.js
+     (initCinematicJourney) — never by separate per-scene pins.
 ══════════════════════════════════════════════ -->
-<section id="scene-1" class="scene relative h-screen w-full flex items-center justify-center overflow-hidden">
-  <div class="absolute inset-0 noise-bg opacity-[0.04]"></div>
-  <div id="s1-wrap" class="relative px-6 text-center">
-    <p id="s1-eyebrow" class="font-display text-xs uppercase tracking-[0.35em] text-white/40 mb-6">Shadow AI Data Leak Prevention</p>
-    <code id="s1-code" class="font-mono inline-block whitespace-nowrap overflow-hidden text-[clamp(0.9rem,3vw,1.7rem)] text-[#d7ff3f] glow-text">const aws_key = 'AKIAIOSFODNN7EXAMPLE';</code>
-  </div>
-  <p class="absolute bottom-10 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-white/30 animate-pulse">Scroll to begin</p>
-</section>
+<section id="cinematic-pin" class="cinematic-pin">
+  <div id="smooth-wrapper" class="smooth-wrapper">
 
-<!-- ══════════════════════════════════════════════
-     SCENE 2 — THE GLASS WALL / INTERCEPT
-══════════════════════════════════════════════ -->
-<section id="scene-2" class="scene relative h-screen w-full overflow-hidden flex items-center justify-center" style="perspective: 1400px;">
-  <div id="s2-cam" class="relative w-full h-full flex items-center justify-center" style="transform-style: preserve-3d;">
-
-    <!-- yPercent:-50 centering is applied by GSAP (gsap.set), not a Tailwind
-         translate utility — an inline transform from GSAP would otherwise
-         clobber a CSS-variable-composed Tailwind transform outright. -->
-    <div id="s2-glass" class="absolute right-0 top-1/2 w-[60%] h-[68%] rounded-[2rem] glass-panel"></div>
-
-    <div id="s2-text" class="relative z-10 font-mono text-[clamp(0.85rem,2.2vw,1.4rem)] text-white/80 text-center px-6">
-      const aws_key = '<span id="s2-secret-wrap" class="relative inline-block whitespace-nowrap"><span id="s2-raw" class="opacity-0">AKIAIOSFODNN7EXAMPLE</span><span id="s2-safe" class="absolute left-0 top-0 font-bold accent-grad-text whitespace-nowrap">[SECRET_1]</span></span>';
+    <!-- Beat 1 — The Launch -->
+    <div class="scene" id="scene-launch">
+      <p class="scene-eyebrow">Shadow AI Data Leak Prevention</p>
+      <code class="scene-code" id="launch-code">const aws_key = 'AKIAIOSFODNN7EXAMPLE';</code>
+      <p class="scene-hint">Scroll to begin</p>
     </div>
 
-    <div id="s2-particles" class="absolute inset-0 pointer-events-none"></div>
-  </div>
+    <!-- Beat 2 — The Glass Wall / The Intercept -->
+    <div class="scene" id="scene-intercept">
+      <div class="intercept-shield cinema-glass cinema-glow" id="intercept-shield"></div>
+      <div class="intercept-text" id="intercept-text">
+        const aws_key = '<span class="secret-wrap"><span class="secret-raw" id="secret-raw">AKIAIOSFODNN7EXAMPLE</span><span class="secret-safe grad-text" id="secret-safe">[SECRET_1]</span></span>';
+      </div>
+      <div class="intercept-particles" id="intercept-particles"></div>
+      <p class="scene-label scene-label--bottom">Redactr intercepts it on-device</p>
+    </div>
 
-  <div class="absolute bottom-12 left-1/2 -translate-x-1/2 text-center px-6">
-    <p class="font-display text-sm uppercase tracking-[0.3em] text-white/40">Redactr intercepts it on-device</p>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════
-     SCENE 3 — THE MOBILE COMMAND CENTER
-══════════════════════════════════════════════ -->
-<section id="scene-3" class="scene relative h-screen w-full overflow-hidden flex items-center justify-center">
-  <div class="absolute top-28 left-1/2 -translate-x-1/2 text-center px-6">
-    <p class="font-display text-sm uppercase tracking-[0.3em] text-white/40">Your manager finds out instantly</p>
-  </div>
-
-  <div id="s3-phone" class="relative w-[270px] h-[540px] rounded-[2.5rem] glass-panel border border-white/10 p-3">
-    <div class="w-full h-full rounded-[2rem] bg-[#0a0a0a] overflow-hidden relative flex flex-col items-center justify-center p-4">
-      <div id="s3-notif" class="w-full glass-panel rounded-2xl p-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-[0.65rem] font-display font-semibold uppercase tracking-wide text-[#ffb020] glow-danger">Critical Alert</span>
-          <span class="text-[0.65rem] text-white/40">Just now</span>
+    <!-- Beat 3 — The Mobile Command Center -->
+    <div class="scene" id="scene-mobile">
+      <p class="scene-label scene-label--top">Your manager finds out instantly</p>
+      <div class="mobile-phone cinema-glass" id="mobile-phone">
+        <div class="mobile-screen">
+          <div class="mobile-notif cinema-glass" id="mobile-notif">
+            <div class="notif-row">
+              <span class="notif-tag">Critical Alert</span>
+              <span class="notif-time">Just now</span>
+            </div>
+            <p class="notif-body">AWS key blocked on ChatGPT — Sarah K.</p>
+            <button class="notif-approve" id="notif-approve" type="button">Approve</button>
+          </div>
         </div>
-        <p class="text-sm text-white/85 mb-4 leading-snug">AWS key blocked on ChatGPT — Sarah K.</p>
-        <button id="s3-approve" class="relative w-full text-xs font-semibold py-2.5 rounded-lg accent-grad-bg text-black overflow-hidden">
-          Approve
-        </button>
+      </div>
+      <div class="mobile-ripple" id="mobile-ripple"></div>
+    </div>
+
+    <!-- Beat 4 — The Clean Output -->
+    <div class="scene" id="scene-output">
+      <div class="output-orb" id="output-orb"></div>
+      <div class="output-terminal cinema-glass" id="output-terminal">
+        <h2>Protect Your Team<br /><span class="grad-text">Starting Today</span></h2>
+        <p>Choose a plan and get the Chrome extension running in under 5 minutes.</p>
+
+        <div class="plan-grid">
+          <button class="plan-card" onclick="selectPlan('starter')" type="button">
+            <div class="plan-name">Starter</div>
+            <div class="plan-price">$9<span>/mo</span></div>
+            <div class="plan-seats">Up to 5 employee seats</div>
+          </button>
+          <button class="plan-card plan-card--popular" onclick="selectPlan('professional')" type="button">
+            <div class="plan-name">Professional · Popular</div>
+            <div class="plan-price">$29<span>/mo</span></div>
+            <div class="plan-seats">Up to 25 employee seats</div>
+          </button>
+          <button class="plan-card" onclick="selectPlan('enterprise')" type="button">
+            <div class="plan-name">Enterprise</div>
+            <div class="plan-price">$99<span>/mo</span></div>
+            <div class="plan-seats">Unlimited seats · AI detection</div>
+          </button>
+        </div>
+
+        <a href="pages/pricing.html" class="output-compare-link">Compare all plan features →</a>
       </div>
     </div>
-  </div>
 
-  <div id="s3-ripple" class="absolute w-6 h-6 rounded-full pointer-events-none opacity-0" style="background: radial-gradient(circle, rgba(215,255,63,0.55), transparent 70%);"></div>
-</section>
-
-<!-- ══════════════════════════════════════════════
-     SCENE 4 — THE CLEAN OUTPUT / PURCHASE
-══════════════════════════════════════════════ -->
-<section id="scene-4" class="scene relative h-screen w-full overflow-hidden flex items-center justify-center">
-  <div id="s4-orb-wrap" class="absolute opacity-60">
-    <div class="orb-pulse w-48 h-48 rounded-full blur-3xl accent-grad-bg"></div>
-  </div>
-
-  <div id="s4-terminal" class="relative z-10 w-[min(960px,92vw)] glass-panel rounded-3xl border border-white/10 p-8 md:p-12">
-    <h2 class="font-display text-3xl md:text-5xl font-bold text-center mb-3 leading-tight">
-      Protect Your Team<br /><span class="accent-grad-text">Starting Today</span>
-    </h2>
-    <p class="text-center text-white/50 mb-10 max-w-md mx-auto">
-      Choose a plan and get the Chrome extension running in under 5 minutes.
-    </p>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <button onclick="selectPlan('starter')" class="plan-card">
-        <div class="font-display text-sm uppercase tracking-wide text-white/50 mb-1">Starter</div>
-        <div class="font-display text-3xl font-bold mb-1">$9<span class="text-sm text-white/40 font-normal">/mo</span></div>
-        <div class="text-xs text-white/40">Up to 5 employee seats</div>
-      </button>
-      <button onclick="selectPlan('professional')" class="plan-card popular">
-        <div class="font-display text-sm uppercase tracking-wide text-[#d7ff3f] mb-1">Professional · Popular</div>
-        <div class="font-display text-3xl font-bold mb-1">$29<span class="text-sm text-white/40 font-normal">/mo</span></div>
-        <div class="text-xs text-white/40">Up to 25 employee seats</div>
-      </button>
-      <button onclick="selectPlan('enterprise')" class="plan-card">
-        <div class="font-display text-sm uppercase tracking-wide text-white/50 mb-1">Enterprise</div>
-        <div class="font-display text-3xl font-bold mb-1">$99<span class="text-sm text-white/40 font-normal">/mo</span></div>
-        <div class="text-xs text-white/40">Unlimited seats · AI detection</div>
-      </button>
-    </div>
-
-    <div class="text-center mt-8">
-      <a href="pages/pricing.html" class="text-sm text-white/40 hover:text-white/70 transition underline underline-offset-4">Compare all plan features →</a>
-    </div>
   </div>
 </section>
 
 <!-- ══════════════════════════════════════════════
-     FOOTER (normal flow, after the cinematic journey)
+     FOOTER (normal flow, after the pinned journey)
 ══════════════════════════════════════════════ -->
-<footer class="relative bg-[#050505] border-t border-white/5 py-14 px-6">
-  <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-    <div class="flex items-center gap-2 font-display font-bold">
-      <img src="assets/Logo.png" alt="Redactr" class="w-7 h-7 rounded-lg" />
-      <span>Redact<span class="accent-grad-text">r</span></span>
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo" style="display:inline-flex;">
+          <img src="assets/Logo.png" alt="Redactr" style="width:32px;height:32px;border-radius:8px;" />
+          <span class="logo-text" style="font-size:1.1rem;">Redact<span>r</span></span>
+        </a>
+        <p>Shadow AI Data Leak Prevention for small businesses. Redact before you send.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="pages/how-it-works.html">How It Works</a>
+        <a href="pages/pricing.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="pages/contact.html">Contact Us</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
     </div>
-    <div class="flex items-center gap-6 text-sm text-white/50">
-      <a href="pages/how-it-works.html" class="hover:text-white transition">How It Works</a>
-      <a href="pages/pricing.html" class="hover:text-white transition">Pricing</a>
-      <a href="pages/contact.html" class="hover:text-white transition">Contact</a>
+
+    <div class="footer-disclaimer">
+      ⚠️ This website is for a class assignment project and not for commercial purpose.
     </div>
-    <div class="text-xs text-white/30">© 2025 Redactr. All rights reserved.</div>
-  </div>
-  <div class="max-w-5xl mx-auto mt-8 text-center text-xs text-amber-400/70">
-    ⚠️ This website is for a class assignment project and not for commercial purpose.
+
+    <div class="footer-bottom">
+      <div>© 2025 Redactr. All rights reserved.</div>
+      <div>ABN: 12 345 678 901</div>
+    </div>
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/cinematic.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

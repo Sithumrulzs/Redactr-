@@ -29,6 +29,19 @@
 }
 
 /* ---------- Reset & Base ---------- */
+/* Core setup for cinematic scrolling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #050505; /* The pitch-black starting point */
+    color: #ffffff;
+    overflow-x: hidden; /* Prevents horizontal scrolling bugs during animations */
+    font-family: 'Inter', sans-serif; /* A premium, clean font */
+}
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; font-size: 16px; }
@@ -1801,4 +1814,354 @@ p  { color: var(--muted); line-height: 1.8; }
     transform: none !important;
   }
   .reveal { transition: opacity 0.3s ease !important; filter: none !important; transform: none !important; }
+}
+
+/* ===================================================
+   CINEMATIC HOMEPAGE — Single-Shot Scroll Journey
+   Scoped to its own --cinema-* tokens and classes so it never
+   touches the --primary/--accent tokens the rest of the site
+   (pricing/contact/how-it-works/checkout) relies on.
+=================================================== */
+:root {
+  --cinema-bg: #050505;
+  --cinema-green: #15301d;
+  --cinema-yellow: #e3c14a;
+  --cinema-gradient: linear-gradient(135deg, var(--cinema-green), var(--cinema-yellow));
+  --cinema-danger: #ffb020;
+}
+
+body.cinematic-page {
+  background: var(--cinema-bg);
+  overflow-x: hidden;
+}
+
+body.cinematic-page .navbar {
+  background: rgba(5, 5, 5, 0.55);
+  border-bottom-color: rgba(227, 193, 74, 0.1);
+}
+body.cinematic-page .navbar.scrolled { background: rgba(5, 5, 5, 0.9); }
+body.cinematic-page .nav-logo .logo-text span,
+body.cinematic-page .nav-links a:hover { color: var(--cinema-yellow); }
+body.cinematic-page .cinema-cta {
+  background: var(--cinema-gradient);
+  color: #0a0a0a;
+  box-shadow: 0 0 24px rgba(227, 193, 74, 0.3);
+}
+body.cinematic-page .cinema-cta:hover {
+  background: var(--cinema-gradient);
+  box-shadow: 0 0 36px rgba(227, 193, 74, 0.5);
+}
+
+.cinematic-pin {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--cinema-bg);
+}
+
+.smooth-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Hidden by default — entrances/exits are driven purely by the master
+   GSAP timeline (js/main.js's initCinematicJourney), never by CSS. */
+.scene {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.cinema-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cinema-glow {
+  box-shadow: 0 0 40px rgba(227, 193, 74, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.grad-text {
+  background: var(--cinema-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Beat 1 — The Launch ──────────────────────────── */
+.scene-eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 24px;
+}
+
+.scene-code {
+  font-family: 'Courier New', monospace;
+  font-size: clamp(0.9rem, 3vw, 1.7rem);
+  color: var(--cinema-yellow);
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+  width: 0ch;
+  border-right: 2px solid var(--cinema-yellow);
+  text-shadow: 0 0 18px rgba(227, 193, 74, 0.5);
+}
+
+.scene-hint {
+  position: absolute;
+  bottom: 40px;
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Beat 2 — The Glass Wall / The Intercept ──────── */
+#scene-intercept { perspective: 1400px; }
+
+.intercept-shield {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 60%;
+  height: 68%;
+  border-radius: 2rem;
+}
+
+.intercept-text {
+  position: relative;
+  z-index: 1;
+  font-family: 'Courier New', monospace;
+  font-size: clamp(0.85rem, 2.2vw, 1.4rem);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.secret-wrap {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.secret-raw { opacity: 0; }
+
+.secret-safe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.intercept-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cinema-danger);
+  opacity: 0;
+}
+
+.scene-label {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+.scene-label--bottom { bottom: 48px; }
+.scene-label--top { top: 112px; }
+
+/* ── Beat 3 — The Mobile Command Center ───────────── */
+.mobile-phone {
+  position: relative;
+  width: 270px;
+  height: 540px;
+  border-radius: 2.5rem;
+  padding: 12px;
+}
+
+.mobile-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 2rem;
+  background: #0a0a0a;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.mobile-notif {
+  width: 100%;
+  border-radius: 1rem;
+  padding: 16px;
+  opacity: 0;
+}
+
+.notif-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.notif-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cinema-danger);
+  text-shadow: 0 0 12px rgba(255, 176, 32, 0.5);
+}
+
+.notif-time { font-size: 0.65rem; color: rgba(255, 255, 255, 0.4); }
+
+.notif-body {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.notif-approve {
+  width: 100%;
+  padding: 10px;
+  border-radius: 0.5rem;
+  background: var(--cinema-gradient);
+  color: #0a0a0a;
+  font-weight: 600;
+  font-size: 0.8rem;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-ripple {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(227, 193, 74, 0.55), transparent 70%);
+}
+
+/* ── Beat 4 — The Clean Output ────────────────────── */
+.output-orb {
+  position: absolute;
+  width: 192px;
+  height: 192px;
+  border-radius: 50%;
+  filter: blur(48px);
+  background: var(--cinema-gradient);
+  opacity: 0;
+}
+
+.output-terminal {
+  position: relative;
+  z-index: 1;
+  width: min(960px, 92vw);
+  border-radius: 1.5rem;
+  padding: 48px;
+  opacity: 0;
+}
+
+.output-terminal h2 {
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  margin-bottom: 12px;
+  line-height: 1.15;
+}
+
+.output-terminal > p {
+  color: rgba(255, 255, 255, 0.5);
+  max-width: 420px;
+  margin: 0 auto 40px;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.plan-card {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 20px;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, background 0.35s ease;
+}
+.plan-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(227, 193, 74, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+}
+.plan-card--popular { border-color: rgba(227, 193, 74, 0.45); }
+
+.plan-name {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4px;
+}
+.plan-card--popular .plan-name { color: var(--cinema-yellow); }
+
+.plan-price {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.plan-price span { font-size: 0.85rem; font-weight: 400; color: rgba(255, 255, 255, 0.4); }
+
+.plan-seats { font-size: 0.75rem; color: rgba(255, 255, 255, 0.4); }
+
+.output-compare-link {
+  display: block;
+  text-align: center;
+  margin-top: 32px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: underline;
+}
+.output-compare-link:hover { color: rgba(255, 255, 255, 0.7); }
+
+@media (max-width: 768px) {
+  .plan-grid { grid-template-columns: 1fr; }
+  .mobile-phone { width: 230px; height: 460px; }
+  .scene-label--top { top: 100px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-code { animation: none; }
 }
