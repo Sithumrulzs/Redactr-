@@ -48,8 +48,9 @@
      HERO
 ══════════════════════════════════════════════ -->
 <section class="hero" id="hero">
-  <div class="hero-bg"></div>
+  <div class="hero-bg aurora"></div>
   <div class="hero-grid"></div>
+  <canvas class="particle-canvas"></canvas>
 
   <div class="container">
     <div class="grid-2" style="gap: 60px; align-items: center;">
@@ -61,7 +62,7 @@
           AI Data Leak Prevention
         </div>
 
-        <h1>Protect <span class="highlight">Sensitive Data</span> Before It Reaches AI</h1>
+        <h1>Protect <span class="highlight gradient-text">Sensitive Data</span> Before It Reaches AI</h1>
 
         <p class="hero-sub">
           Redactr automatically detects and redacts sensitive information before employees send prompts to ChatGPT, Claude, Gemini, and other AI tools. Your data stays yours.
@@ -78,11 +79,11 @@
 
         <div class="hero-stats">
           <div class="hero-stat-item">
-            <div class="stat-val">99.8%</div>
+            <div class="stat-val" data-count-to="99.8" data-count-suffix="%" data-count-decimals="1">99.8%</div>
             <div class="stat-lbl">Detection Rate</div>
           </div>
           <div class="hero-stat-item">
-            <div class="stat-val">&lt;1ms</div>
+            <div class="stat-val" data-count-to="1" data-count-prefix="&lt;" data-count-suffix="ms">&lt;1ms</div>
             <div class="stat-lbl">Scan Time</div>
           </div>
           <div class="hero-stat-item">
@@ -94,14 +95,33 @@
 
       <!-- Right: Terminal demo card -->
       <div class="hero-visual">
-        <div class="hero-card">
+        <div class="hero-card scanning">
           <div class="terminal-header">
             <div class="terminal-dot red"></div>
             <div class="terminal-dot yellow"></div>
             <div class="terminal-dot green"></div>
             <div class="terminal-title">redactr · live scan</div>
           </div>
-          <div class="terminal-body">
+          <div
+            class="terminal-body"
+            data-live-terminal='[
+              {"text":"▶ Scanning prompt…","cls":"line-in","speed":24},
+              {"break":true},
+              {"text":"&gt; My AWS key is AKIAIOSFODNN7EXAMPLE","cls":"line-in","speed":14},
+              {"text":"&gt; Card: 4111 1111 1111 1111","cls":"line-in","speed":14},
+              {"text":"&gt; Contact: sarah@acme.com","cls":"line-in","speed":14,"pause":400},
+              {"break":true},
+              {"text":"⚠ RISK DETECTED · Score: 140 · CRITICAL","cls":"line-bad","speed":18,"pause":600},
+              {"break":true},
+              {"text":"✓ Safe version generated:","cls":"line-ok","speed":18},
+              {"text":"&gt; My AWS key is [SECRET_1]","cls":"line-tag","speed":14},
+              {"text":"&gt; Card: [CARD_1]","cls":"line-tag","speed":14},
+              {"text":"&gt; Contact: [EMAIL_1]","cls":"line-tag","speed":14,"pause":400},
+              {"break":true},
+              {"text":"✓ Manager notified · Prompt blocked","cls":"line-ok","speed":18,"pause":1200}
+            ]'
+          >
+            <!-- Static fallback shown if JS doesn't run; animations.js clears and replaces this on load -->
             <div class="line-in">▶ Scanning prompt…</div>
             <br>
             <div class="line-in">&gt; My AWS key is AKIAIOSFODNN7EXAMPLE</div>
@@ -119,15 +139,19 @@
           </div>
         </div>
 
-        <!-- Floating badge -->
-        <div style="position:absolute;bottom:-16px;right:20px;
-          background:var(--surface2);border:1px solid var(--border);
-          border-radius:12px;padding:12px 18px;display:flex;align-items:center;
-          gap:10px;box-shadow:var(--shadow);">
+        <!-- Floating badge — cycles through recent catches to feel live -->
+        <div
+          class="hero-live-badge"
+          data-live-badge='[
+            {"title":"3 leaks blocked","sub":"Just now · ChatGPT"},
+            {"title":"API key redacted","sub":"12s ago · Claude"},
+            {"title":"Card number blocked","sub":"41s ago · Gemini"}
+          ]'
+        >
           <span style="font-size:1.4rem;">🔒</span>
           <div>
-            <div style="font-weight:700;font-size:0.9rem;">3 leaks blocked</div>
-            <div style="font-size:0.75rem;color:var(--muted);">Just now · ChatGPT</div>
+            <div class="badge-title" style="font-weight:700;font-size:0.9rem;">3 leaks blocked</div>
+            <div class="badge-sub" style="font-size:0.75rem;color:var(--muted);">Just now · ChatGPT</div>
           </div>
         </div>
       </div>
@@ -144,12 +168,10 @@
     <p style="text-align:center;font-size:0.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:28px;">
       Protects your team when using
     </p>
-    <div style="display:flex;justify-content:center;align-items:center;gap:48px;flex-wrap:wrap;">
+    <div style="display:flex;justify-content:center;align-items:center;gap:48px;flex-wrap:wrap;" class="reveal">
       <div style="font-size:1rem;font-weight:700;color:rgba(248,250,252,0.4);letter-spacing:-0.02em;">ChatGPT</div>
       <div style="font-size:1rem;font-weight:700;color:rgba(248,250,252,0.4);letter-spacing:-0.02em;">Claude</div>
       <div style="font-size:1rem;font-weight:700;color:rgba(248,250,252,0.4);letter-spacing:-0.02em;">Gemini</div>
-      <div style="font-size:1rem;font-weight:700;color:rgba(248,250,252,0.4);letter-spacing:-0.02em;">Copilot</div>
-      <div style="font-size:1rem;font-weight:700;color:rgba(248,250,252,0.4);letter-spacing:-0.02em;">Perplexity</div>
     </div>
   </div>
 </section>
@@ -245,6 +267,54 @@
 
     <div style="text-align:center;margin-top:48px;" class="reveal">
       <a href="pages/how-it-works.html" class="btn btn-outline">See Full Workflow →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     LIVE LEAK-DETECTION SHOWCASE
+══════════════════════════════════════════════ -->
+<section class="section demo-section" id="live-demo">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">See It In Action</div>
+      <h2>Watch Redactr Catch a Leak <span class="text-primary gradient-text">in Real Time</span></h2>
+      <p>This is exactly what happens on an employee's screen — entirely on their device, the instant they hit send.</p>
+    </div>
+
+    <div class="demo-stage reveal">
+      <div class="demo-chatbox" id="demo-chatbox">
+        <div class="demo-chatbox-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <span class="demo-chatbox-url">chatgpt.com</span>
+        </div>
+        <div class="demo-prompt" id="demo-prompt">
+          Hey, can you help me debug this script? My AWS key is
+          <span class="pii" data-token="[SECRET_1]" data-label="AWS Key">AKIAIOSFODNN7EXAMPLE</span>
+          and bill the customer's card
+          <span class="pii" data-token="[CARD_1]" data-label="Card Number">4111 1111 1111 1111</span>,
+          confirm with
+          <span class="pii" data-token="[EMAIL_1]" data-label="Email">sarah@acme.com</span>
+          once it's working.
+        </div>
+        <div class="demo-scan-beam" id="demo-scan-beam"></div>
+        <div class="demo-status" id="demo-status">
+          <span class="demo-status-dot"></span>
+          <span id="demo-status-text">Idle — watching this input field…</span>
+        </div>
+      </div>
+
+      <div class="demo-side">
+        <div class="risk-gauge" id="risk-gauge" style="--pct: 0;">
+          <div class="risk-gauge-inner">
+            <div class="risk-gauge-val" id="risk-gauge-val">0</div>
+            <div class="risk-gauge-lbl">Risk Score</div>
+          </div>
+        </div>
+        <div class="demo-findings" id="demo-findings"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -437,6 +507,7 @@
 </footer>
 
 <script src="js/main.js"></script>
+<script src="js/animations.js"></script>
 <script src="js/cart.js"></script>
 </body>
 </html>

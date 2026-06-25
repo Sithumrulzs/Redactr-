@@ -1212,13 +1212,17 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .reveal {
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(28px) scale(0.97);
+  filter: blur(6px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+  filter: blur(0);
 }
 
 /* ===================================================
@@ -1300,4 +1304,501 @@ p  { color: var(--muted); line-height: 1.8; }
   .btn-lg { width: 100%; justify-content: center; }
   h1 { font-size: 2rem; }
   .plan-price { font-size: 2.2rem; }
+}
+
+/* ===================================================
+   SCROLL PROGRESS BAR
+=================================================== */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2.5px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  box-shadow: 0 0 12px rgba(0, 209, 178, 0.7);
+  z-index: 1100;
+  transition: width 0.1s linear;
+}
+
+/* ===================================================
+   CURSOR SPOTLIGHT (ambient, follows pointer)
+=================================================== */
+.cursor-glow {
+  position: fixed;
+  top: 0; left: 0;
+  width: 480px; height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 209, 178, 0.10) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+  mix-blend-mode: screen;
+}
+
+@media (max-width: 768px) {
+  .cursor-glow { display: none; }
+}
+
+/* ===================================================
+   PARTICLE NETWORK CANVAS (hero backdrop)
+=================================================== */
+.particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+/* ===================================================
+   HERO — AURORA / SCAN-LINE / LIVE TERMINAL
+=================================================== */
+.hero-bg.aurora {
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 10%, rgba(0,209,178,0.16) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 45% at 85% 70%, rgba(25,229,194,0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 35% 40% at 50% 100%, rgba(0,209,178,0.08) 0%, transparent 60%);
+  animation: auroraDrift 14s ease-in-out infinite alternate;
+}
+
+@keyframes auroraDrift {
+  0%   { background-position: 0% 0%, 100% 100%, 50% 100%; filter: hue-rotate(0deg); }
+  50%  { transform: scale(1.06) translate(1%, -1%); }
+  100% { transform: scale(1); }
+}
+
+.hero-grid {
+  animation: gridPan 40s linear infinite;
+}
+
+@keyframes gridPan {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 60px 60px, 60px 60px; }
+}
+
+.hero-card {
+  isolation: isolate;
+}
+
+.hero-card.scanning::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 60px;
+  top: -60px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 209, 178, 0.16) 50%,
+    transparent 100%
+  );
+  animation: scanSweep 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes scanSweep {
+  0%   { top: -60px; opacity: 0; }
+  10%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 1em;
+  background: var(--primary);
+  margin-left: 2px;
+  vertical-align: -2px;
+  animation: blink 0.9s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.terminal-body .typed-line {
+  opacity: 0;
+  animation: lineIn 0.3s ease forwards;
+}
+
+@keyframes lineIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Floating "live activity" badge — idle float + content-cycle fade */
+.hero-live-badge {
+  position: absolute;
+  bottom: -16px; right: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow);
+  animation: badgeFloat 4s ease-in-out infinite;
+}
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+.hero-live-badge .badge-text {
+  transition: opacity 0.35s ease;
+}
+
+/* ===================================================
+   CARD TILT + SPOTLIGHT (mouse-reactive, see js/animations.js)
+=================================================== */
+.card, .hero-card, .testimonial-card {
+  --spot-x: 50%;
+  --spot-y: 50%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* .testimonial-card already uses ::before for its decorative quote mark,
+   so its spotlight glow uses ::after instead to avoid clobbering it. */
+.card.tilt::before, .testimonial-card.tilt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--spot-x) var(--spot-y), rgba(0, 209, 178, 0.16), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card.tilt:hover::before, .testimonial-card.tilt:hover::after {
+  opacity: 1;
+}
+
+.card.tilt > *, .testimonial-card.tilt > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================================
+   ANIMATED GRADIENT TEXT (headline highlight)
+=================================================== */
+.gradient-text {
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 4s linear infinite;
+}
+
+@keyframes gradientShift {
+  to { background-position: 200% center; }
+}
+
+/* ===================================================
+   BUTTON SHINE SWEEP
+=================================================== */
+.btn-primary, .btn-outline {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after, .btn-outline::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.btn-primary:hover::after, .btn-outline:hover::after {
+  left: 125%;
+}
+
+/* ===================================================
+   ANIMATED COUNTER STAT
+=================================================== */
+.stat-val.counting {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===================================================
+   FLOW CONNECTOR — TRAVELING PULSE
+=================================================== */
+.flow-connector {
+  overflow: hidden;
+}
+
+.flow-connector::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -20%;
+  width: 20%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  box-shadow: 0 0 8px var(--primary);
+  animation: flowPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes flowPulse {
+  0%   { left: -20%; opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+/* Lightweight aurora glow for the secondary pages' hero sections
+   (pricing/contact/how-it-works) so the whole site feels consistent,
+   without the cost of a full particle canvas on every page. */
+.pricing-hero, .contact-hero, .hiw-hero, .checkout-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-hero::before, .contact-hero::before, .hiw-hero::before, .checkout-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 55% 60% at 50% 0%, rgba(0,209,178,0.14) 0%, transparent 70%);
+  animation: auroraDrift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pricing-hero > *, .contact-hero > *, .hiw-hero > *, .checkout-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================================
+   LIVE LEAK-DETECTION SHOWCASE
+=================================================== */
+.demo-stage {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 32px;
+  align-items: stretch;
+}
+
+.demo-chatbox {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+}
+
+.demo-chatbox-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+
+.demo-chatbox-url {
+  margin-left: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-family: monospace;
+}
+
+.demo-prompt {
+  padding: 32px 28px 24px;
+  font-size: 1.05rem;
+  line-height: 2.1;
+  color: var(--text);
+  min-height: 140px;
+}
+
+.demo-prompt .pii {
+  display: inline-block;
+  font-family: 'Courier New', monospace;
+  font-size: 0.92rem;
+  padding: 2px 6px;
+  border-radius: 5px;
+  transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease, transform 0.3s ease;
+}
+
+.demo-prompt .pii.exposed {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.5), 0 0 16px rgba(239, 68, 68, 0.35);
+  animation: piiPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes piiPulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(239,68,68,0.5), 0 0 14px rgba(239,68,68,0.3); }
+  50%      { box-shadow: 0 0 0 1px rgba(239,68,68,0.7), 0 0 22px rgba(239,68,68,0.55); }
+}
+
+.demo-prompt .pii.redacted {
+  background: rgba(0, 209, 178, 0.12);
+  color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(0, 209, 178, 0.4);
+  animation: none;
+  transform: scale(1);
+}
+
+.demo-scan-beam {
+  position: absolute;
+  left: 0; right: 0;
+  top: 84px;
+  height: 90px;
+  background: linear-gradient(180deg, transparent, rgba(0, 209, 178, 0.22), transparent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.demo-scan-beam.active {
+  animation: demoScan 1.5s ease-in-out 1;
+}
+
+@keyframes demoScan {
+  0%   { top: 84px; opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.demo-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-family: monospace;
+  transition: color 0.3s ease;
+}
+
+.demo-status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.demo-status.scanning .demo-status-dot { background: var(--warning); box-shadow: 0 0 10px rgba(245,158,11,0.6); animation: pulse 1s infinite; }
+.demo-status.danger   .demo-status-dot { background: var(--danger); box-shadow: 0 0 10px rgba(239,68,68,0.6); }
+.demo-status.safe     .demo-status-dot { background: var(--success); box-shadow: 0 0 10px rgba(16,185,129,0.6); }
+.demo-status.scanning { color: var(--warning); }
+.demo-status.danger   { color: var(--danger); }
+.demo-status.safe     { color: var(--success); }
+
+.demo-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 20px;
+}
+
+.risk-gauge {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: conic-gradient(var(--gauge-color, var(--success)) calc(var(--pct, 0) * 1%), var(--surface2) 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s linear;
+  flex-shrink: 0;
+}
+
+.risk-gauge-inner {
+  width: 122px; height: 122px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.risk-gauge-val {
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: var(--text);
+  line-height: 1;
+}
+
+.risk-gauge-lbl {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+.demo-findings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-height: 110px;
+}
+
+.demo-finding-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: chipIn 0.35s ease forwards;
+}
+
+@keyframes chipIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.demo-finding-chip .chip-check {
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+
+.demo-finding-chip .chip-check.warn { color: var(--danger); }
+.demo-finding-chip .chip-check.done { color: var(--success); }
+
+@media (max-width: 992px) {
+  .demo-stage { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg.aurora, .hero-grid, .hero-card.scanning::after, .hero-live-badge,
+  .flow-connector::after, .gradient-text, .terminal-cursor,
+  .pricing-hero::before, .contact-hero::before, .hiw-hero::before, .checkout-hero::before,
+  .demo-scan-beam.active, .demo-prompt .pii.exposed, .demo-status-dot.scanning {
+    animation: none !important;
+  }
+  .demo-finding-chip {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .reveal { transition: opacity 0.3s ease !important; filter: none !important; transform: none !important; }
 }

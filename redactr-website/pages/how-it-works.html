@@ -58,7 +58,7 @@
           <div class="section-label">Input</div>
           <h3>Employee Types a Prompt</h3>
           <p>
-            The employee opens ChatGPT, Claude, Gemini, or Microsoft Copilot in their browser and begins typing a prompt — perhaps asking an AI to help write an email to a customer, debug code, or generate a report.
+            The employee opens ChatGPT, Claude, or Gemini in their browser and begins typing a prompt — perhaps asking an AI to help write an email to a customer, debug code, or generate a report.
           </p>
           <p style="margin-top:12px;">
             Redactr runs as a Chrome extension, silently watching the text input field. The employee doesn't notice anything — until a problem is detected.
@@ -209,17 +209,17 @@
       <div class="card reveal">
         <div class="card-icon">🌐</div>
         <h3>Website</h3>
-        <p>Plain HTML/CSS/JS. Markets and sells the subscription. Stores plan selection in <code>localStorage</code>. PayPal Sandbox for payment. No backend required.</p>
+        <p>Plain HTML/CSS/JS. Markets and sells the subscription, then hands off to the backend to create the company and admin invite on purchase. PayPal Sandbox for payment.</p>
       </div>
       <div class="card reveal">
         <div class="card-icon">🧩</div>
-        <h3>Chrome Extension</h3>
-        <p>Manifest V3. Content script injected into ChatGPT, Claude, Gemini, Copilot. Detection runs entirely in-browser. Zero external API calls.</p>
+        <h3>Chrome &amp; Edge Extension</h3>
+        <p>Manifest V3. Content script injected into ChatGPT, Claude, Gemini. Detection runs entirely in-browser — only blocked-prompt metadata, never the matched text, ever leaves the device.</p>
       </div>
       <div class="card reveal">
         <div class="card-icon">📱</div>
         <h3>Flutter App</h3>
-        <p>Manager's control centre. Shows all leak alerts, risk scores, and employee names. Approve or Deny with one tap. Uses mock data — no server needed.</p>
+        <p>Manager's control centre. Shows real leak alerts, risk scores, and employee names from Firestore. Approve or Deny with one tap, synced live.</p>
       </div>
     </div>
     <div style="text-align:center;margin-top:48px;" class="reveal">
@@ -262,5 +262,6 @@
 </footer>
 
 <script src="../js/main.js"></script>
+<script src="../js/animations.js"></script>
 </body>
 </html>
