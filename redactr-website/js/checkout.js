@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cart = (window.getCart && getCart()) || null;
   const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '0.0.0.0' || window.location.protocol === 'file:')
     ? 'http://localhost:3000'
-    : 'https://redactr-api.onrender.com';
+    : 'https://redactr-ln5t.onrender.com';
   let businessDownloadUrl = null;
 
   // ── Populate order summary ────────────────────────
