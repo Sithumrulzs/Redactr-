@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" href="../assets/Logo.png" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <img src="../assets/Logo.png" alt="Redactr" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="pricing.html" class="active">Pricing</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="contact.html" class="btn btn-outline btn-sm">Contact Sales</a>
+      <a href="checkout.html" class="btn btn-primary btn-sm">Checkout</a>
+    </div>
+    <button class="nav-menu-btn">☰</button>
+  </div>
+</nav>
+<nav class="nav-mobile">
+  <a href="../index.html">Home</a>
+  <a href="how-it-works.html">How It Works</a>
+  <a href="pricing.html">Pricing</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<!-- Hero -->
+<section class="pricing-hero">
+  <div class="container">
+    <div class="section-label">Simple Pricing</div>
+    <h1>Protect Your Team <span class="text-primary">Without the Complexity</span></h1>
+    <p style="max-width:520px;margin:20px auto 0;font-size:1.05rem;">
+      Start free, scale as you grow. All plans include the Chrome extension and mobile app. Cancel anytime.
+    </p>
+
+    <!-- Toggle -->
+    <div style="display:flex;justify-content:center;margin-top:32px;">
+      <div class="pricing-toggle">
+        <span class="toggle-opt active" data-period="monthly">Monthly</span>
+        <span class="toggle-opt" data-period="annual">Annual <span style="color:var(--success);font-size:0.75rem;margin-left:4px;">Save 20%</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing cards -->
+<section class="section-sm">
+  <div class="container">
+    <div class="pricing-grid">
+
+      <!-- Starter -->
+      <div class="pricing-card reveal" data-monthly="9">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">
+          <sup>$</sup><span class="price-num">9</span>
+          <span class="period">/month</span>
+        </div>
+        <div class="plan-desc">Perfect for micro-businesses and freelancers. Up to 5 seats.</div>
+
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="feature-check">✓</span> API Key &amp; Secret Detection</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Email &amp; Phone Redaction</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Credit Card Protection</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Chrome Extension</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Basic Dashboard</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> 5 Manager Approvals/mo</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Email Support</li>
+          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">Team Analytics</span></li>
+          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">Slack Integration</span></li>
+        </ul>
+
+        <button class="btn btn-outline btn-block" data-plan-id="starter" onclick="selectPlan('starter')">
+          Choose Starter →
+        </button>
+      </div>
+
+      <!-- Professional (popular) -->
+      <div class="pricing-card popular reveal" data-monthly="29">
+        <div class="popular-badge">Most Popular</div>
+        <div class="plan-name">Professional</div>
+        <div class="plan-price">
+          <sup>$</sup><span class="price-num">29</span>
+          <span class="period">/month</span>
+        </div>
+        <div class="plan-desc">For growing teams that need visibility and control. Up to 25 seats.</div>
+
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="feature-check">✓</span> Everything in Starter</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Source Code Detection</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Advanced Risk Scoring</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Manager Mobile App</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Unlimited Approvals</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Team Analytics</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Priority Support</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Slack Integration</li>
+          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">SSO / SAML</span></li>
+        </ul>
+
+        <button class="btn btn-primary btn-block" data-plan-id="professional" onclick="selectPlan('professional')">
+          Choose Professional →
+        </button>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="pricing-card reveal" data-monthly="99">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">
+          <sup>$</sup><span class="price-num">99</span>
+          <span class="period">/month</span>
+        </div>
+        <div class="plan-desc">Unlimited seats, custom rules, and dedicated support for large organisations.</div>
+
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="feature-check">✓</span> Everything in Professional</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Custom Detection Rules</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> SSO / SAML</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> SIEM Integration</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Dedicated Account Manager</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> SLA 99.9% Uptime</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Custom Contracts</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> On-Premise Option</li>
+        </ul>
+
+        <button class="btn btn-outline btn-block" data-plan-id="enterprise" onclick="selectPlan('enterprise')">
+          Choose Enterprise →
+        </button>
+      </div>
+    </div>
+
+    <!-- Trust badge row -->
+    <div style="display:flex;justify-content:center;gap:32px;margin-top:48px;flex-wrap:wrap;" class="reveal">
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
+        <span style="color:var(--success);">✓</span> No credit card required
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
+        <span style="color:var(--success);">✓</span> Cancel anytime
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
+        <span style="color:var(--success);">✓</span> 14-day free trial
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
+        <span style="color:var(--success);">✓</span> On-device only · no data sent
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison table -->
+<section class="comparison-section" style="padding: 80px 0;">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Compare Plans</div>
+      <h2>Feature <span class="text-primary">Comparison</span></h2>
+    </div>
+
+    <div style="overflow-x:auto;" class="reveal">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;width:40%;">Feature</th>
+            <th>Starter<br><span style="font-size:0.8rem;color:var(--muted);font-weight:400;">$9/mo</span></th>
+            <th style="color:var(--primary);">Professional<br><span style="font-size:0.8rem;color:var(--muted);font-weight:400;">$29/mo</span></th>
+            <th>Enterprise<br><span style="font-size:0.8rem;color:var(--muted);font-weight:400;">$99/mo</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Detection</td></tr>
+          <tr><td>API Key Detection</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Credit Card + Luhn</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Email &amp; Phone</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>IP Address Detection</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Source Code Patterns</td><td class="x-cell">✗</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Custom Detection Rules</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+
+          <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Management</td></tr>
+          <tr><td>Chrome Extension</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Manager Mobile App</td><td class="x-cell">–</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Manager Approvals/month</td><td>5</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>Team Analytics Dashboard</td><td class="x-cell">✗</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Slack Integration</td><td class="x-cell">✗</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+
+          <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Enterprise</td></tr>
+          <tr><td>SSO / SAML</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>SIEM Integration</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>SLA 99.9% Uptime</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>Dedicated Account Manager</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>On-premise Deployment</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+
+          <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Support</td></tr>
+          <tr><td>Email Support</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Priority Support</td><td class="x-cell">✗</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Dedicated Account Manager</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:var(--surface);">
+  <div class="container" style="max-width:760px;">
+    <div class="section-header reveal">
+      <div class="section-label">FAQ</div>
+      <h2>Common <span class="text-primary">Questions</span></h2>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;" class="reveal">
+      <div class="card" style="padding:24px;">
+        <h4 style="margin-bottom:8px;">Does Redactr see my employees' prompts?</h4>
+        <p style="font-size:0.9rem;">No. Detection runs entirely on the employee's device. No prompt data is ever sent to Redactr's servers. We physically cannot see what your team types.</p>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h4 style="margin-bottom:8px;">Which AI tools does it protect against?</h4>
+        <p style="font-size:0.9rem;">Currently ChatGPT, Claude.ai, Gemini, and Microsoft Copilot. Enterprise plans can add custom URL patterns for internal AI tools.</p>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h4 style="margin-bottom:8px;">What happens if I exceed my approval limit?</h4>
+        <p style="font-size:0.9rem;">On the Starter plan, after 5 approvals the exception workflow is disabled for that month — leaks are still blocked, but employees can't request exceptions. Upgrade to Professional for unlimited approvals.</p>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h4 style="margin-bottom:8px;">Can I cancel anytime?</h4>
+        <p style="font-size:0.9rem;">Yes. No lock-in contracts. Cancel from your account dashboard and your plan stays active until the end of the billing period.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="nav-logo" style="display:inline-flex;">
+          <img src="../assets/Logo.png" alt="Redactr" style="width:32px;height:32px;border-radius:8px;" />
+          <span class="logo-text">Redact<span>r</span></span>
+        </a>
+        <p>Shadow AI Data Leak Prevention. Redact before you send.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-disclaimer">⚠️ This website is for a class assignment project and not for commercial purpose.</div>
+    <div class="footer-bottom">
+      <div>© 2025 Redactr. All rights reserved.</div>
+      <div>ABN: 12 345 678 901</div>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+<script src="../js/cart.js"></script>
+</body>
+</html>

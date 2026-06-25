@@ -1,0 +1,132 @@
+/* ===================================================
+   REDACTR — main.js
+   Shared page behaviour: navbar, scroll, animations
+=================================================== */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // ── Navbar scroll state ──────────────────────────
+  const navbar = document.querySelector('.navbar');
+  if (navbar) {
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+  }
+
+  // ── Mobile menu toggle ───────────────────────────
+  const menuBtn  = document.querySelector('.nav-menu-btn');
+  const mobileNav = document.querySelector('.nav-mobile');
+
+  if (menuBtn && mobileNav) {
+    menuBtn.addEventListener('click', () => {
+      const open = mobileNav.classList.toggle('open');
+      menuBtn.setAttribute('aria-expanded', open);
+      menuBtn.textContent = open ? '✕' : '☰';
+    });
+  }
+
+  // ── Active nav link ──────────────────────────────
+  const navLinks = document.querySelectorAll('.nav-links a, .nav-mobile a');
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+  navLinks.forEach(link => {
+    const href = link.getAttribute('href');
+    if (href && (href === currentPage || href.endsWith(currentPage))) {
+      link.classList.add('active');
+    }
+  });
+
+  // ── Scroll reveal ────────────────────────────────
+  const revealEls = document.querySelectorAll('.reveal');
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    revealEls.forEach(el => observer.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('visible'));
+  }
+
+  // ── Toast helper ─────────────────────────────────
+  window.showToast = function(message, type = 'success') {
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+    toast.innerHTML = `
+      <span class="toast-icon">${icons[type] || '✅'}</span>
+      <span>${message}</span>
+    `;
+
+    toast.classList.add('show');
+
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
+  };
+
+  // ── Smooth scroll for anchor links ───────────────
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (mobileNav) mobileNav.classList.remove('open');
+      }
+    });
+  });
+
+  // ── Contact form handler ──────────────────────────
+  const contactForm = document.getElementById('contactForm');
+  if (contactForm) {
+    contactForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const btn = contactForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      setTimeout(() => {
+        contactForm.reset();
+        btn.disabled = false;
+        btn.textContent = 'Send Message';
+        showToast('Message sent! We\'ll respond within 24 hours.', 'success');
+      }, 1400);
+    });
+  }
+
+  // ── Pricing toggle (monthly / annual) ────────────
+  const toggleOpts = document.querySelectorAll('.toggle-opt');
+  toggleOpts.forEach(opt => {
+    opt.addEventListener('click', () => {
+      toggleOpts.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+
+      const isAnnual = opt.dataset.period === 'annual';
+      document.querySelectorAll('[data-monthly]').forEach(el => {
+        const monthly = parseFloat(el.dataset.monthly);
+        const display = isAnnual
+          ? `$${(monthly * 0.8).toFixed(0)}`
+          : `$${monthly}`;
+        el.querySelector('.price-num').textContent = display;
+      });
+
+      if (isAnnual) {
+        showToast('Annual billing selected — save 20%!', 'info');
+      }
+    });
+  });
+
+});

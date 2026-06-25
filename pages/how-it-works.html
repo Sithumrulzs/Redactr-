@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How It Works — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" href="../assets/Logo.png" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <img src="../assets/Logo.png" alt="Redactr" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="how-it-works.html" class="active">How It Works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="pricing.html" class="btn btn-outline btn-sm">View Plans</a>
+      <a href="pricing.html" class="btn btn-primary btn-sm">Start Free Trial</a>
+    </div>
+    <button class="nav-menu-btn">☰</button>
+  </div>
+</nav>
+<nav class="nav-mobile">
+  <a href="../index.html">Home</a>
+  <a href="how-it-works.html">How It Works</a>
+  <a href="pricing.html">Pricing</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<!-- Hero -->
+<section class="hiw-hero">
+  <div class="container">
+    <div class="section-label">The Full Workflow</div>
+    <h1>How <span class="text-primary">Redactr</span> Works</h1>
+    <p style="max-width:560px;margin:20px auto 0;font-size:1.1rem;">
+      Five steps. Sub-millisecond detection. Zero data leaves the device. Here's exactly what happens when an employee types a sensitive prompt.
+    </p>
+  </div>
+</section>
+
+<!-- Step-by-step -->
+<section class="section">
+  <div class="container">
+    <div class="hiw-steps">
+
+      <!-- Step 1 -->
+      <div class="hiw-step reveal">
+        <div class="hiw-step-num">1</div>
+        <div class="hiw-step-content">
+          <div class="section-label">Input</div>
+          <h3>Employee Types a Prompt</h3>
+          <p>
+            The employee opens ChatGPT, Claude, Gemini, or Microsoft Copilot in their browser and begins typing a prompt — perhaps asking an AI to help write an email to a customer, debug code, or generate a report.
+          </p>
+          <p style="margin-top:12px;">
+            Redactr runs as a Chrome extension, silently watching the text input field. The employee doesn't notice anything — until a problem is detected.
+          </p>
+          <div class="hiw-code-demo" style="margin-top:20px;">
+            <div class="code-label"># What the employee types</div>
+            <div class="code-before">Please summarise our deal with Acme Corp.</div>
+            <div class="code-before">Their contact is sarah.jones@acme.com, +61 412 345 678.</div>
+            <div class="code-before">Our Stripe key is sk-live-abc123XYZ...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="hiw-step reveal">
+        <div class="hiw-step-num">2</div>
+        <div class="hiw-step-content">
+          <div class="section-label">Detection</div>
+          <h3>Extension Scans the Prompt</h3>
+          <p>
+            The <code>content/scanner.js</code> file, injected into the chatbot page, passes the text to the detection engine <code>lib/detector.js</code> on every keystroke (debounced for performance).
+          </p>
+          <p style="margin-top:12px;">
+            The detector runs six pattern checks simultaneously — all on-device using regular expressions and the Luhn checksum for card validation. Nothing is sent to a server.
+          </p>
+          <div class="hiw-code-demo" style="margin-top:20px;">
+            <div class="code-label"># Detection engine output (JSON)</div>
+            <div class="code-tag">&#123;</div>
+            <div class="code-tag">&nbsp;&nbsp;"riskScore": 105,</div>
+            <div class="code-tag">&nbsp;&nbsp;"severity": "CRITICAL",</div>
+            <div class="code-tag">&nbsp;&nbsp;"findings": [</div>
+            <div class="code-tag">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "EMAIL",   "score": 10, "value": "sarah.jones@acme.com" &#125;,</div>
+            <div class="code-tag">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "PHONE",   "score": 15, "value": "+61 412 345 678" &#125;,</div>
+            <div class="code-tag">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "API_KEY", "score": 80, "value": "sk-live-abc..." &#125;</div>
+            <div class="code-tag">&nbsp;&nbsp;]</div>
+            <div class="code-tag">&#125;</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="hiw-step reveal">
+        <div class="hiw-step-num">3</div>
+        <div class="hiw-step-content">
+          <div class="section-label">Alert</div>
+          <h3>Leak Detected — Send is Blocked</h3>
+          <p>
+            When the risk score crosses the red threshold (61+), Redactr intercepts the send event and displays a modal overlay showing exactly what was found, the risk score, and the severity level.
+          </p>
+          <p style="margin-top:12px;">
+            The employee sees a clear warning with colour-coded severity. They cannot send until they take action.
+          </p>
+
+          <!-- Fake modal preview -->
+          <div style="margin-top:24px;background:#111827;border:1px solid #EF4444;border-radius:16px;padding:24px;max-width:420px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <span style="font-size:1.4rem;">🚨</span>
+              <h4 style="color:#EF4444;font-size:1rem;">Sensitive Information Detected</h4>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:8px 12px;background:rgba(239,68,68,0.08);border-radius:8px;border:1px solid rgba(239,68,68,0.2);">
+                <span>🔑 API Key (Stripe)</span><span class="badge badge-red">+80 pts</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:8px 12px;background:rgba(245,158,11,0.08);border-radius:8px;border:1px solid rgba(245,158,11,0.2);">
+                <span>📞 Phone Number</span><span class="badge badge-amber">+15 pts</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:8px 12px;background:rgba(245,158,11,0.08);border-radius:8px;border:1px solid rgba(245,158,11,0.2);">
+                <span>📧 Email Address</span><span class="badge badge-amber">+10 pts</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-primary btn-sm">Copy Safe Version</button>
+              <button class="btn btn-ghost btn-sm">Request Exception</button>
+              <button class="btn btn-ghost btn-sm">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="hiw-step reveal">
+        <div class="hiw-step-num">4</div>
+        <div class="hiw-step-content">
+          <div class="section-label">Redaction</div>
+          <h3>Safe Prompt Generated</h3>
+          <p>
+            The redaction engine rewrites the prompt, replacing each sensitive item with a numbered placeholder tag. The employee gets a usable, safe prompt — not just a blocked message.
+          </p>
+          <p style="margin-top:12px;">
+            This is the feature that makes Redactr helpful rather than annoying. Work continues; leaks do not.
+          </p>
+          <div class="hiw-code-demo" style="margin-top:20px;">
+            <div class="code-label"># Original (blocked)</div>
+            <div class="code-before">sarah.jones@acme.com · +61 412 345 678 · sk-live-abc123</div>
+            <br>
+            <div class="code-label"># Safe version (copy &amp; send this)</div>
+            <div class="code-after">Please summarise our deal with Acme Corp.</div>
+            <div class="code-after">Their contact is [EMAIL_1], [PHONE_1].</div>
+            <div class="code-after">Our Stripe key is [SECRET_1].</div>
+          </div>
+          <div style="margin-top:16px;font-size:0.88rem;color:var(--muted);">
+            Tag mapping: <code style="color:var(--primary);">[EMAIL_1]</code> → sarah.jones@acme.com &nbsp;|&nbsp;
+            <code style="color:var(--primary);">[PHONE_1]</code> → +61 412 345 678 &nbsp;|&nbsp;
+            <code style="color:var(--primary);">[SECRET_1]</code> → sk-live-abc123
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="hiw-step reveal">
+        <div class="hiw-step-num">5</div>
+        <div class="hiw-step-content">
+          <div class="section-label">Approval</div>
+          <h3>Manager Approves or Denies Exception</h3>
+          <p>
+            If the employee genuinely needs to send the original data (e.g. to a vetted AI system), they tap <strong>"Request Exception"</strong>. An alert is pushed to the manager's phone via the Redactr mobile app.
+          </p>
+          <p style="margin-top:12px;">
+            The manager sees the employee name, the type of data, the risk score, and the full prompt context. They tap <strong>Approve</strong> or <strong>Deny</strong> and the extension acts immediately.
+          </p>
+          <div style="margin-top:20px;display:flex;gap:16px;flex-wrap:wrap;">
+            <div class="card" style="max-width:200px;padding:20px;border-color:rgba(16,185,129,0.3);">
+              <div style="font-size:1.4rem;margin-bottom:10px;">✅</div>
+              <div style="font-weight:700;font-size:0.95rem;color:var(--success);">Approved</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Exception logged. Original prompt sent.</div>
+            </div>
+            <div class="card" style="max-width:200px;padding:20px;border-color:rgba(239,68,68,0.3);">
+              <div style="font-size:1.4rem;margin-bottom:10px;">❌</div>
+              <div style="font-weight:700;font-size:0.95rem;color:var(--danger);">Denied</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Prompt blocked. Employee notified.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Architecture overview -->
+<section class="section" style="background:var(--surface);">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Architecture</div>
+      <h2>Three Components. <span class="text-primary">One Mission.</span></h2>
+    </div>
+    <div class="grid-3">
+      <div class="card reveal">
+        <div class="card-icon">🌐</div>
+        <h3>Website</h3>
+        <p>Plain HTML/CSS/JS. Markets and sells the subscription. Stores plan selection in <code>localStorage</code>. PayPal Sandbox for payment. No backend required.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">🧩</div>
+        <h3>Chrome Extension</h3>
+        <p>Manifest V3. Content script injected into ChatGPT, Claude, Gemini, Copilot. Detection runs entirely in-browser. Zero external API calls.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">📱</div>
+        <h3>Flutter App</h3>
+        <p>Manager's control centre. Shows all leak alerts, risk scores, and employee names. Approve or Deny with one tap. Uses mock data — no server needed.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:48px;" class="reveal">
+      <a href="pricing.html" class="btn btn-primary btn-lg">🛡️ &nbsp;Get Protected Now</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="nav-logo" style="display:inline-flex;">
+          <img src="../assets/Logo.png" alt="Redactr" style="width:32px;height:32px;border-radius:8px;" />
+          <span class="logo-text">Redact<span>r</span></span>
+        </a>
+        <p>Shadow AI Data Leak Prevention. Redact before you send.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-disclaimer">⚠️ This website is for a class assignment project and not for commercial purpose.</div>
+    <div class="footer-bottom">
+      <div>© 2025 Redactr. All rights reserved.</div>
+      <div>ABN: 12 345 678 901</div>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+</body>
+</html>

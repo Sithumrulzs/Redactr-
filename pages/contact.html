@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" href="../assets/Logo.png" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <img src="../assets/Logo.png" alt="Redactr" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html" class="active">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="pricing.html" class="btn btn-outline btn-sm">View Plans</a>
+      <a href="pricing.html" class="btn btn-primary btn-sm">Start Free Trial</a>
+    </div>
+    <button class="nav-menu-btn">☰</button>
+  </div>
+</nav>
+<nav class="nav-mobile">
+  <a href="../index.html">Home</a>
+  <a href="how-it-works.html">How It Works</a>
+  <a href="pricing.html">Pricing</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<!-- Hero -->
+<section class="contact-hero">
+  <div class="container">
+    <div class="section-label">Get In Touch</div>
+    <h1>Contact <span class="text-primary">Redactr</span></h1>
+    <p style="max-width:500px;margin:16px auto 0;">
+      Questions about plans, security, or a custom enterprise deployment? Our team responds within one business day.
+    </p>
+  </div>
+</section>
+
+<!-- Contact grid -->
+<section class="section-sm">
+  <div class="container">
+    <div class="contact-grid">
+
+      <!-- Left: Info -->
+      <div class="reveal">
+        <h3>Business Information</h3>
+
+        <div class="contact-detail">
+          <div class="detail-icon">🏢</div>
+          <div class="detail-text">
+            <div class="label">Company</div>
+            <div class="value">Redactr Pty Ltd</div>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="detail-icon">🔢</div>
+          <div class="detail-text">
+            <div class="label">ABN</div>
+            <div class="value">12 345 678 901</div>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="detail-icon">📍</div>
+          <div class="detail-text">
+            <div class="label">Address</div>
+            <div class="value">Level 4, 580 George Street<br>Sydney NSW 2000, Australia</div>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="detail-icon">📧</div>
+          <div class="detail-text">
+            <div class="label">Email</div>
+            <div class="value">security@redactr.io</div>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="detail-icon">📞</div>
+          <div class="detail-text">
+            <div class="label">Phone</div>
+            <div class="value">+61 2 9000 0000</div>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="detail-icon">🕐</div>
+          <div class="detail-text">
+            <div class="label">Business Hours</div>
+            <div class="value">Mon – Fri, 9:00 AM – 5:00 PM AEST</div>
+          </div>
+        </div>
+
+        <!-- Google Maps embed -->
+        <div class="map-embed">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3312.9!2d151.2052!3d-33.8696!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12ae3f4fcb2ddb%3A0xf03565f85d1e3606!2s580%20George%20St%2C%20Sydney%20NSW%202000!5e0!3m2!1sen!2sau!4v1234567890"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Redactr office location"
+          ></iframe>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer-box">
+          <span>⚠️</span>
+          <span>This website is for a class assignment project and not for commercial purpose. The ABN, contact details, and address shown are fictitious and used for academic demonstration only.</span>
+        </div>
+      </div>
+
+      <!-- Right: Form -->
+      <div class="contact-form-wrap reveal">
+        <h3 style="margin-bottom:8px;">Send a Message</h3>
+        <p style="font-size:0.9rem;margin-bottom:28px;">
+          Fill in the form and we'll get back to you within 24 hours.
+        </p>
+
+        <form id="contactForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="firstName">First Name *</label>
+              <input class="form-input" type="text" id="firstName" name="firstName" placeholder="Jane" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lastName">Last Name *</label>
+              <input class="form-input" type="text" id="lastName" name="lastName" placeholder="Smith" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address *</label>
+            <input class="form-input" type="email" id="email" name="email" placeholder="jane@company.com" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="company">Company</label>
+            <input class="form-input" type="text" id="company" name="company" placeholder="Acme Corp" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="subject">Subject *</label>
+            <select class="form-select" id="subject" name="subject" required>
+              <option value="">Select a topic…</option>
+              <option>Sales Enquiry</option>
+              <option>Technical Support</option>
+              <option>Enterprise Demo Request</option>
+              <option>Partnership</option>
+              <option>General Question</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="message">Message *</label>
+            <textarea class="form-textarea" id="message" name="message" placeholder="Tell us how we can help…" required></textarea>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:24px;font-size:0.85rem;color:var(--muted);">
+            <input type="checkbox" id="consent" name="consent" required style="margin-top:3px;accent-color:var(--primary);" />
+            <label for="consent">I consent to Redactr contacting me about my enquiry. I understand this is a class project demo.</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg">
+            Send Message →
+          </button>
+        </form>
+
+        <div class="disclaimer-box" style="margin-top:20px;">
+          <span>⚠️</span>
+          <span>This website is for a class assignment project and not for commercial purpose. No messages are actually sent.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="nav-logo" style="display:inline-flex;">
+          <img src="../assets/Logo.png" alt="Redactr" style="width:32px;height:32px;border-radius:8px;" />
+          <span class="logo-text">Redact<span>r</span></span>
+        </a>
+        <p>Shadow AI Data Leak Prevention. Redact before you send.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-disclaimer">⚠️ This website is for a class assignment project and not for commercial purpose.</div>
+    <div class="footer-bottom">
+      <div>© 2025 Redactr. All rights reserved.</div>
+      <div>ABN: 12 345 678 901</div>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" href="../assets/Logo.png" />
+  <!-- PayPal Sandbox SDK -->
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD" defer></script>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <img src="../assets/Logo.png" alt="Redactr" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="pricing.html" class="btn btn-ghost btn-sm">← Change Plan</a>
+    </div>
+    <button class="nav-menu-btn">☰</button>
+  </div>
+</nav>
+<nav class="nav-mobile">
+  <a href="../index.html">Home</a>
+  <a href="pricing.html">Pricing</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<section class="checkout-hero">
+  <div class="container">
+    <div class="section-label">Secure Checkout</div>
+    <h1>Complete Your <span class="text-primary">Subscription</span></h1>
+  </div>
+</section>
+
+<section class="section-sm">
+  <div class="container">
+    <div class="checkout-grid">
+
+      <!-- Left: Checkout form & PayPal -->
+      <div id="checkoutFormSection">
+        <div class="checkout-form-wrap">
+          <!-- Steps indicator -->
+          <div class="checkout-steps">
+            <div class="checkout-step-tab active">1. Review Order</div>
+            <div class="checkout-step-tab">2. Pay Securely</div>
+            <div class="checkout-step-tab">3. Confirm</div>
+          </div>
+
+          <h3 style="margin-bottom:20px;">Billing Information</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input class="form-input" type="text" id="billingFirst" placeholder="Jane" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input class="form-input" type="text" id="billingLast" placeholder="Smith" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Business Email</label>
+            <input class="form-input" type="email" id="billingEmail" placeholder="jane@company.com" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Company Name</label>
+            <input class="form-input" type="text" id="billingCompany" placeholder="Acme Corp Pty Ltd" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ABN (optional)</label>
+            <input class="form-input" type="text" id="billingABN" placeholder="12 345 678 901" maxlength="14" />
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:28px 0;" />
+
+          <h3 style="margin-bottom:8px;">Payment</h3>
+          <p style="font-size:0.85rem;margin-bottom:20px;">
+            🔒 &nbsp;Secured by PayPal Sandbox. No real charges in demo mode.
+          </p>
+
+          <!-- PayPal button renders here -->
+          <div id="paypal-button-container"></div>
+
+          <div class="disclaimer-box" style="margin-top:20px;">
+            <span>⚠️</span>
+            <span>This is a class assignment demo. PayPal Sandbox is used — no real money is charged.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Order summary -->
+      <div>
+        <div class="order-summary">
+          <h3>Order Summary</h3>
+
+          <div class="order-plan-badge">
+            <div class="plan-name-lg" id="orderPlanBadge">Professional</div>
+            <div class="plan-price-sm" id="orderPlanPrice">$29/mo</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;" id="orderSeats">Up to 25 seats</div>
+          </div>
+
+          <div class="order-line">
+            <span style="color:var(--muted);">Plan</span>
+            <span id="summaryPlanName">Professional</span>
+          </div>
+          <div class="order-line">
+            <span style="color:var(--muted);">Billing period</span>
+            <span>Monthly</span>
+          </div>
+          <div class="order-line">
+            <span style="color:var(--muted);">Subtotal</span>
+            <span id="summaryPrice">$29.00</span>
+          </div>
+          <div class="order-line">
+            <span style="color:var(--muted);">GST (10%)</span>
+            <span id="summaryTax">$2.90</span>
+          </div>
+          <div class="order-line total">
+            <span>Total Today</span>
+            <span id="summaryTotal" style="color:var(--primary);">$31.90</span>
+          </div>
+
+          <div style="margin-top:24px;padding:16px;background:rgba(0,209,178,0.05);border:1px solid var(--border);border-radius:12px;">
+            <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;">What's included</div>
+            <div id="planFeaturesList" style="font-size:0.85rem;display:flex;flex-direction:column;gap:6px;">
+              <div>✓ Chrome Extension</div>
+              <div>✓ Manager Mobile App</div>
+              <div>✓ Risk Scoring Dashboard</div>
+              <div>✓ Unlimited Approvals</div>
+              <div>✓ Priority Support</div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;text-align:center;font-size:0.78rem;color:var(--muted);">
+            Cancel anytime · No contracts · 14-day trial
+          </div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:var(--muted);">
+          <div style="display:flex;gap:8px;align-items:center;"><span style="color:var(--success);">🔒</span> 256-bit SSL encryption</div>
+          <div style="display:flex;gap:8px;align-items:center;"><span style="color:var(--success);">🛡️</span> Data never leaves your device</div>
+          <div style="display:flex;gap:8px;align-items:center;"><span style="color:var(--success);">💳</span> Secured by PayPal</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice section (hidden until payment) -->
+    <div class="invoice-wrap" id="invoiceContainer" style="margin-top:48px;"></div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="nav-logo" style="display:inline-flex;">
+          <img src="../assets/Logo.png" alt="Redactr" style="width:32px;height:32px;border-radius:8px;" />
+          <span class="logo-text">Redact<span>r</span></span>
+        </a>
+        <p>Shadow AI Data Leak Prevention. Redact before you send.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-disclaimer">⚠️ This website is for a class assignment project and not for commercial purpose.</div>
+    <div class="footer-bottom">
+      <div>© 2025 Redactr. All rights reserved.</div>
+      <div>ABN: 12 345 678 901</div>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/main.js"></script>
+<script src="../js/cart.js"></script>
+<script src="../js/checkout.js"></script>
+
+<script>
+// Populate tax field after cart.js loads
+document.addEventListener('DOMContentLoaded', () => {
+  const cart = window.getCart ? getCart() : null;
+  if (cart) {
+    const tax = +(cart.price * 0.1).toFixed(2);
+    const el = document.getElementById('summaryTax');
+    if (el) el.textContent = `$${tax.toFixed(2)}`;
+
+    const seatsEl = document.getElementById('orderSeats');
+    if (seatsEl) seatsEl.textContent = cart.seats || '';
+  }
+});
+</script>
+</body>
+</html>
