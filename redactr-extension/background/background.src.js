@@ -18,24 +18,21 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithCredential, signOut as firebaseSignOut } from "firebase/auth";
 
-// TODO(checkpoint): replace with the real Firebase Web app config from
-// Firebase console → Project settings → General → Your apps → Web app.
 const FIREBASE_CONFIG = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME.firebaseapp.com",
-  projectId: "REPLACE_ME",
-  appId: "REPLACE_ME",
+  apiKey: "AIzaSyBTg49GkhytsgHECw-_SagfU_TIV57ncck",
+  authDomain: "redactr-ea568.firebaseapp.com",
+  projectId: "redactr-ea568",
+  appId: "1:116258256150:web:b407a3c35fabc82c0a4c37",
 };
 
-// TODO(checkpoint): replace with the Web-application OAuth Client ID
-// created in Google Cloud Console, with chrome.identity.getRedirectURL()
-// registered as an authorized redirect URI.
-const GOOGLE_OAUTH_CLIENT_ID = "REPLACE_ME.apps.googleusercontent.com";
+// Web-application OAuth Client ID (reused the one Firebase auto-created),
+// with chrome.identity.getRedirectURL() registered as an authorized
+// redirect URI for this extension's ID.
+const GOOGLE_OAUTH_CLIENT_ID = "116258256150-bk6aec5oadquj8hioc1qac1092nbar50.apps.googleusercontent.com";
 
-// TODO(checkpoint): replace with the deployed Render URL, e.g.
-// "https://redactr-api.onrender.com". See server/index.js — this replaced
-// the Cloud Functions (which needed the Blaze billing plan).
-const API_BASE_URL = "REPLACE_ME";
+// See server/index.js — this replaced the Cloud Functions (which needed
+// the Blaze billing plan), hosted on Render.
+const API_BASE_URL = "https://redactr-ln5t.onrender.com";
 
 const app = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
@@ -66,6 +63,7 @@ const DEFAULT_STATE = {
   authUser: null, // { uid, email, displayName, photoURL } | null
   tier2Allowed: false, // entitlement: only true on the Enterprise plan (see getEntitlement)
   plan: null,
+  joinError: null, // set when signed in but no invite exists for this email yet
 };
 
 const OFFSCREEN_PATH = "offscreen/offscreen.html";
@@ -82,16 +80,34 @@ auth.onAuthStateChanged((user) => {
   });
 
   if (user) {
-    fetchEntitlement();
+    joinCompany();
   } else {
-    chrome.storage.local.set({ tier2Allowed: false, plan: null });
+    chrome.storage.local.set({ tier2Allowed: false, plan: null, joinError: null });
   }
 });
 
 /**
  * Called once after sign-in (and on every service-worker wake while signed
- * in, since this is cheap) — never trusts a long-lived client cache for
- * something that gates a paid feature.
+ * in — cheap, and the server already short-circuits once users/{uid}
+ * exists). The extension only ever JOINS via an existing invite — it never
+ * sends a companyName, unlike the app's CompanySetupScreen — so a random
+ * sign-in here can't spin up a new company. If there's no invite waiting
+ * yet, the server returns a clear 400 that gets surfaced in the popup
+ * instead of silently leaving Tier-1/Tier-2 half-linked.
+ */
+async function joinCompany() {
+  try {
+    await callApi("POST", "/claimOrJoinCompany");
+    await chrome.storage.local.set({ joinError: null });
+    await fetchEntitlement();
+  } catch (error) {
+    await chrome.storage.local.set({ joinError: String(error.message || error) });
+  }
+}
+
+/**
+ * Never trusts a long-lived client cache for something that gates a paid
+ * feature.
  */
 async function fetchEntitlement() {
   try {

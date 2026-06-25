@@ -190,30 +190,98 @@ input:checked + .slider::before {
   display: none;
 }
 
+.hidden {
+  display: none !important;
+}
+
+.join-error {
+  color: var(--brand-amber);
+  font-size: 0.7rem;
+  line-height: 1.4;
+  margin: 10px 0 0;
+  padding: 8px;
+  background: rgba(244, 183, 64, 0.1);
+  border-radius: 6px;
+}
+
 .auth-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
+}
+
+.auth-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.auth-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--brand-bg);
+  border: 1px solid var(--brand-border);
+  color: var(--brand-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.auth-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brand-accent);
+  color: var(--brand-bg);
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--brand-surface);
+  line-height: 1;
+}
+
+.auth-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .auth-name {
   font-size: 0.85rem;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .auth-email {
   font-size: 0.7rem;
   color: var(--brand-text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.btn-text {
+.btn-outline-full {
+  width: 100%;
+  margin-top: 12px;
   background: transparent;
   border: 1px solid var(--brand-border);
   color: var(--brand-text-dim);
   border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 0.7rem;
+  padding: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
-  flex-shrink: 0;
+}
+
+.btn-outline-full:hover {
+  border-color: var(--brand-red);
+  color: var(--brand-red);
 }

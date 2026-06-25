@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'screens/alerts_screen.dart';
+import 'screens/biometric_gate_screen.dart';
 import 'screens/company_setup_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/insights_screen.dart';
@@ -25,16 +26,40 @@ class RedactrApp extends StatelessWidget {
     return MaterialApp(
       title: 'Redactr',
       theme: AppTheme.dark,
+      debugShowCheckedModeBanner: false,
       home: const AuthGate(),
     );
   }
 }
+
+/// Shared cross-fade + soft scale-in used everywhere the app switches
+/// between top-level screens driven by auth/profile state (splash -> sign
+/// in -> biometric -> dashboard) instead of a Navigator push, so those
+/// switches don't just hard-cut.
+Widget _premiumTransition(Widget child, Animation<double> animation) {
+  return FadeTransition(
+    opacity: animation,
+    child: ScaleTransition(
+      scale: Tween(begin: 0.98, end: 1.0).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+      child: child,
+    ),
+  );
+}
+
+const _transitionDuration = Duration(milliseconds: 450);
 
 /// Always shows the splash animation first, then routes to [SignInScreen] or
 /// [RootShell] depending on Firebase Auth state. If Firebase hasn't been
 /// configured yet (no google-services.json / Gradle plugin wired in — see
 /// the project plan's setup checkpoint), sign-in is unavailable but the rest
 /// of the app's UI still renders rather than crashing.
+///
+/// Also gates a [BiometricGateScreen] in front of the dashboard — but only
+/// when Firebase's *first* authStateChanges event already has a user (i.e.
+/// a persisted session was restored on a cold app start). A live sign-in
+/// during the same run (the initial sign-up flow) never triggers it — that
+/// first event would be null in that case, since there's no session yet to
+/// restore.
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
@@ -46,6 +71,8 @@ class _AuthGateState extends State<AuthGate> {
   bool _showSplash = true;
   bool _firebaseReady = false;
   Object? _firebaseError;
+  bool? _requiresBiometric;
+  bool _biometricPassed = false;
   final _authService = AuthService();
 
   @override
@@ -53,19 +80,27 @@ class _AuthGateState extends State<AuthGate> {
     super.initState();
     Firebase.initializeApp().then((_) {
       if (mounted) setState(() => _firebaseReady = true);
+      _authService.authStateChanges.first.then((user) {
+        if (mounted) setState(() => _requiresBiometric = user != null);
+      });
     }).catchError((error) {
       if (mounted) setState(() => _firebaseError = error);
     });
   }
 
+  static const _loadingScreen = Scaffold(
+    backgroundColor: AppColors.background,
+    body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+  );
+
   @override
   Widget build(BuildContext context) {
-    if (_showSplash) {
-      return SplashScreen(onFinished: () => setState(() => _showSplash = false));
-    }
+    Widget content;
 
-    if (_firebaseError != null) {
-      return const Scaffold(
+    if (_showSplash) {
+      content = SplashScreen(onFinished: () => setState(() => _showSplash = false));
+    } else if (_firebaseError != null) {
+      content = const Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
           child: Padding(
@@ -78,27 +113,47 @@ class _AuthGateState extends State<AuthGate> {
           ),
         ),
       );
-    }
+    } else if (!_firebaseReady) {
+      content = _loadingScreen;
+    } else {
+      content = StreamBuilder<User?>(
+        stream: _authService.authStateChanges,
+        builder: (context, snapshot) {
+          Widget inner;
 
-    if (!_firebaseReady) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            inner = _loadingScreen;
+          } else {
+            final user = snapshot.data;
+            if (user == null) {
+              inner = const SignInScreen();
+            } else if (_requiresBiometric == null) {
+              // Still determining whether this was a restored session.
+              inner = _loadingScreen;
+            } else if (_requiresBiometric! && !_biometricPassed) {
+              inner = BiometricGateScreen(onSuccess: () => setState(() => _biometricPassed = true));
+            } else {
+              inner = _ProfileGate(uid: user.uid);
+            }
+          }
+
+          return AnimatedSwitcher(
+            duration: _transitionDuration,
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: _premiumTransition,
+            child: inner,
+          );
+        },
       );
     }
 
-    return StreamBuilder<User?>(
-      stream: _authService.authStateChanges,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            backgroundColor: AppColors.background,
-            body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
-          );
-        }
-        final user = snapshot.data;
-        return user == null ? const SignInScreen() : _ProfileGate(uid: user.uid);
-      },
+    return AnimatedSwitcher(
+      duration: _transitionDuration,
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: _premiumTransition,
+      child: content,
     );
   }
 }
@@ -156,17 +211,27 @@ class _ProfileGateState extends State<_ProfileGate> {
     return FutureBuilder<Map<String, dynamic>?>(
       future: _profileFuture,
       builder: (context, snapshot) {
+        Widget inner;
+
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
+          inner = const Scaffold(
             backgroundColor: AppColors.background,
             body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
           );
+        } else if (snapshot.data == null) {
+          inner = CompanySetupScreen(onCompanyReady: _refresh);
+        } else {
+          final companyId = snapshot.data!['companyId'] as String;
+          inner = RootShell(companyId: companyId);
         }
-        if (snapshot.data == null) {
-          return CompanySetupScreen(onCompanyReady: _refresh);
-        }
-        final companyId = snapshot.data!['companyId'] as String;
-        return RootShell(companyId: companyId);
+
+        return AnimatedSwitcher(
+          duration: _transitionDuration,
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          transitionBuilder: _premiumTransition,
+          child: inner,
+        );
       },
     );
   }

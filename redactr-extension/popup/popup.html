@@ -23,12 +23,17 @@
 
     <div class="auth-card hidden" id="auth-signed-in">
       <div class="auth-row">
-        <div>
+        <div class="auth-avatar-wrap">
+          <div class="auth-avatar" id="auth-avatar"></div>
+          <span class="auth-badge">✓</span>
+        </div>
+        <div class="auth-info">
           <div class="auth-name" id="auth-name"></div>
           <div class="auth-email" id="auth-email"></div>
         </div>
-        <button id="sign-out-button" class="btn-text">Sign out</button>
       </div>
+      <p class="join-error hidden" id="join-error"></p>
+      <button id="sign-out-button" class="btn-outline-full">Sign out</button>
     </div>
 
     <div class="counter-card">

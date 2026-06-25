@@ -1,4 +1,3 @@
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:redactr_app/main.dart';
@@ -14,6 +13,7 @@ void main() {
   testWidgets('App shows the splash animation first', (WidgetTester tester) async {
     await tester.pumpWidget(const RedactrApp());
 
-    expect(find.byType(SvgPicture), findsOneWidget);
+    expect(find.text('Redact'), findsOneWidget);
+    expect(find.text('r'), findsOneWidget);
   });
 }

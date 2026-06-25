@@ -3,8 +3,11 @@
          notifications about new alerts (see createAlert in
          firebase/functions/index.js). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Required for local_auth's fingerprint/face unlock gate (see
+         lib/screens/biometric_gate_screen.dart). -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <application
-        android:label="redactr_app"
+        android:label="Redactr"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

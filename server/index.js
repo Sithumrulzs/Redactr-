@@ -9,6 +9,7 @@
  * replaces claimOrJoinCompany / inviteEmployee / getEntitlement /
  * createAlert / paypalWebhook.
  */
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
@@ -18,10 +19,14 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
 const TIER2_PLANS = new Set(["enterprise"]);
+const SEAT_LIMITS = { starter: 5, professional: 25, enterprise: 999999 };
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+// Serves server/public/redactr-extension.zip at /download/redactr-extension.zip
+// — the file the website's post-purchase page links to.
+app.use("/download", express.static(path.join(__dirname, "public")));
 
 /** Verifies the Firebase ID token in Authorization: Bearer <token>. */
 async function requireAuth(req, res, next) {
@@ -140,6 +145,62 @@ app.post("/inviteEmployee", requireAuth, async (req, res) => {
     res.json({ ok: true });
   } catch (error) {
     console.error("inviteEmployee failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
+
+/**
+ * Public checkout endpoint — called by redactr-website/js/checkout.js once
+ * the PayPal sandbox payment captures. No auth required (the website never
+ * signs in); the purchaser is identified by the billing email they typed
+ * in, not a Firebase session. Creates the company AND an invites/{email}
+ * doc with role "admin" — the exact shape claimOrJoinCompany already
+ * reads, so when the purchaser later signs into the app or extension with
+ * a Google account matching that billing email, they join this company
+ * automatically instead of creating a new one.
+ *
+ * Accepted limitation: like the not-yet-deployed /paypalWebhook below,
+ * this trusts the client's PayPal capture result rather than
+ * independently re-verifying it server-side — fine for this assignment,
+ * not something to ship as-is for real payments.
+ */
+app.post("/createSubscription", async (req, res) => {
+  try {
+    const email = (req.body?.email ?? "").trim().toLowerCase();
+    const companyName = (req.body?.companyName ?? "").trim();
+    const plan = SEAT_LIMITS[req.body?.plan] ? req.body.plan : "starter";
+    const txId = req.body?.txId ?? null;
+
+    if (!email || !companyName) {
+      res.status(400).json({ error: "email and companyName are required." });
+      return;
+    }
+
+    const companyRef = db.collection("companies").doc();
+    await companyRef.set({
+      name: companyName,
+      plan,
+      seatLimit: SEAT_LIMITS[plan],
+      status: "active",
+      paypalOrderId: txId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Overwrites any earlier pending invite for this email with this new
+    // company — the most recent purchase wins.
+    await db.collection("invites").doc(email).set({
+      companyId: companyRef.id,
+      role: "admin",
+      invitedBy: "system:purchase",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.json({
+      ok: true,
+      subscription: { companyId: companyRef.id, downloadUrl: "/download/redactr-extension.zip" },
+    });
+  } catch (error) {
+    console.error("createSubscription failed", error);
     res.status(500).json({ error: "Internal error." });
   }
 });

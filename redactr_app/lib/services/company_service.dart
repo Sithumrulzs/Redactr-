@@ -3,11 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
-// TODO(checkpoint): replace with the deployed Render URL once available,
-// e.g. "https://redactr-api.onrender.com". See server/index.js — this is
-// the plain Express app that replaced the Cloud Functions (which needed
-// the Blaze billing plan).
-const _apiBaseUrl = "REPLACE_ME";
+// See server/index.js — the plain Express app that replaced the Cloud
+// Functions (which needed the Blaze billing plan), hosted on Render.
+const _apiBaseUrl = "https://redactr-ln5t.onrender.com";
 
 /// Thin wrapper around the `users/{uid}` Firestore doc and the small
 /// Express API in ../../../server/index.js (claimOrJoinCompany,

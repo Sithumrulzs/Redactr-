@@ -11,14 +11,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   const authErrorEl = document.getElementById("auth-error");
   const authNameEl = document.getElementById("auth-name");
   const authEmailEl = document.getElementById("auth-email");
+  const authAvatarEl = document.getElementById("auth-avatar");
+  const joinErrorEl = document.getElementById("join-error");
 
-  function renderAuth(authUser) {
+  function renderAuth(authUser, joinError) {
     signedOutEl.classList.toggle("hidden", !!authUser);
     signedInEl.classList.toggle("hidden", !authUser);
     if (authUser) {
-      authNameEl.textContent = authUser.displayName || "Signed in";
+      const name = authUser.displayName || authUser.email || "Signed in";
+      authNameEl.textContent = name;
       authEmailEl.textContent = authUser.email || "";
+      authAvatarEl.textContent = name.charAt(0).toUpperCase();
     }
+    renderJoinError(joinError);
+  }
+
+  function renderJoinError(joinError) {
+    const message = joinError
+      ? "No company found for this email — ask your admin to invite you, then sign out and back in."
+      : "";
+    joinErrorEl.textContent = message;
+    joinErrorEl.classList.toggle("hidden", !message);
   }
 
   signInButton.addEventListener("click", async () => {
@@ -30,12 +43,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       authErrorEl.textContent = "Sign-in failed. Please try again.";
       return;
     }
-    renderAuth(response.user);
+    // joinCompany() runs in the background off the auth-state listener and
+    // reports via the joinError storage key picked up below — render the
+    // signed-in card now, the join-error line (if any) follows shortly.
+    renderAuth(response.user, null);
   });
 
   signOutButton.addEventListener("click", async () => {
     await chrome.runtime.sendMessage({ type: "SIGN_OUT" });
-    renderAuth(null);
+    renderAuth(null, null);
   });
 
   const STATUS_LABEL = {
@@ -67,9 +83,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     tier2Status: "idle",
     authUser: null,
     tier2Allowed: false,
+    joinError: null,
   });
 
-  renderAuth(state.authUser);
+  renderAuth(state.authUser, state.joinError);
   counterEl.textContent = state.leaksPrevented;
   toggleEl.checked = state.enabled;
   statusEl.textContent = state.enabled
@@ -114,7 +131,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
     }
     if (changes.authUser) {
-      renderAuth(changes.authUser.newValue);
+      renderAuth(changes.authUser.newValue, changes.joinError ? changes.joinError.newValue : null);
+    } else if (changes.joinError) {
+      renderJoinError(changes.joinError.newValue);
     }
   });
 });

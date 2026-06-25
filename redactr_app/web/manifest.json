@@ -1,11 +1,11 @@
 {
-    "name": "redactr_app",
-    "short_name": "redactr_app",
+    "name": "Redactr",
+    "short_name": "Redactr",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#14181F",
     "theme_color": "#14181F",
-    "description": "A new Flutter project.",
+    "description": "On-device leak protection for your team.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

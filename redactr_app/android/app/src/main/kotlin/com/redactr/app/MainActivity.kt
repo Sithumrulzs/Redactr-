@@ -1,5 +1,7 @@
 package com.redactr.app
 
-import io.flutter.embedding.android.FlutterActivity
+// FlutterFragmentActivity (not FlutterActivity) — required by the
+// local_auth plugin's BiometricPrompt integration on Android.
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity : FlutterFragmentActivity()

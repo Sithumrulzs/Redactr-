@@ -43,6 +43,7 @@ dependencies:
   fl_chart: ^0.69.0
   flutter_svg: ^2.0.10
   http: ^1.2.2
+  local_auth: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -61,6 +62,12 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/branding/icon512.png"
+  # Adaptive icons (Android 8+) composite a solid background color with a
+  # separate transparent-background foreground layer instead of one
+  # flattened image — without this split the launcher pads/shrinks the
+  # icon inside its mask shape, which is why the icon looked small before.
+  adaptive_icon_background: "#14181F"
+  adaptive_icon_foreground: "assets/branding/icon_adaptive_foreground.png"
   min_sdk_android: 21
   web:
     generate: true
