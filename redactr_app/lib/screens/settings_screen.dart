@@ -3,6 +3,7 @@ import '../services/auth_service.dart';
 import '../services/company_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_header.dart';
+import 'custom_keywords_screen.dart';
 import 'invite_employee_screen.dart';
 
 const _kAppVersion = '1.0.0';
@@ -20,6 +21,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _authService = AuthService();
   final _companyService = CompanyService();
   bool _notificationsEnabled = true;
+  late final _entitlementFuture = _companyService.getEntitlement();
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: AppSpacing.xl),
           SectionHeader(title: 'Plan'),
           FutureBuilder(
-            future: _companyService.getEntitlement(),
+            future: _entitlementFuture,
             builder: (context, snapshot) {
               final entitlement = snapshot.data;
               return Container(
@@ -121,6 +123,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => InviteEmployeeScreen(companyId: widget.companyId)),
             ),
+          ),
+          FutureBuilder(
+            future: _entitlementFuture,
+            builder: (context, snapshot) {
+              final entitlement = snapshot.data;
+              if (entitlement?.plan != 'enterprise') return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.sm),
+                child: ListTile(
+                  tileColor: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    side: const BorderSide(color: AppColors.border),
+                  ),
+                  leading: const Icon(Icons.key, color: AppColors.primary),
+                  title: const Text('Custom keywords'),
+                  subtitle: Text('${entitlement!.customKeywords.length} active'),
+                  trailing: const Icon(Icons.chevron_right, color: AppColors.textDim),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => CustomKeywordsScreen(initialKeywords: entitlement.customKeywords),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(height: AppSpacing.xl),
           SectionHeader(title: 'Preferences'),

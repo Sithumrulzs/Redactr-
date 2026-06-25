@@ -69,15 +69,15 @@
         <div class="plan-desc">Perfect for micro-businesses and freelancers. Up to 5 seats.</div>
 
         <ul class="plan-features">
-          <li class="plan-feature"><span class="feature-check">✓</span> API Key &amp; Secret Detection</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> AWS &amp; OpenAI API Key Detection</li>
           <li class="plan-feature"><span class="feature-check">✓</span> Email &amp; Phone Redaction</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Credit Card Protection</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Chrome Extension</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Basic Dashboard</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> 5 Manager Approvals/mo</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Credit Card Protection (Luhn)</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Chrome &amp; Edge Extension</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Manager Mobile App</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Up to 5 employee seats</li>
           <li class="plan-feature"><span class="feature-check">✓</span> Email Support</li>
-          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">Team Analytics</span></li>
-          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">Slack Integration</span></li>
+          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
+          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
         </ul>
 
         <button class="btn btn-outline btn-block" data-plan-id="starter" onclick="selectPlan('starter')">
@@ -97,14 +97,10 @@
 
         <ul class="plan-features">
           <li class="plan-feature"><span class="feature-check">✓</span> Everything in Starter</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Source Code Detection</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Advanced Risk Scoring</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Manager Mobile App</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Unlimited Approvals</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Team Analytics</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Up to 25 employee seats</li>
           <li class="plan-feature"><span class="feature-check">✓</span> Priority Support</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Slack Integration</li>
-          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">SSO / SAML</span></li>
+          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
+          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
         </ul>
 
         <button class="btn btn-primary btn-block" data-plan-id="professional" onclick="selectPlan('professional')">
@@ -119,17 +115,15 @@
           <sup>$</sup><span class="price-num">99</span>
           <span class="period">/month</span>
         </div>
-        <div class="plan-desc">Unlimited seats, custom rules, and dedicated support for large organisations.</div>
+        <div class="plan-desc">Unlimited seats, on-device AI detection, and dedicated support for large organisations.</div>
 
         <ul class="plan-features">
           <li class="plan-feature"><span class="feature-check">✓</span> Everything in Professional</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Custom Detection Rules</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> SSO / SAML</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> SIEM Integration</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Unlimited employee seats</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> AI Name &amp; Address Detection</li>
+          <li class="plan-feature"><span class="feature-check">✓</span> Custom Keyword Detection</li>
           <li class="plan-feature"><span class="feature-check">✓</span> Dedicated Account Manager</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> SLA 99.9% Uptime</li>
           <li class="plan-feature"><span class="feature-check">✓</span> Custom Contracts</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> On-Premise Option</li>
         </ul>
 
         <button class="btn btn-outline btn-block" data-plan-id="enterprise" onclick="selectPlan('enterprise')">
@@ -176,31 +170,24 @@
         </thead>
         <tbody>
           <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Detection</td></tr>
-          <tr><td>API Key Detection</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>API Key Detection (AWS, OpenAI)</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
           <tr><td>Credit Card + Luhn</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
           <tr><td>Email &amp; Phone</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
           <tr><td>IP Address Detection</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
-          <tr><td>Source Code Patterns</td><td class="x-cell">✗</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
-          <tr><td>Custom Detection Rules</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>AI Name &amp; Address Detection (on-device)</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>Custom Keyword Detection</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
 
           <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Management</td></tr>
-          <tr><td>Chrome Extension</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
-          <tr><td>Manager Mobile App</td><td class="x-cell">–</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
-          <tr><td>Manager Approvals/month</td><td>5</td><td>Unlimited</td><td>Unlimited</td></tr>
-          <tr><td>Team Analytics Dashboard</td><td class="x-cell">✗</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
-          <tr><td>Slack Integration</td><td class="x-cell">✗</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
-
-          <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Enterprise</td></tr>
-          <tr><td>SSO / SAML</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
-          <tr><td>SIEM Integration</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
-          <tr><td>SLA 99.9% Uptime</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
-          <tr><td>Dedicated Account Manager</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
-          <tr><td>On-premise Deployment</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>Chrome &amp; Edge Extension</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Manager Mobile App (Dashboard, Alerts, Insights)</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Employee Seats</td><td>5</td><td>25</td><td>Unlimited</td></tr>
+          <tr><td>Manager Approve/Deny Alerts</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
 
           <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Support</td></tr>
           <tr><td>Email Support</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
           <tr><td>Priority Support</td><td class="x-cell">✗</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
           <tr><td>Dedicated Account Manager</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>Custom Contracts</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
         </tbody>
       </table>
     </div>
@@ -221,11 +208,11 @@
       </div>
       <div class="card" style="padding:24px;">
         <h4 style="margin-bottom:8px;">Which AI tools does it protect against?</h4>
-        <p style="font-size:0.9rem;">Currently ChatGPT, Claude.ai, Gemini, and Microsoft Copilot. Enterprise plans can add custom URL patterns for internal AI tools.</p>
+        <p style="font-size:0.9rem;">Currently ChatGPT, Claude.ai, and Gemini.</p>
       </div>
       <div class="card" style="padding:24px;">
-        <h4 style="margin-bottom:8px;">What happens if I exceed my approval limit?</h4>
-        <p style="font-size:0.9rem;">On the Starter plan, after 5 approvals the exception workflow is disabled for that month — leaks are still blocked, but employees can't request exceptions. Upgrade to Professional for unlimited approvals.</p>
+        <h4 style="margin-bottom:8px;">What happens if I exceed my seat limit?</h4>
+        <p style="font-size:0.9rem;">Each plan includes a fixed number of employee seats (5 on Starter, 25 on Professional, unlimited on Enterprise). Once you hit your limit, inviting another employee is blocked until you free up a seat or upgrade your plan.</p>
       </div>
       <div class="card" style="padding:24px;">
         <h4 style="margin-bottom:8px;">Can I cancel anytime?</h4>

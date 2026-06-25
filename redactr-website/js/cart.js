@@ -14,12 +14,12 @@ const PLANS = {
     period:   'month',
     seats:    'Up to 5 seats',
     features: [
-      'API Key & Secret Detection',
+      'AWS & OpenAI API Key Detection',
       'Email & Phone Redaction',
-      'Credit Card Protection',
-      'Chrome Extension',
-      'Basic Dashboard',
-      '5 manager approvals/month',
+      'Credit Card Protection (Luhn-validated)',
+      'Chrome & Edge Extension',
+      'Manager Mobile App (Dashboard, Alerts, Insights)',
+      'Up to 5 employee seats',
       'Email Support'
     ]
   },
@@ -32,13 +32,8 @@ const PLANS = {
     seats:    'Up to 25 seats',
     features: [
       'Everything in Starter',
-      'Source Code Detection',
-      'Advanced Risk Scoring',
-      'Manager Mobile App',
-      'Unlimited Approvals',
-      'Team Analytics',
-      'Priority Support',
-      'Slack Integration'
+      'Up to 25 employee seats',
+      'Priority Support'
     ]
   },
   enterprise: {
@@ -50,13 +45,11 @@ const PLANS = {
     seats:    'Unlimited seats',
     features: [
       'Everything in Professional',
-      'Custom Detection Rules',
-      'SSO / SAML',
-      'SIEM Integration',
+      'Unlimited employee seats',
+      'AI Name & Address Detection (on-device)',
+      'Custom Keyword Detection',
       'Dedicated Account Manager',
-      'SLA 99.9% Uptime',
-      'Custom Contracts',
-      'On-premise Option'
+      'Custom Contracts'
     ]
   }
 };

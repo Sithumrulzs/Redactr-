@@ -28,6 +28,7 @@
 
   let enabled = true;
   let tier2Enabled = false;
+  let customKeywords = [];
   let banner = null;
   let attachedInput = null;
   let attachedButton = null;
@@ -36,11 +37,13 @@
   chrome.runtime.sendMessage({ type: "GET_STATE" }, (state) => {
     enabled = state?.enabled ?? true;
     tier2Enabled = state?.tier2Enabled ?? false;
+    customKeywords = state?.customKeywords ?? [];
   });
 
   chrome.storage.onChanged.addListener((changes) => {
     if (changes.enabled) enabled = changes.enabled.newValue;
     if (changes.tier2Enabled) tier2Enabled = changes.tier2Enabled.newValue;
+    if (changes.customKeywords) customKeywords = changes.customKeywords.newValue ?? [];
   });
 
   function getInputElement() {
@@ -156,7 +159,7 @@
     const text = getText(inputEl);
     if (!text || !text.trim()) return;
 
-    const tier1Result = RedactrDetector.scan(text);
+    const tier1Result = RedactrDetector.scan(text, customKeywords);
 
     if (tier1Result.findings.length > 0) {
       event.preventDefault();

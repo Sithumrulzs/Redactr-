@@ -44,7 +44,40 @@
     IP_ADDRESS: 10,
     PERSON: 20,
     LOCATION: 20,
+    CUSTOM_KEYWORD: 30,
   };
+
+  /** Escapes regex metacharacters so a literal keyword can't be misread as a pattern. */
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  /**
+   * Enterprise-only custom keywords (see server/index.js's
+   * addCustomKeyword) — deliberately literal substrings, not arbitrary
+   * regex, so an admin-supplied pattern can never cause catastrophic
+   * backtracking in every employee's browser.
+   */
+  function findCustomKeywords(text, keywords) {
+    if (!Array.isArray(keywords) || keywords.length === 0) return [];
+    const findings = [];
+    for (const keyword of keywords) {
+      if (!keyword) continue;
+      const regex = new RegExp(escapeRegExp(keyword), "gi");
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        findings.push({
+          type: "CUSTOM_KEYWORD",
+          match: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          severity: "high",
+        });
+        if (match[0].length === 0) regex.lastIndex++;
+      }
+    }
+    return findings;
+  }
 
   /** Luhn checksum: true if the digit string passes. */
   function luhnCheck(digits) {
@@ -85,9 +118,10 @@
   /**
    * Scan text and return Tier-1 findings plus an aggregate 0-100 risk score.
    * @param {string} text
+   * @param {string[]} [customKeywords] - Enterprise-only literal phrases (see getEntitlement)
    * @returns {{findings: Array, score: number, level: "green"|"amber"|"red"}}
    */
-  function scan(text) {
+  function scan(text, customKeywords) {
     const findings = [];
 
     for (const pattern of PATTERNS) {
@@ -105,6 +139,7 @@
     }
 
     findings.push(...findCreditCards(text));
+    findings.push(...findCustomKeywords(text, customKeywords));
     findings.sort((a, b) => a.start - b.start);
 
     return scoreFindings(findings);

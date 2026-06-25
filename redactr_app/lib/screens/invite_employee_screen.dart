@@ -37,7 +37,7 @@ class _InviteEmployeeScreenState extends State<InviteEmployeeScreen> {
     } catch (e) {
       setState(() {
         _isSending = false;
-        _error = 'Could not send the invite. Please try again.';
+        _error = e.toString().replaceFirst('Exception: ', '');
       });
     }
   }

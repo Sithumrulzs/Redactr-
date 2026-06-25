@@ -66,11 +66,12 @@ class CompanyService {
   /// Tier-2 NER is gated to the Enterprise plan, per the pricing copy
   /// already on the website — called once after sign-in, never cached
   /// indefinitely client-side.
-  Future<({String plan, bool tier2Allowed})> getEntitlement() async {
+  Future<({String plan, bool tier2Allowed, List<String> customKeywords})> getEntitlement() async {
     final data = await _callApi('GET', '/getEntitlement');
     return (
       plan: data['plan'] as String? ?? 'starter',
       tier2Allowed: data['tier2Allowed'] as bool? ?? false,
+      customKeywords: (data['customKeywords'] as List<dynamic>?)?.cast<String>() ?? const [],
     );
   }
 
@@ -79,6 +80,18 @@ class CompanyService {
   /// new one (see claimOrJoinCompany).
   Future<void> inviteEmployee(String email) async {
     await _callApi('POST', '/inviteEmployee', body: {'email': email});
+  }
+
+  /// Enterprise + admin-only. Literal phrases, not regex — the matching
+  /// server route deliberately rejects arbitrary patterns to avoid a
+  /// ReDoS risk running in every employee's browser.
+  Future<List<String>> addCustomKeyword(String keyword) async {
+    final data = await _callApi('POST', '/addCustomKeyword', body: {'keyword': keyword});
+    return (data['customKeywords'] as List<dynamic>?)?.cast<String>() ?? const [];
+  }
+
+  Future<void> removeCustomKeyword(String keyword) async {
+    await _callApi('POST', '/removeCustomKeyword', body: {'keyword': keyword});
   }
 
   /// Pending invites for an admin's own company — allowed by

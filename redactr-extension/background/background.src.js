@@ -64,6 +64,7 @@ const DEFAULT_STATE = {
   tier2Allowed: false, // entitlement: only true on the Enterprise plan (see getEntitlement)
   plan: null,
   joinError: null, // set when signed in but no invite exists for this email yet
+  customKeywords: [], // Enterprise-only, admin-managed (see getEntitlement)
 };
 
 const OFFSCREEN_PATH = "offscreen/offscreen.html";
@@ -112,7 +113,11 @@ async function joinCompany() {
 async function fetchEntitlement() {
   try {
     const data = await callApi("GET", "/getEntitlement");
-    await chrome.storage.local.set({ plan: data.plan, tier2Allowed: data.tier2Allowed });
+    await chrome.storage.local.set({
+      plan: data.plan,
+      tier2Allowed: data.tier2Allowed,
+      customKeywords: data.customKeywords ?? [],
+    });
   } catch (error) {
     console.warn("Redactr: failed to fetch entitlement", error);
   }
