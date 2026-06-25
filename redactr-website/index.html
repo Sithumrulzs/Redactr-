@@ -1,513 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Redactr — Redact Before You Send</title>
-  <meta name="description" content="Redactr automatically detects and redacts sensitive information before employees send prompts to ChatGPT, Claude, Gemini and other AI tools." />
-  <link rel="stylesheet" href="css/styles.css" />
-  <link rel="icon" href="assets/Logo.png" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Redactr — Redact Before You Send</title>
+<meta name="description" content="Redactr automatically detects and redacts sensitive information before employees send prompts to ChatGPT, Claude, Gemini and other AI tools." />
+<link rel="icon" href="assets/Logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root {
+    --bg: #050505;
+    --accent-from: #173622;
+    --accent-to: #d7ff3f;
+    --accent-grad: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+    --danger: #ffb020;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body { font-family: 'Inter', sans-serif; color: #f5f5f5; overflow-x: hidden; }
+  .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+
+  .accent-grad-bg { background: var(--accent-grad); }
+  .accent-grad-text {
+    background: var(--accent-grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid rgba(215, 255, 63, 0.18);
+    box-shadow: 0 0 40px rgba(215, 255, 63, 0.06), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  .glow-text { text-shadow: 0 0 18px rgba(215, 255, 63, 0.55); }
+  .glow-danger { text-shadow: 0 0 18px rgba(255, 176, 32, 0.6); }
+
+  /* height set here, not via Tailwind's h-screen utility — Tailwind's CDN
+     build injects its generated CSS asynchronously, and ScrollTrigger
+     measures each scene's layout on DOMContentLoaded; if that injection
+     hasn't landed yet, every pin distance gets computed against a
+     collapsed (0-height) element. */
+  .scene { background: var(--bg); height: 100vh; }
+
+  .noise-bg {
+    background-image: radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  #s1-code {
+    width: 0ch;
+    border-right: 2px solid rgba(215, 255, 63, 0.7);
+  }
+
+  .plan-card {
+    text-align: left;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.35s ease, background 0.35s ease;
+  }
+  .plan-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(215, 255, 63, 0.4);
+    background: rgba(255,255,255,0.05);
+  }
+  .plan-card.popular { border-color: rgba(215,255,63,0.45); }
+
+  .particle {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--danger);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @keyframes orbPulse {
+    0%, 100% { transform: scale(1); opacity: 0.55; }
+    50%      { transform: scale(1.15); opacity: 0.85; }
+  }
+  .orb-pulse { animation: orbPulse 3.2s ease-in-out infinite; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: rgba(215,255,63,0.5); border-radius: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orb-pulse { animation: none; }
+  }
+</style>
 </head>
-<body>
+<body class="bg-[#050505]">
 
 <!-- ══════════════════════════════════════════════
-     NAVBAR
+     NAV — fixed, minimal, stays usable through the whole journey
 ══════════════════════════════════════════════ -->
-<nav class="navbar" role="navigation" aria-label="Main navigation">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">
-      <img src="assets/Logo.png" alt="Redactr logo" />
-      <span class="logo-text">Redact<span>r</span></span>
-    </a>
-
-    <div class="nav-links">
-      <a href="index.html" class="active">Home</a>
-      <a href="pages/how-it-works.html">How It Works</a>
-      <a href="pages/pricing.html">Pricing</a>
-      <a href="pages/contact.html">Contact</a>
-    </div>
-
-    <div class="nav-actions">
-      <a href="pages/pricing.html" class="btn btn-outline btn-sm">View Plans</a>
-      <a href="pages/pricing.html" class="btn btn-primary btn-sm">Start Free Trial</a>
-    </div>
-
-    <button class="nav-menu-btn" aria-label="Toggle menu" aria-expanded="false">☰</button>
+<nav class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-5 backdrop-blur-md bg-black/30 border-b border-white/5">
+  <a href="index.html" class="flex items-center gap-2 font-display font-bold text-lg">
+    <img src="assets/Logo.png" alt="Redactr" class="w-8 h-8 rounded-lg" />
+    <span>Redact<span class="accent-grad-text">r</span></span>
+  </a>
+  <div class="hidden md:flex items-center gap-8 text-sm text-white/70">
+    <a href="pages/how-it-works.html" class="hover:text-white transition">How It Works</a>
+    <a href="pages/pricing.html" class="hover:text-white transition">Pricing</a>
+    <a href="pages/contact.html" class="hover:text-white transition">Contact</a>
   </div>
-</nav>
-
-<nav class="nav-mobile" role="navigation" aria-label="Mobile navigation">
-  <a href="index.html">Home</a>
-  <a href="pages/how-it-works.html">How It Works</a>
-  <a href="pages/pricing.html">Pricing</a>
-  <a href="pages/contact.html">Contact</a>
-  <a href="pages/pricing.html" class="btn btn-primary btn-sm" style="margin-top:12px;">Start Free Trial</a>
+  <a href="pages/pricing.html" class="text-sm font-semibold px-4 py-2 rounded-lg accent-grad-bg text-black">Start Free Trial</a>
 </nav>
 
 <!-- ══════════════════════════════════════════════
-     HERO
+     SCENE 1 — THE LAUNCH
 ══════════════════════════════════════════════ -->
-<section class="hero" id="hero">
-  <div class="hero-bg aurora"></div>
-  <div class="hero-grid"></div>
-  <canvas class="particle-canvas"></canvas>
+<section id="scene-1" class="scene relative h-screen w-full flex items-center justify-center overflow-hidden">
+  <div class="absolute inset-0 noise-bg opacity-[0.04]"></div>
+  <div id="s1-wrap" class="relative px-6 text-center">
+    <p id="s1-eyebrow" class="font-display text-xs uppercase tracking-[0.35em] text-white/40 mb-6">Shadow AI Data Leak Prevention</p>
+    <code id="s1-code" class="font-mono inline-block whitespace-nowrap overflow-hidden text-[clamp(0.9rem,3vw,1.7rem)] text-[#d7ff3f] glow-text">const aws_key = 'AKIAIOSFODNN7EXAMPLE';</code>
+  </div>
+  <p class="absolute bottom-10 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-white/30 animate-pulse">Scroll to begin</p>
+</section>
 
-  <div class="container">
-    <div class="grid-2" style="gap: 60px; align-items: center;">
+<!-- ══════════════════════════════════════════════
+     SCENE 2 — THE GLASS WALL / INTERCEPT
+══════════════════════════════════════════════ -->
+<section id="scene-2" class="scene relative h-screen w-full overflow-hidden flex items-center justify-center" style="perspective: 1400px;">
+  <div id="s2-cam" class="relative w-full h-full flex items-center justify-center" style="transform-style: preserve-3d;">
 
-      <!-- Left: Copy -->
-      <div class="hero-content">
-        <div class="hero-badge">
-          <span class="hero-badge-dot"></span>
-          AI Data Leak Prevention
-        </div>
+    <!-- yPercent:-50 centering is applied by GSAP (gsap.set), not a Tailwind
+         translate utility — an inline transform from GSAP would otherwise
+         clobber a CSS-variable-composed Tailwind transform outright. -->
+    <div id="s2-glass" class="absolute right-0 top-1/2 w-[60%] h-[68%] rounded-[2rem] glass-panel"></div>
 
-        <h1>Protect <span class="highlight gradient-text">Sensitive Data</span> Before It Reaches AI</h1>
-
-        <p class="hero-sub">
-          Redactr automatically detects and redacts sensitive information before employees send prompts to ChatGPT, Claude, Gemini, and other AI tools. Your data stays yours.
-        </p>
-
-        <div class="hero-actions">
-          <a href="pages/pricing.html" class="btn btn-primary btn-lg">
-            🛡️ &nbsp;Start Free Trial
-          </a>
-          <a href="pages/how-it-works.html" class="btn btn-outline btn-lg">
-            ▶ &nbsp;Watch Demo
-          </a>
-        </div>
-
-        <div class="hero-stats">
-          <div class="hero-stat-item">
-            <div class="stat-val" data-count-to="99.8" data-count-suffix="%" data-count-decimals="1">99.8%</div>
-            <div class="stat-lbl">Detection Rate</div>
-          </div>
-          <div class="hero-stat-item">
-            <div class="stat-val" data-count-to="1" data-count-prefix="&lt;" data-count-suffix="ms">&lt;1ms</div>
-            <div class="stat-lbl">Scan Time</div>
-          </div>
-          <div class="hero-stat-item">
-            <div class="stat-val">On-Device</div>
-            <div class="stat-lbl">No Data Sent</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Terminal demo card -->
-      <div class="hero-visual">
-        <div class="hero-card scanning">
-          <div class="terminal-header">
-            <div class="terminal-dot red"></div>
-            <div class="terminal-dot yellow"></div>
-            <div class="terminal-dot green"></div>
-            <div class="terminal-title">redactr · live scan</div>
-          </div>
-          <div
-            class="terminal-body"
-            data-live-terminal='[
-              {"text":"▶ Scanning prompt…","cls":"line-in","speed":24},
-              {"break":true},
-              {"text":"&gt; My AWS key is AKIAIOSFODNN7EXAMPLE","cls":"line-in","speed":14},
-              {"text":"&gt; Card: 4111 1111 1111 1111","cls":"line-in","speed":14},
-              {"text":"&gt; Contact: sarah@acme.com","cls":"line-in","speed":14,"pause":400},
-              {"break":true},
-              {"text":"⚠ RISK DETECTED · Score: 140 · CRITICAL","cls":"line-bad","speed":18,"pause":600},
-              {"break":true},
-              {"text":"✓ Safe version generated:","cls":"line-ok","speed":18},
-              {"text":"&gt; My AWS key is [SECRET_1]","cls":"line-tag","speed":14},
-              {"text":"&gt; Card: [CARD_1]","cls":"line-tag","speed":14},
-              {"text":"&gt; Contact: [EMAIL_1]","cls":"line-tag","speed":14,"pause":400},
-              {"break":true},
-              {"text":"✓ Manager notified · Prompt blocked","cls":"line-ok","speed":18,"pause":1200}
-            ]'
-          >
-            <!-- Static fallback shown if JS doesn't run; animations.js clears and replaces this on load -->
-            <div class="line-in">▶ Scanning prompt…</div>
-            <br>
-            <div class="line-in">&gt; My AWS key is AKIAIOSFODNN7EXAMPLE</div>
-            <div class="line-in">&gt; Card: 4111 1111 1111 1111</div>
-            <div class="line-in">&gt; Contact: sarah@acme.com</div>
-            <br>
-            <div class="line-bad">⚠ RISK DETECTED · Score: 140 · CRITICAL</div>
-            <br>
-            <div class="line-ok">✓ Safe version generated:</div>
-            <div class="line-tag">&gt; My AWS key is [SECRET_1]</div>
-            <div class="line-tag">&gt; Card: [CARD_1]</div>
-            <div class="line-tag">&gt; Contact: [EMAIL_1]</div>
-            <br>
-            <div class="line-ok">✓ Manager notified · Prompt blocked</div>
-          </div>
-        </div>
-
-        <!-- Floating badge — cycles through recent catches to feel live -->
-        <div
-          class="hero-live-badge"
-          data-live-badge='[
-            {"title":"3 leaks blocked","sub":"Just now · ChatGPT"},
-            {"title":"API key redacted","sub":"12s ago · Claude"},
-            {"title":"Card number blocked","sub":"41s ago · Gemini"}
-          ]'
-        >
-          <span style="font-size:1.4rem;">🔒</span>
-          <div>
-            <div class="badge-title" style="font-weight:700;font-size:0.9rem;">3 leaks blocked</div>
-            <div class="badge-sub" style="font-size:0.75rem;color:var(--muted);">Just now · ChatGPT</div>
-          </div>
-        </div>
-      </div>
-
+    <div id="s2-text" class="relative z-10 font-mono text-[clamp(0.85rem,2.2vw,1.4rem)] text-white/80 text-center px-6">
+      const aws_key = '<span id="s2-secret-wrap" class="relative inline-block whitespace-nowrap"><span id="s2-raw" class="opacity-0">AKIAIOSFODNN7EXAMPLE</span><span id="s2-safe" class="absolute left-0 top-0 font-bold accent-grad-text whitespace-nowrap">[SECRET_1]</span></span>';
     </div>
+
+    <div id="s2-particles" class="absolute inset-0 pointer-events-none"></div>
+  </div>
+
+  <div class="absolute bottom-12 left-1/2 -translate-x-1/2 text-center px-6">
+    <p class="font-display text-sm uppercase tracking-[0.3em] text-white/40">Redactr intercepts it on-device</p>
   </div>
 </section>
 
 <!-- ══════════════════════════════════════════════
-     TRUSTED BY (logos strip)
+     SCENE 3 — THE MOBILE COMMAND CENTER
 ══════════════════════════════════════════════ -->
-<section class="section-sm" style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
-  <div class="container">
-    <p style="text-align:center;font-size:0.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:28px;">
-      Protects your team when using
+<section id="scene-3" class="scene relative h-screen w-full overflow-hidden flex items-center justify-center">
+  <div class="absolute top-28 left-1/2 -translate-x-1/2 text-center px-6">
+    <p class="font-display text-sm uppercase tracking-[0.3em] text-white/40">Your manager finds out instantly</p>
+  </div>
+
+  <div id="s3-phone" class="relative w-[270px] h-[540px] rounded-[2.5rem] glass-panel border border-white/10 p-3">
+    <div class="w-full h-full rounded-[2rem] bg-[#0a0a0a] overflow-hidden relative flex flex-col items-center justify-center p-4">
+      <div id="s3-notif" class="w-full glass-panel rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[0.65rem] font-display font-semibold uppercase tracking-wide text-[#ffb020] glow-danger">Critical Alert</span>
+          <span class="text-[0.65rem] text-white/40">Just now</span>
+        </div>
+        <p class="text-sm text-white/85 mb-4 leading-snug">AWS key blocked on ChatGPT — Sarah K.</p>
+        <button id="s3-approve" class="relative w-full text-xs font-semibold py-2.5 rounded-lg accent-grad-bg text-black overflow-hidden">
+          Approve
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="s3-ripple" class="absolute w-6 h-6 rounded-full pointer-events-none opacity-0" style="background: radial-gradient(circle, rgba(215,255,63,0.55), transparent 70%);"></div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SCENE 4 — THE CLEAN OUTPUT / PURCHASE
+══════════════════════════════════════════════ -->
+<section id="scene-4" class="scene relative h-screen w-full overflow-hidden flex items-center justify-center">
+  <div id="s4-orb-wrap" class="absolute opacity-60">
+    <div class="orb-pulse w-48 h-48 rounded-full blur-3xl accent-grad-bg"></div>
+  </div>
+
+  <div id="s4-terminal" class="relative z-10 w-[min(960px,92vw)] glass-panel rounded-3xl border border-white/10 p-8 md:p-12">
+    <h2 class="font-display text-3xl md:text-5xl font-bold text-center mb-3 leading-tight">
+      Protect Your Team<br /><span class="accent-grad-text">Starting Today</span>
+    </h2>
+    <p class="text-center text-white/50 mb-10 max-w-md mx-auto">
+      Choose a plan and get the Chrome extension running in under 5 minutes.
     </p>
-    <div style="display:flex;justify-content:center;align-items:center;gap:48px;flex-wrap:wrap;" class="reveal">
-      <div style="font-size:1rem;font-weight:700;color:rgba(248,250,252,0.4);letter-spacing:-0.02em;">ChatGPT</div>
-      <div style="font-size:1rem;font-weight:700;color:rgba(248,250,252,0.4);letter-spacing:-0.02em;">Claude</div>
-      <div style="font-size:1rem;font-weight:700;color:rgba(248,250,252,0.4);letter-spacing:-0.02em;">Gemini</div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <button onclick="selectPlan('starter')" class="plan-card">
+        <div class="font-display text-sm uppercase tracking-wide text-white/50 mb-1">Starter</div>
+        <div class="font-display text-3xl font-bold mb-1">$9<span class="text-sm text-white/40 font-normal">/mo</span></div>
+        <div class="text-xs text-white/40">Up to 5 employee seats</div>
+      </button>
+      <button onclick="selectPlan('professional')" class="plan-card popular">
+        <div class="font-display text-sm uppercase tracking-wide text-[#d7ff3f] mb-1">Professional · Popular</div>
+        <div class="font-display text-3xl font-bold mb-1">$29<span class="text-sm text-white/40 font-normal">/mo</span></div>
+        <div class="text-xs text-white/40">Up to 25 employee seats</div>
+      </button>
+      <button onclick="selectPlan('enterprise')" class="plan-card">
+        <div class="font-display text-sm uppercase tracking-wide text-white/50 mb-1">Enterprise</div>
+        <div class="font-display text-3xl font-bold mb-1">$99<span class="text-sm text-white/40 font-normal">/mo</span></div>
+        <div class="text-xs text-white/40">Unlimited seats · AI detection</div>
+      </button>
+    </div>
+
+    <div class="text-center mt-8">
+      <a href="pages/pricing.html" class="text-sm text-white/40 hover:text-white/70 transition underline underline-offset-4">Compare all plan features →</a>
     </div>
   </div>
 </section>
 
 <!-- ══════════════════════════════════════════════
-     FEATURES
+     FOOTER (normal flow, after the cinematic journey)
 ══════════════════════════════════════════════ -->
-<section class="section features-section" id="features">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-label">Core Protection</div>
-      <h2>Everything Your Team Needs to <span class="text-primary">Stay Safe</span></h2>
-      <p>Six layers of protection, all running on-device with zero data sent to external servers.</p>
+<footer class="relative bg-[#050505] border-t border-white/5 py-14 px-6">
+  <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="flex items-center gap-2 font-display font-bold">
+      <img src="assets/Logo.png" alt="Redactr" class="w-7 h-7 rounded-lg" />
+      <span>Redact<span class="accent-grad-text">r</span></span>
     </div>
-
-    <div class="grid-3">
-      <div class="card reveal">
-        <div class="card-icon">🔑</div>
-        <h3>API Key Detection</h3>
-        <p>Catches AWS access keys and OpenAI-style API keys before they escape into AI chat logs.</p>
-      </div>
-      <div class="card reveal">
-        <div class="card-icon">💳</div>
-        <h3>Credit Card Protection</h3>
-        <p>Regex + Luhn algorithm validation to block real card numbers from being pasted into AI prompts.</p>
-      </div>
-      <div class="card reveal">
-        <div class="card-icon">📧</div>
-        <h3>Email &amp; Phone Detection</h3>
-        <p>Customer email addresses and phone numbers are flagged and replaced with safe placeholder tags.</p>
-      </div>
-      <div class="card reveal">
-        <div class="card-icon">✂️</div>
-        <h3>Safe Prompt Generation</h3>
-        <p>Instead of just blocking, Redactr rewrites the prompt replacing sensitive data so work continues.</p>
-      </div>
-      <div class="card reveal">
-        <div class="card-icon">👔</div>
-        <h3>Manager Approval Workflow</h3>
-        <p>Every blocked prompt is logged with a risk score. Managers get an instant push notification and can mark each one approved or denied from the mobile app.</p>
-      </div>
-      <div class="card reveal">
-        <div class="card-icon">🧩</div>
-        <h3>Browser Extension Security</h3>
-        <p>Runs as a lightweight Chrome extension — nothing to install on every machine beyond a single click.</p>
-      </div>
+    <div class="flex items-center gap-6 text-sm text-white/50">
+      <a href="pages/how-it-works.html" class="hover:text-white transition">How It Works</a>
+      <a href="pages/pricing.html" class="hover:text-white transition">Pricing</a>
+      <a href="pages/contact.html" class="hover:text-white transition">Contact</a>
     </div>
+    <div class="text-xs text-white/30">© 2025 Redactr. All rights reserved.</div>
   </div>
-</section>
-
-<!-- ══════════════════════════════════════════════
-     PRODUCT FLOW
-══════════════════════════════════════════════ -->
-<section class="section flow-section" id="flow">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-label">How It Works</div>
-      <h2>The Website Sells It. The Extension Protects. <span class="text-primary">The App Decides.</span></h2>
-    </div>
-
-    <div class="flow-steps">
-      <div class="flow-step reveal">
-        <div class="flow-step-num">1</div>
-        <div class="flow-connector"></div>
-        <h4>Employee Types Prompt</h4>
-        <p>Staff use AI tools normally. Redactr watches in the background.</p>
-      </div>
-      <div class="flow-step reveal">
-        <div class="flow-step-num">2</div>
-        <div class="flow-connector"></div>
-        <h4>Extension Scans</h4>
-        <p>On every keystroke, the detector checks for secrets, cards, emails, and keys.</p>
-      </div>
-      <div class="flow-step reveal">
-        <div class="flow-step-num">3</div>
-        <div class="flow-connector"></div>
-        <h4>Leak Detected</h4>
-        <p>If risk score exceeds threshold, sending is blocked and a warning shown.</p>
-      </div>
-      <div class="flow-step reveal">
-        <div class="flow-step-num">4</div>
-        <div class="flow-connector"></div>
-        <h4>Redaction Generated</h4>
-        <p>A safe version replaces sensitive data with <code>[SECRET_1]</code> style tags.</p>
-      </div>
-      <div class="flow-step reveal">
-        <div class="flow-step-num">5</div>
-        <div class="flow-connector"></div>
-        <h4>Manager Approves</h4>
-        <p>If an exception is needed, the manager approves or denies via the mobile app.</p>
-      </div>
-    </div>
-
-    <div style="text-align:center;margin-top:48px;" class="reveal">
-      <a href="pages/how-it-works.html" class="btn btn-outline">See Full Workflow →</a>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════
-     LIVE LEAK-DETECTION SHOWCASE
-══════════════════════════════════════════════ -->
-<section class="section demo-section" id="live-demo">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-label">See It In Action</div>
-      <h2>Watch Redactr Catch a Leak <span class="text-primary gradient-text">in Real Time</span></h2>
-      <p>This is exactly what happens on an employee's screen — entirely on their device, the instant they hit send.</p>
-    </div>
-
-    <div class="demo-stage reveal">
-      <div class="demo-chatbox" id="demo-chatbox">
-        <div class="demo-chatbox-header">
-          <div class="terminal-dot red"></div>
-          <div class="terminal-dot yellow"></div>
-          <div class="terminal-dot green"></div>
-          <span class="demo-chatbox-url">chatgpt.com</span>
-        </div>
-        <div class="demo-prompt" id="demo-prompt">
-          Hey, can you help me debug this script? My AWS key is
-          <span class="pii" data-token="[SECRET_1]" data-label="AWS Key">AKIAIOSFODNN7EXAMPLE</span>
-          and bill the customer's card
-          <span class="pii" data-token="[CARD_1]" data-label="Card Number">4111 1111 1111 1111</span>,
-          confirm with
-          <span class="pii" data-token="[EMAIL_1]" data-label="Email">sarah@acme.com</span>
-          once it's working.
-        </div>
-        <div class="demo-scan-beam" id="demo-scan-beam"></div>
-        <div class="demo-status" id="demo-status">
-          <span class="demo-status-dot"></span>
-          <span id="demo-status-text">Idle — watching this input field…</span>
-        </div>
-      </div>
-
-      <div class="demo-side">
-        <div class="risk-gauge" id="risk-gauge" style="--pct: 0;">
-          <div class="risk-gauge-inner">
-            <div class="risk-gauge-val" id="risk-gauge-val">0</div>
-            <div class="risk-gauge-lbl">Risk Score</div>
-          </div>
-        </div>
-        <div class="demo-findings" id="demo-findings"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════
-     RISK SCORING DEMO
-══════════════════════════════════════════════ -->
-<section class="section" style="background:var(--surface);">
-  <div class="container">
-    <div class="grid-2">
-      <div class="reveal">
-        <div class="section-label">Risk Engine</div>
-        <h2>Real-Time <span class="text-primary">Risk Scoring</span></h2>
-        <p style="margin-top:16px;margin-bottom:32px;">
-          Every scan produces a live risk score. Green means safe. Amber means caution. Red means blocked.
-          Managers see everything in real-time.
-        </p>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;">
-          <div class="badge badge-green" style="padding:10px 18px;font-size:0.9rem;">● 0–25 Safe</div>
-          <div class="badge badge-amber" style="padding:10px 18px;font-size:0.9rem;">● 26–60 Caution</div>
-          <div class="badge badge-red"   style="padding:10px 18px;font-size:0.9rem;">● 61+ Blocked</div>
-        </div>
-      </div>
-
-      <div class="reveal">
-        <div class="card">
-          <div style="font-size:0.85rem;font-weight:600;color:var(--muted);margin-bottom:16px;text-transform:uppercase;letter-spacing:.08em;">Risk Breakdown</div>
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.88rem;margin-bottom:6px;">
-                <span>Private / API Key</span>
-                <span class="text-primary">80–100 pts</span>
-              </div>
-              <div style="background:var(--surface2);border-radius:4px;height:6px;">
-                <div style="background:var(--danger);width:100%;height:100%;border-radius:4px;"></div>
-              </div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.88rem;margin-bottom:6px;">
-                <span>Credit Card Number</span>
-                <span class="text-primary">50 pts</span>
-              </div>
-              <div style="background:var(--surface2);border-radius:4px;height:6px;">
-                <div style="background:var(--warning);width:60%;height:100%;border-radius:4px;"></div>
-              </div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.88rem;margin-bottom:6px;">
-                <span>Phone Number</span>
-                <span class="text-primary">15 pts</span>
-              </div>
-              <div style="background:var(--surface2);border-radius:4px;height:6px;">
-                <div style="background:var(--warning);width:25%;height:100%;border-radius:4px;"></div>
-              </div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.88rem;margin-bottom:6px;">
-                <span>Email Address</span>
-                <span class="text-primary">10 pts</span>
-              </div>
-              <div style="background:var(--surface2);border-radius:4px;height:6px;">
-                <div style="background:var(--success);width:15%;height:100%;border-radius:4px;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════
-     TESTIMONIALS
-══════════════════════════════════════════════ -->
-<section class="section testimonials-section" id="testimonials">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-label">Customer Stories</div>
-      <h2>Trusted by <span class="text-primary">Security-Conscious</span> Teams</h2>
-    </div>
-
-    <div class="grid-3">
-      <div class="testimonial-card reveal">
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">
-          "Our developer accidentally pasted a production API key into ChatGPT — Redactr caught it before it sent. That one catch was worth the entire year's subscription."
-        </p>
-        <div class="testimonial-author">
-          <div class="author-avatar">MK</div>
-          <div class="author-info">
-            <div class="name">Marcus Kim</div>
-            <div class="role">CTO, Buildflow SaaS</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonial-card reveal">
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">
-          "We handle healthcare data. Before Redactr, I had no visibility into what employees were asking AI tools. Now I get instant alerts and can approve or deny exceptions from my phone."
-        </p>
-        <div class="testimonial-author">
-          <div class="author-avatar">SL</div>
-          <div class="author-info">
-            <div class="name">Sophia Lim</div>
-            <div class="role">Compliance Manager, MediTrack</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonial-card reveal">
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">
-          "The safe prompt feature is brilliant — instead of just blocking employees, it rewrites their prompt so they can still get the help they need. Zero productivity loss, full protection."
-        </p>
-        <div class="testimonial-author">
-          <div class="author-avatar">AJ</div>
-          <div class="author-info">
-            <div class="name">Alex Johnson</div>
-            <div class="role">IT Director, RetailFirst</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════
-     CTA
-══════════════════════════════════════════════ -->
-<section class="section cta-section" id="cta">
-  <div class="container">
-    <div class="cta-inner reveal">
-      <div class="section-label">Get Started</div>
-      <h2>Start Protecting Your Business <span class="text-primary">Today</span></h2>
-      <p>Join hundreds of small businesses that trust Redactr to keep sensitive data off AI servers. Setup takes under 5 minutes.</p>
-      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:36px;">
-        <a href="pages/pricing.html" class="btn btn-primary btn-lg">🛡️ &nbsp;Start Free Trial</a>
-        <a href="pages/contact.html" class="btn btn-outline btn-lg">Talk to Sales</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════════════════════
-     FOOTER
-══════════════════════════════════════════════ -->
-<footer class="footer" role="contentinfo">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="index.html" class="nav-logo" style="display:inline-flex;">
-          <img src="assets/Logo.png" alt="Redactr" style="width:32px;height:32px;border-radius:8px;" />
-          <span class="logo-text" style="font-size:1.1rem;">Redact<span>r</span></span>
-        </a>
-        <p>Shadow AI Data Leak Prevention for small businesses. Redact before you send.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Product</h4>
-        <a href="pages/how-it-works.html">How It Works</a>
-        <a href="pages/pricing.html">Pricing</a>
-        <a href="#">Chrome Extension</a>
-        <a href="#">Mobile App</a>
-      </div>
-      <div class="footer-col">
-        <h4>Company</h4>
-        <a href="pages/contact.html">Contact Us</a>
-        <a href="#">About</a>
-        <a href="#">Blog</a>
-        <a href="#">Careers</a>
-      </div>
-      <div class="footer-col">
-        <h4>Legal</h4>
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-        <a href="#">Security</a>
-        <a href="#">Compliance</a>
-      </div>
-    </div>
-
-    <div class="footer-disclaimer">
-      ⚠️ This website is for a class assignment project and not for commercial purpose.
-    </div>
-
-    <div class="footer-bottom">
-      <div>© 2025 Redactr. All rights reserved.</div>
-      <div>ABN: 12 345 678 901</div>
-    </div>
+  <div class="max-w-5xl mx-auto mt-8 text-center text-xs text-amber-400/70">
+    ⚠️ This website is for a class assignment project and not for commercial purpose.
   </div>
 </footer>
 
-<script src="js/main.js"></script>
-<script src="js/animations.js"></script>
 <script src="js/cart.js"></script>
+<script src="js/cinematic.js"></script>
 </body>
 </html>

@@ -69,7 +69,10 @@ function selectPlan(planId) {
   }
 
   setTimeout(() => {
-    window.location.href = '../pages/checkout.html';
+    // Root-relative path — selectPlan is called both from index.html (site
+    // root) and pages/pricing.html, so a path relative to the *current*
+    // page would resolve differently depending on the caller.
+    window.location.href = '/pages/checkout.html';
   }, 800);
 }
 
