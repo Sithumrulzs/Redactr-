@@ -71,6 +71,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ── Glass-depth sheen (mouse-tracked light across glass cards) ── */
+  if (!reducedMotion) {
+    document.querySelectorAll('.glass-depth').forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      });
+    });
+  }
+
   /* ── Animated counters (hero stats, etc.) ─────────── */
   const counters = document.querySelectorAll('[data-count-to]');
   if (counters.length && 'IntersectionObserver' in window) {
@@ -397,21 +408,59 @@ document.addEventListener('DOMContentLoaded', () => {
      the hand-rolled promise/setTimeout pattern the leak-detection demo
      above uses) and plays it once the section scrolls into view, then
      loops with a pause, matching that demo's cadence. */
-  buildUseCaseDemo();
+  // Two instances of the same demo on this page: the hero (glass-depth
+  // card, plays once the page loads since it's already in view) and
+  // the #usecase section further down (plays on scroll-into-view).
+  initChatDemo({
+    sectionId: 'usecase',
+    fieldId: 'chat-input-field',
+    typedId: 'chat-input-typed',
+    preId: 'chat-input-pre',
+    placeholderId: 'chat-input-placeholder',
+    secretId: 'chat-input-secret',
+    safeId: 'chat-input-safe',
+    badgeId: 'chat-leak-badge',
+    sendBtnId: 'chat-send-btn',
+    finalMsgId: 'chat-msg-final',
+    playOnLoad: false,
+  });
 
-  function buildUseCaseDemo() {
-    const section = document.getElementById('usecase');
+  initChatDemo({
+    sectionId: 'hero',
+    fieldId: 'hero-chat-input-field',
+    typedId: 'hero-chat-input-typed',
+    preId: 'hero-chat-input-pre',
+    placeholderId: 'hero-chat-input-placeholder',
+    secretId: 'hero-chat-input-secret',
+    safeId: 'hero-chat-input-safe',
+    badgeId: 'hero-chat-leak-badge',
+    sendBtnId: 'hero-chat-send-btn',
+    finalMsgId: 'hero-chat-msg-final',
+    playOnLoad: true,
+  });
+
+  /**
+   * Types a prompt into a mock chat input, "sends" it, gets intercepted
+   * (crimson border + tooltip), watches the sensitive value glow amber
+   * then morph into its turquoise safe tag, then slides the redacted
+   * message into chat history. Reused for both the hero's glass-depth
+   * card and the #usecase section further down — same markup/CSS
+   * classes, different element ids so both can run independently.
+   */
+  function initChatDemo(ids) {
+    const section = document.getElementById(ids.sectionId);
     if (!section) return;
 
-    const chatField = document.getElementById('chat-input-field');
-    const typedEl = document.getElementById('chat-input-typed');
-    const preEl = document.getElementById('chat-input-pre');
-    const placeholderEl = document.getElementById('chat-input-placeholder');
-    const secretEl = document.getElementById('chat-input-secret');
-    const safeEl = document.getElementById('chat-input-safe');
-    const badgeEl = document.getElementById('chat-leak-badge');
-    const sendBtn = document.getElementById('chat-send-btn');
-    const finalMsg = document.getElementById('chat-msg-final');
+    const chatField = document.getElementById(ids.fieldId);
+    const typedEl = document.getElementById(ids.typedId);
+    const preEl = document.getElementById(ids.preId);
+    const placeholderEl = document.getElementById(ids.placeholderId);
+    const secretEl = document.getElementById(ids.secretId);
+    const safeEl = document.getElementById(ids.safeId);
+    const badgeEl = document.getElementById(ids.badgeId);
+    const sendBtn = document.getElementById(ids.sendBtnId);
+    const finalMsg = document.getElementById(ids.finalMsgId);
+    if (!chatField || !typedEl) return;
 
     if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
       return; // HTML defaults already show the finished, safe end-state.
@@ -473,11 +522,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let started = false;
-    ScrollTrigger.create({
-      trigger: section,
-      start: 'top 75%',
-      onEnter: () => { if (!started) { started = true; buildTimeline(); } },
-      onEnterBack: () => { if (!started) { started = true; buildTimeline(); } },
-    });
+    function start() {
+      if (started) return;
+      started = true;
+      buildTimeline();
+    }
+
+    if (ids.playOnLoad) {
+      start(); // hero is already in view on load — no scroll needed
+    } else {
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top 75%',
+        onEnter: start,
+        onEnterBack: start,
+      });
+    }
   }
 });

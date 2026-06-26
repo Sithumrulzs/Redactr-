@@ -2279,6 +2279,9 @@ p  { color: var(--muted); line-height: 1.8; }
   transform: translateY(6px) scale(0.96);
   white-space: nowrap;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .chat-leak-badge::after {
@@ -2315,4 +2318,69 @@ p  { color: var(--muted); line-height: 1.8; }
 
 @media (prefers-reduced-motion: reduce) {
   .chat-input-cursor { animation: none; }
+}
+
+/* ===================================================
+   GLASS-DEPTH — premium frosted/skeuomorphic surface
+   Brand colors only (var(--primary) teal-tinted sheen/glow,
+   no new colors) — applied to .chat-window so the same demo
+   markup looks identical in the hero and in #usecase.
+=================================================== */
+.glass-depth {
+  position: relative;
+  background: linear-gradient(145deg, var(--surface2) 0%, var(--bg) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 40px 80px -20px rgba(0, 0, 0, 0.7),
+    0 16px 32px -16px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-depth::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(20, 200, 166, 0.12) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 5;
+  mix-blend-mode: screen;
+}
+
+/* ── Hero chat demo (glass-depth instance of the #usecase markup) ── */
+.hero-visual { position: relative; }
+
+.hero-visual .chat-window {
+  width: 100%;
+}
+
+.hero-visual .chat-history {
+  min-height: 70px;
+}
+
+/* ===================================================
+   ICON-INLINE — shared sizing for the SVG icons replacing emoji
+   site-wide. currentColor means each icon inherits whatever brand
+   color its surrounding context already sets (no per-icon overrides).
+=================================================== */
+.icon-inline {
+  display: inline-block;
+  vertical-align: -2px;
+  flex-shrink: 0;
+}
+
+/* Floating badges upgraded to the same frosted-glass language as the
+   reference's floating-ui-badge, in brand colors. */
+.hero-live-badge.glass-depth {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 25px 50px -12px rgba(0, 0, 0, 0.7),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.4);
 }

@@ -93,62 +93,53 @@
         </div>
       </div>
 
-      <!-- Right: Terminal demo card -->
+      <!-- Right: Live chat demo — real typing, intercepted before send -->
       <div class="hero-visual">
-        <div class="hero-card scanning">
-          <div class="terminal-header">
+        <div class="chat-window glass-depth" id="hero-chat-window">
+          <div class="chat-window-header">
             <div class="terminal-dot red"></div>
             <div class="terminal-dot yellow"></div>
             <div class="terminal-dot green"></div>
-            <div class="terminal-title">redactr · live scan</div>
+            <span class="chat-window-title">ChatGPT</span>
           </div>
-          <div
-            class="terminal-body"
-            data-live-terminal='[
-              {"text":"▶ Scanning prompt…","cls":"line-in","speed":24},
-              {"break":true},
-              {"text":"&gt; My AWS key is AKIAIOSFODNN7EXAMPLE","cls":"line-in","speed":14},
-              {"text":"&gt; Card: 4111 1111 1111 1111","cls":"line-in","speed":14},
-              {"text":"&gt; Contact: sarah@acme.com","cls":"line-in","speed":14,"pause":400},
-              {"break":true},
-              {"text":"⚠ RISK DETECTED · Score: 140 · CRITICAL","cls":"line-bad","speed":18,"pause":600},
-              {"break":true},
-              {"text":"✓ Safe version generated:","cls":"line-ok","speed":18},
-              {"text":"&gt; My AWS key is [SECRET_1]","cls":"line-tag","speed":14},
-              {"text":"&gt; Card: [CARD_1]","cls":"line-tag","speed":14},
-              {"text":"&gt; Contact: [EMAIL_1]","cls":"line-tag","speed":14,"pause":400},
-              {"break":true},
-              {"text":"✓ Manager notified · Prompt blocked","cls":"line-ok","speed":18,"pause":1200}
-            ]'
-          >
-            <!-- Static fallback shown if JS doesn't run; animations.js clears and replaces this on load -->
-            <div class="line-in">▶ Scanning prompt…</div>
-            <br>
-            <div class="line-in">&gt; My AWS key is AKIAIOSFODNN7EXAMPLE</div>
-            <div class="line-in">&gt; Card: 4111 1111 1111 1111</div>
-            <div class="line-in">&gt; Contact: sarah@acme.com</div>
-            <br>
-            <div class="line-bad">⚠ RISK DETECTED · Score: 140 · CRITICAL</div>
-            <br>
-            <div class="line-ok">✓ Safe version generated:</div>
-            <div class="line-tag">&gt; My AWS key is [SECRET_1]</div>
-            <div class="line-tag">&gt; Card: [CARD_1]</div>
-            <div class="line-tag">&gt; Contact: [EMAIL_1]</div>
-            <br>
-            <div class="line-ok">✓ Manager notified · Prompt blocked</div>
+
+          <div class="chat-history" id="hero-chat-history">
+            <div class="chat-msg" id="hero-chat-msg-final">
+              <div class="chat-msg-bubble">
+                Can you review this code? My AWS key is <span class="grad-text chat-msg-tag">[SECRET_1]</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-row">
+            <div class="chat-input-field" id="hero-chat-input-field">
+              <span class="chat-input-placeholder" id="hero-chat-input-placeholder">Message ChatGPT…</span>
+              <span class="chat-input-typed" id="hero-chat-input-typed"
+                ><span id="hero-chat-input-pre">Can you review this code? My AWS key is </span><span class="chat-input-secret-wrap"
+                  ><span id="hero-chat-input-secret">AKIAIOSFODNN7EXAMPLE</span><span id="hero-chat-input-safe" class="grad-text">[SECRET_1]</span></span
+                ><span class="chat-input-cursor" id="hero-chat-input-cursor"></span
+              ></span>
+              <div class="chat-leak-badge" id="hero-chat-leak-badge"><svg class="icon-inline" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg> Leak Prevented: AWS Key Detected</div>
+            </div>
+            <button class="chat-send-btn" id="hero-chat-send-btn" type="button" aria-label="Send message">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
           </div>
         </div>
 
         <!-- Floating badge — cycles through recent catches to feel live -->
         <div
-          class="hero-live-badge"
+          class="hero-live-badge glass-depth"
           data-live-badge='[
             {"title":"3 leaks blocked","sub":"Just now · ChatGPT"},
             {"title":"API key redacted","sub":"12s ago · Claude"},
             {"title":"Card number blocked","sub":"41s ago · Gemini"}
           ]'
         >
-          <span style="font-size:1.4rem;">🔒</span>
+          <svg class="icon-inline" style="color:var(--primary);" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <div>
             <div class="badge-title" style="font-weight:700;font-size:0.9rem;">3 leaks blocked</div>
             <div class="badge-sub" style="font-size:0.75rem;color:var(--muted);">Just now · ChatGPT</div>
