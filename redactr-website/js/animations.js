@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function step() {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = 'rgba(0, 209, 178, 0.7)';
+      ctx.fillStyle = 'rgba(20, 200, 166, 0.7)';
 
       for (const p of particles) {
         p.x += p.vx;
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const dx = a.x - b.x, dy = a.y - b.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < maxDist) {
-            ctx.strokeStyle = `rgba(0, 209, 178, ${0.18 * (1 - dist / maxDist)})`;
+            ctx.strokeStyle = `rgba(20, 200, 166, ${0.18 * (1 - dist / maxDist)})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);

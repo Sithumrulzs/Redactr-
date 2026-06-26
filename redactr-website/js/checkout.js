@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <button class="btn btn-primary btn-block btn-lg" onclick="simulatePayment()">
         💳 &nbsp;Pay with PayPal (Demo)
       </button>
-      <p style="text-align:center;font-size:0.8rem;color:#94A3B8;margin-top:10px;">
+      <p style="text-align:center;font-size:0.8rem;color:#8C95A6;margin-top:10px;">
         PayPal Sandbox · No real payment
       </p>
     `;
@@ -169,25 +169,25 @@ document.addEventListener('DOMContentLoaded', () => {
         <div>
           <div class="invoice-title">INVOICE</div>
           <div class="invoice-number">${invoiceNum}</div>
-          <div style="font-size:0.85rem;color:#94A3B8;margin-top:4px;">Date: ${dateStr}</div>
+          <div style="font-size:0.85rem;color:#8C95A6;margin-top:4px;">Date: ${dateStr}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-size:1.4rem;font-weight:800;color:#00D1B2;font-family:'Poppins',sans-serif;">Redactr</div>
-          <div style="font-size:0.8rem;color:#94A3B8;margin-top:4px;">ABN: 12 345 678 901</div>
-          <div style="font-size:0.8rem;color:#94A3B8;">security@redactr.io</div>
+          <div style="font-size:1.4rem;font-weight:800;color:#14C8A6;font-family:'Poppins',sans-serif;">Redactr</div>
+          <div style="font-size:0.8rem;color:#8C95A6;margin-top:4px;">ABN: 12 345 678 901</div>
+          <div style="font-size:0.8rem;color:#8C95A6;">security@redactr.io</div>
         </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:28px;">
         <div>
-          <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;margin-bottom:8px;">Bill To</div>
+          <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:.08em;color:#8C95A6;margin-bottom:8px;">Bill To</div>
           <div style="font-weight:600;">${buyerName.trim()}</div>
-          <div style="font-size:0.88rem;color:#94A3B8;">${buyerEmail}</div>
+          <div style="font-size:0.88rem;color:#8C95A6;">${buyerEmail}</div>
         </div>
         <div>
-          <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;margin-bottom:8px;">Transaction</div>
-          <div style="font-size:0.85rem;font-family:monospace;color:#00D1B2;">${txId}</div>
-          <div style="font-size:0.85rem;color:#10B981;margin-top:4px;">✓ Payment Confirmed</div>
+          <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:.08em;color:#8C95A6;margin-bottom:8px;">Transaction</div>
+          <div style="font-size:0.85rem;font-family:monospace;color:#14C8A6;">${txId}</div>
+          <div style="font-size:0.85rem;color:#14C8A6;margin-top:4px;">✓ Payment Confirmed</div>
         </div>
       </div>
 
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <tr>
             <td>
               <div style="font-weight:600;">Redactr ${plan.name} Plan</div>
-              <div style="font-size:0.8rem;color:#94A3B8;">${plan.seats} · Monthly subscription · Renewal ${nextStr}</div>
+              <div style="font-size:0.8rem;color:#8C95A6;">${plan.seats} · Monthly subscription · Renewal ${nextStr}</div>
             </td>
             <td style="text-align:right;">1</td>
             <td style="text-align:right;">$${plan.price}.00</td>
@@ -214,15 +214,15 @@ document.addEventListener('DOMContentLoaded', () => {
       </table>
 
       <div style="max-width:280px;margin-left:auto;">
-        <div class="order-line"><span style="color:#94A3B8;">Subtotal</span><span>$${plan.price}.00</span></div>
-        <div class="order-line"><span style="color:#94A3B8;">GST (10%)</span><span>$${tax.toFixed(2)}</span></div>
-        <div class="order-line total"><span>Total Paid</span><span style="color:#00D1B2;">$${total.toFixed(2)}</span></div>
+        <div class="order-line"><span style="color:#8C95A6;">Subtotal</span><span>$${plan.price}.00</span></div>
+        <div class="order-line"><span style="color:#8C95A6;">GST (10%)</span><span>$${tax.toFixed(2)}</span></div>
+        <div class="order-line total"><span>Total Paid</span><span style="color:#14C8A6;">$${total.toFixed(2)}</span></div>
       </div>
 
       <div style="margin-top:32px;text-align:center;padding:20px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:12px;">
         <div style="font-size:1.4rem;margin-bottom:8px;">🎉</div>
-        <div style="font-weight:700;color:#10B981;margin-bottom:4px;">Thank you for subscribing to Redactr!</div>
-        <div style="font-size:0.85rem;color:#94A3B8;">Your team is now protected. Download the extension package below to install Redactr and unlock the features included with your ${plan.name} plan.</div>
+        <div style="font-weight:700;color:#14C8A6;margin-bottom:4px;">Thank you for subscribing to Redactr!</div>
+        <div style="font-size:0.85rem;color:#8C95A6;">Your team is now protected. Download the extension package below to install Redactr and unlock the features included with your ${plan.name} plan.</div>
       </div>
 
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <button class="btn btn-outline" onclick="window.location.href='../index.html'">← Back to Home</button>
       </div>
 
-      <div style="margin-top:20px;font-size:0.75rem;color:#94A3B8;text-align:center;border-top:1px solid rgba(0,209,178,0.1);padding-top:16px;">
+      <div style="margin-top:20px;font-size:0.75rem;color:#8C95A6;text-align:center;border-top:1px solid rgba(0,209,178,0.1);padding-top:16px;">
         ⚠️ This website is for a class assignment project and not for commercial purpose.
       </div>
     `;
@@ -270,9 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('paypal-button-container');
     if (container) {
       container.innerHTML = `
-        <div style="text-align:center;padding:32px;color:#94A3B8;">
+        <div style="text-align:center;padding:32px;color:#8C95A6;">
           <div style="font-size:2rem;margin-bottom:12px;">🛒</div>
-          <p>No plan selected. <a href="pricing.html" style="color:#00D1B2;">Choose a plan</a> first.</p>
+          <p>No plan selected. <a href="pricing.html" style="color:#14C8A6;">Choose a plan</a> first.</p>
         </div>
       `;
     }
