@@ -86,29 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
       onApprove: (data, actions) => {
         return actions.order.capture().then(async details => {
           const txId = details.id || 'RDCTR-' + Date.now();
-          const billingEmail = document.getElementById('billingEmail')?.value || '';
-          const billingCompany = document.getElementById('billingCompany')?.value || '';
-          try {
-            console.log('Submitting subscription to', `${API_BASE_URL}/createSubscription`);
-            const response = await fetch(`${API_BASE_URL}/createSubscription`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                companyId: billingCompany || `company-${txId}`,
-                plan: cart.id,
-                email: billingEmail,
-                companyName: billingCompany,
-                txId,
-              }),
-            });
-            const payload = await response.json().catch(() => null);
-            console.log('Subscription response', payload);
-            businessDownloadUrl = payload?.subscription?.downloadUrl
-              ? `${API_BASE_URL}${payload.subscription.downloadUrl}`
-              : null;
-          } catch (error) {
-            console.error('subscription sync failed', error);
-          }
+          await submitSubscription(txId);
           generateInvoice(cart, details, txId, total, tax);
           clearCart();
         });
@@ -126,28 +104,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }).render('#paypal-button-container');
 
   } else if (ppContainer) {
-    // PayPal SDK not loaded — show demo button
+    // PayPal's SDK script didn't load (ad blocker, network issue, etc.) —
+    // still provisions a real company/admin invite via /createSubscription,
+    // it just can't take a card payment without the SDK present.
     ppContainer.innerHTML = `
-      <button class="btn btn-primary btn-block btn-lg" onclick="simulatePayment()">
-        💳 &nbsp;Pay with PayPal (Demo)
+      <button class="btn btn-primary btn-block btn-lg" onclick="continueWithoutPayPal()">
+        Continue — Set Up My Account
       </button>
       <p style="text-align:center;font-size:0.8rem;color:#8C95A6;margin-top:10px;">
-        PayPal Sandbox · No real payment
+        PayPal isn't available right now — we'll email an invoice instead.
       </p>
     `;
   }
 
-  // ── Simulate payment for demo ─────────────────────
-  window.simulatePayment = function() {
-    const fakeDetails = {
-      id: 'DEMO-' + Math.random().toString(36).substr(2,9).toUpperCase(),
-      payer: {
-        name: { given_name: 'Demo', surname: 'User' },
-        email_address: 'demo@example.com'
-      },
-      status: 'COMPLETED'
+  // ── Submits the subscription to the backend; shared by the real
+  //    PayPal approval handler and the no-SDK fallback below. ──
+  async function submitSubscription(txId) {
+    const billingEmail = document.getElementById('billingEmail')?.value || '';
+    const billingCompany = document.getElementById('billingCompany')?.value || '';
+    try {
+      const response = await fetch(`${API_BASE_URL}/createSubscription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId: billingCompany || `company-${txId}`,
+          plan: cart.id,
+          email: billingEmail,
+          companyName: billingCompany,
+          txId,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      businessDownloadUrl = payload?.subscription?.downloadUrl
+        ? `${API_BASE_URL}${payload.subscription.downloadUrl}`
+        : null;
+    } catch (error) {
+      console.error('subscription sync failed', error);
+    }
+  }
+
+  // ── No-PayPal fallback: still creates the real company/invite ────
+  window.continueWithoutPayPal = async function() {
+    const firstName = document.getElementById('billingFirst')?.value.trim() || '';
+    const lastName = document.getElementById('billingLast')?.value.trim() || '';
+    const email = document.getElementById('billingEmail')?.value.trim() || '';
+    const company = document.getElementById('billingCompany')?.value.trim() || '';
+    if (!email || !company) {
+      showToast('Enter your business email and company name first.', 'warning');
+      return;
+    }
+
+    const txId = 'RDCTR-' + Date.now();
+    await submitSubscription(txId);
+    const details = {
+      id: txId,
+      payer: { name: { given_name: firstName, surname: lastName }, email_address: email },
+      status: 'COMPLETED',
     };
-    generateInvoice(cart, fakeDetails, fakeDetails.id, total, tax);
+    generateInvoice(cart, details, txId, total, tax);
     clearCart();
   };
 
@@ -173,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div style="text-align:right;">
           <div style="font-size:1.4rem;font-weight:800;color:#14C8A6;font-family:'Poppins',sans-serif;">Redactr</div>
-          <div style="font-size:0.8rem;color:#8C95A6;margin-top:4px;">ABN: 12 345 678 901</div>
           <div style="font-size:0.8rem;color:#8C95A6;">security@redactr.io</div>
         </div>
       </div>
@@ -219,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="order-line total"><span>Total Paid</span><span style="color:#14C8A6;">$${total.toFixed(2)}</span></div>
       </div>
 
-      <div style="margin-top:32px;text-align:center;padding:20px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:12px;">
+      <div style="margin-top:32px;text-align:center;padding:20px;background:rgba(20,200,166,0.08);border:1px solid rgba(20,200,166,0.2);border-radius:12px;">
         <div style="font-size:1.4rem;margin-bottom:8px;">🎉</div>
         <div style="font-weight:700;color:#14C8A6;margin-bottom:4px;">Thank you for subscribing to Redactr!</div>
         <div style="font-size:0.85rem;color:#8C95A6;">Your team is now protected. Download the extension package below to install Redactr and unlock the features included with your ${plan.name} plan.</div>
@@ -229,10 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <button class="btn btn-primary" onclick="printInvoice()">🖨️ &nbsp;Print Invoice</button>
         <button type="button" class="btn btn-outline" onclick="window.downloadBusinessExtension()">⬇️ Download Extension</button>
         <button class="btn btn-outline" onclick="window.location.href='../index.html'">← Back to Home</button>
-      </div>
-
-      <div style="margin-top:20px;font-size:0.75rem;color:#8C95A6;text-align:center;border-top:1px solid rgba(0,209,178,0.1);padding-top:16px;">
-        ⚠️ This website is for a class assignment project and not for commercial purpose.
       </div>
     `;
 
