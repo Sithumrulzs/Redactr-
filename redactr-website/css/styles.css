@@ -508,6 +508,7 @@ p  { color: var(--muted); line-height: 1.8; }
   justify-content: center;
   font-size: 1.4rem;
   margin-bottom: 20px;
+  color: var(--primary);
 }
 
 .card h3 { margin-bottom: 10px; font-size: 1.1rem; }
@@ -1021,6 +1022,7 @@ p  { color: var(--muted); line-height: 1.8; }
   justify-content: center;
   font-size: 1rem;
   flex-shrink: 0;
+  color: var(--primary);
 }
 
 .detail-text .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
@@ -2383,4 +2385,29 @@ p  { color: var(--muted); line-height: 1.8; }
     0 25px 50px -12px rgba(0, 0, 0, 0.7),
     inset 0 1px 1px rgba(255, 255, 255, 0.12),
     inset 0 -1px 1px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Site-wide glass depth pass ──────────────────────
+   Extends the same layered-shadow + frosted-blur "physical card"
+   language to every major surface across the site, without touching
+   any HTML — these selectors' own background/border rules elsewhere
+   in this file still apply; this only adds depth + blur on top.
+   Lower specificity than any :hover rule, so hover effects (the
+   existing card-tilt spotlight, pricing-card glow, etc.) still win. */
+.card,
+.testimonial-card,
+.pricing-card,
+.demo-chatbox,
+.hiw-modal-preview,
+.contact-form-wrap,
+.order-summary,
+.checkout-form-wrap,
+.location-map-inner {
+  box-shadow:
+    0 24px 48px -16px rgba(0, 0, 0, 0.55),
+    0 8px 16px -8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }

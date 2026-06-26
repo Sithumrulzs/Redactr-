@@ -233,14 +233,14 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <div style="margin-top:32px;text-align:center;padding:20px;background:rgba(20,200,166,0.08);border:1px solid rgba(20,200,166,0.2);border-radius:12px;">
-        <div style="font-size:1.4rem;margin-bottom:8px;">🎉</div>
+        <div style="color:#14C8A6;margin-bottom:8px;display:flex;justify-content:center;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></div>
         <div style="font-weight:700;color:#14C8A6;margin-bottom:4px;">Thank you for subscribing to Redactr!</div>
         <div style="font-size:0.85rem;color:#8C95A6;">Your team is now protected. Download the extension package below to install Redactr and unlock the features included with your ${plan.name} plan.</div>
       </div>
 
       <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="printInvoice()">🖨️ &nbsp;Print Invoice</button>
-        <button type="button" class="btn btn-outline" onclick="window.downloadBusinessExtension()">⬇️ Download Extension</button>
+        <button class="btn btn-primary" onclick="printInvoice()"><svg class="icon-inline" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> &nbsp;Print Invoice</button>
+        <button type="button" class="btn btn-outline" onclick="window.downloadBusinessExtension()"><svg class="icon-inline" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Extension</button>
         <button class="btn btn-outline" onclick="window.location.href='../index.html'">← Back to Home</button>
       </div>
     `;
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (container) {
       container.innerHTML = `
         <div style="text-align:center;padding:32px;color:#8C95A6;">
-          <div style="font-size:2rem;margin-bottom:12px;">🛒</div>
+          <div style="margin-bottom:12px;display:flex;justify-content:center;"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></div>
           <p>No plan selected. <a href="pricing.html" style="color:#14C8A6;">Choose a plan</a> first.</p>
         </div>
       `;
