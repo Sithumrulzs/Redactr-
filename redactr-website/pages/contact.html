@@ -59,7 +59,7 @@
           <div class="detail-icon">🏢</div>
           <div class="detail-text">
             <div class="label">Company</div>
-            <div class="value">Redactr Pty Ltd</div>
+            <div class="value">Redactr Pvt. Ltd.</div>
           </div>
         </div>
 
@@ -103,15 +103,42 @@
           </div>
         </div>
 
-        <!-- Google Maps embed -->
-        <div class="map-embed">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3312.9!2d151.2052!3d-33.8696!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12ae3f4fcb2ddb%3A0xf03565f85d1e3606!2s580%20George%20St%2C%20Sydney%20NSW%202000!5e0!3m2!1sen!2sau!4v1234567890"
-            allowfullscreen=""
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            title="Redactr office location"
-          ></iframe>
+        <!-- Interactive location card — collapsed by default (decorative
+             mini-map + tilt), expands on click to reveal the real Google
+             Maps embed. See js/location-map.js. -->
+        <div class="location-map" id="location-map">
+          <div class="location-map-inner" id="location-map-inner">
+            <div class="location-map-overlay"></div>
+            <div class="location-map-grid"></div>
+
+            <div class="location-map-frame" id="location-map-frame">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3312.9!2d151.2052!3d-33.8696!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12ae3f4fcb2ddb%3A0xf03565f85d1e3606!2s580%20George%20St%2C%20Sydney%20NSW%202000!5e0!3m2!1sen!2sau!4v1234567890"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="Redactr office location"
+              ></iframe>
+            </div>
+
+            <button type="button" class="location-map-close" id="location-map-close" aria-label="Collapse map">✕</button>
+
+            <div class="location-map-content">
+              <div class="location-map-top">
+                <svg class="location-map-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+                  <line x1="9" x2="9" y1="3" y2="18"></line>
+                  <line x1="15" x2="15" y1="6" y2="21"></line>
+                </svg>
+                <div class="location-map-badge"><span class="location-map-dot"></span>Live</div>
+              </div>
+              <div class="location-map-bottom">
+                <h4 class="location-map-title">Sydney, Australia</h4>
+                <p class="location-map-coords" id="location-map-coords">33.8696° S, 151.2052° E</p>
+                <div class="location-map-underline"></div>
+              </div>
+            </div>
+          </div>
+          <p class="location-map-hint">Click to expand</p>
         </div>
 
       </div>
@@ -209,5 +236,6 @@
 
 <script src="../js/main.js"></script>
 <script src="../js/animations.js"></script>
+<script src="../js/location-map.js"></script>
 </body>
 </html>
