@@ -49,12 +49,13 @@
 <!-- Step-by-step -->
 <section class="section">
   <div class="container">
-    <div class="hiw-steps">
+    <div class="hiw-steps" id="hiw-steps">
+      <div class="hiw-spine"><div class="hiw-spine-fill" id="hiw-spine-fill"></div></div>
 
       <!-- Step 1 -->
-      <div class="hiw-step reveal">
+      <div class="hiw-step" id="hiw-step-1">
         <div class="hiw-step-num">1</div>
-        <div class="hiw-step-content">
+        <div class="hiw-step-content reveal">
           <div class="section-label">Input</div>
           <h3>Employee Types a Prompt</h3>
           <p>
@@ -65,17 +66,17 @@
           </p>
           <div class="hiw-code-demo" style="margin-top:20px;">
             <div class="code-label"># What the employee types</div>
-            <div class="code-before">Please summarise our deal with Acme Corp.</div>
-            <div class="code-before">Their contact is sarah.jones@acme.com, +61 412 345 678.</div>
-            <div class="code-before">Our Stripe key is sk-live-abc123XYZ...</div>
+            <div class="hiw-typed-line" id="hiw-line-1">Please summarise our deal with Acme Corp.</div>
+            <div class="hiw-typed-line" id="hiw-line-2">Their contact is sarah.jones@acme.com, +61 412 345 678.</div>
+            <div class="hiw-typed-line" id="hiw-line-3">Our Stripe key is sk-live-abc123XYZ...<span class="hiw-cursor" id="hiw-cursor-1"></span></div>
           </div>
         </div>
       </div>
 
       <!-- Step 2 -->
-      <div class="hiw-step reveal">
+      <div class="hiw-step" id="hiw-step-2">
         <div class="hiw-step-num">2</div>
-        <div class="hiw-step-content">
+        <div class="hiw-step-content reveal">
           <div class="section-label">Detection</div>
           <h3>Extension Scans the Prompt</h3>
           <p>
@@ -86,23 +87,23 @@
           </p>
           <div class="hiw-code-demo" style="margin-top:20px;">
             <div class="code-label"># Detection engine output (JSON)</div>
-            <div class="code-tag">&#123;</div>
-            <div class="code-tag">&nbsp;&nbsp;"riskScore": 105,</div>
-            <div class="code-tag">&nbsp;&nbsp;"severity": "CRITICAL",</div>
-            <div class="code-tag">&nbsp;&nbsp;"findings": [</div>
-            <div class="code-tag">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "EMAIL",   "score": 10, "value": "sarah.jones@acme.com" &#125;,</div>
-            <div class="code-tag">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "PHONE",   "score": 15, "value": "+61 412 345 678" &#125;,</div>
-            <div class="code-tag">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "API_KEY", "score": 80, "value": "sk-live-abc..." &#125;</div>
-            <div class="code-tag">&nbsp;&nbsp;]</div>
-            <div class="code-tag">&#125;</div>
+            <div class="code-tag hiw-json-line">&#123;</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;"riskScore": <span id="hiw-risk-score" data-count-to="105" data-count-decimals="0">0</span>,</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;"severity": "CRITICAL",</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;"findings": [</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "EMAIL",   "score": 10, "value": "sarah.jones@acme.com" &#125;,</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "PHONE",   "score": 15, "value": "+61 412 345 678" &#125;,</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "API_KEY", "score": 80, "value": "sk-live-abc..." &#125;</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;]</div>
+            <div class="code-tag hiw-json-line">&#125;</div>
           </div>
         </div>
       </div>
 
       <!-- Step 3 -->
-      <div class="hiw-step reveal">
+      <div class="hiw-step" id="hiw-step-3">
         <div class="hiw-step-num">3</div>
-        <div class="hiw-step-content">
+        <div class="hiw-step-content reveal">
           <div class="section-label">Alert</div>
           <h3>Leak Detected — Send is Blocked</h3>
           <p>
@@ -113,19 +114,19 @@
           </p>
 
           <!-- Fake modal preview -->
-          <div style="margin-top:24px;background:#1B212B;border:1px solid #EF5466;border-radius:16px;padding:24px;max-width:420px;">
+          <div class="hiw-modal-preview" id="hiw-modal-preview">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
               <span style="font-size:1.4rem;">🚨</span>
-              <h4 style="color:#EF5466;font-size:1rem;">Sensitive Information Detected</h4>
+              <h4 style="color:var(--danger);font-size:1rem;">Sensitive Information Detected</h4>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
-              <div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:8px 12px;background:rgba(239,84,102,0.08);border-radius:8px;border:1px solid rgba(239,84,102,0.2);">
+              <div class="hiw-finding-row" style="background:rgba(239,84,102,0.08);border:1px solid rgba(239,84,102,0.2);">
                 <span>🔑 API Key (Stripe)</span><span class="badge badge-red">+80 pts</span>
               </div>
-              <div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:8px 12px;background:rgba(244,183,64,0.08);border-radius:8px;border:1px solid rgba(244,183,64,0.2);">
+              <div class="hiw-finding-row" style="background:rgba(244,183,64,0.08);border:1px solid rgba(244,183,64,0.2);">
                 <span>📞 Phone Number</span><span class="badge badge-amber">+15 pts</span>
               </div>
-              <div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:8px 12px;background:rgba(244,183,64,0.08);border-radius:8px;border:1px solid rgba(244,183,64,0.2);">
+              <div class="hiw-finding-row" style="background:rgba(244,183,64,0.08);border:1px solid rgba(244,183,64,0.2);">
                 <span>📧 Email Address</span><span class="badge badge-amber">+10 pts</span>
               </div>
             </div>
@@ -139,9 +140,9 @@
       </div>
 
       <!-- Step 4 -->
-      <div class="hiw-step reveal">
+      <div class="hiw-step" id="hiw-step-4">
         <div class="hiw-step-num">4</div>
-        <div class="hiw-step-content">
+        <div class="hiw-step-content reveal">
           <div class="section-label">Redaction</div>
           <h3>Safe Prompt Generated</h3>
           <p>
@@ -151,13 +152,10 @@
             This is the feature that makes Redactr helpful rather than annoying. Work continues; leaks do not.
           </p>
           <div class="hiw-code-demo" style="margin-top:20px;">
-            <div class="code-label"># Original (blocked)</div>
-            <div class="code-before">sarah.jones@acme.com · +61 412 345 678 · sk-live-abc123</div>
-            <br>
-            <div class="code-label"># Safe version (copy &amp; send this)</div>
+            <div class="code-label"># Original → Safe version (auto-redacted)</div>
             <div class="code-after">Please summarise our deal with Acme Corp.</div>
-            <div class="code-after">Their contact is [EMAIL_1], [PHONE_1].</div>
-            <div class="code-after">Our Stripe key is [SECRET_1].</div>
+            <div class="code-after">Their contact is <span class="hiw-redact-wrap"><span class="hiw-redact-raw" id="hiw-redact-email">sarah.jones@acme.com</span><span class="hiw-redact-safe grad-text" id="hiw-redact-email-safe">[EMAIL_1]</span></span>, <span class="hiw-redact-wrap"><span class="hiw-redact-raw" id="hiw-redact-phone">+61 412 345 678</span><span class="hiw-redact-safe grad-text" id="hiw-redact-phone-safe">[PHONE_1]</span></span>.</div>
+            <div class="code-after">Our Stripe key is <span class="hiw-redact-wrap"><span class="hiw-redact-raw" id="hiw-redact-key">sk-live-abc123</span><span class="hiw-redact-safe grad-text" id="hiw-redact-key-safe">[SECRET_1]</span></span>.</div>
           </div>
           <div style="margin-top:16px;font-size:0.88rem;color:var(--muted);">
             Tag mapping: <code style="color:var(--primary);">[EMAIL_1]</code> → sarah.jones@acme.com &nbsp;|&nbsp;
@@ -168,9 +166,9 @@
       </div>
 
       <!-- Step 5 -->
-      <div class="hiw-step reveal">
+      <div class="hiw-step" id="hiw-step-5">
         <div class="hiw-step-num">5</div>
-        <div class="hiw-step-content">
+        <div class="hiw-step-content reveal">
           <div class="section-label">Approval</div>
           <h3>Manager Approves or Denies Exception</h3>
           <p>
@@ -180,12 +178,12 @@
             The manager sees the employee name, the type of data, the risk score, and the full prompt context. They tap <strong>Approve</strong> or <strong>Deny</strong> and the extension acts immediately.
           </p>
           <div style="margin-top:20px;display:flex;gap:16px;flex-wrap:wrap;">
-            <div class="card" style="max-width:200px;padding:20px;border-color:rgba(20,200,166,0.3);">
+            <div class="card" id="hiw-approve-card" style="max-width:200px;padding:20px;border-color:rgba(20,200,166,0.3);">
               <div style="font-size:1.4rem;margin-bottom:10px;">✅</div>
               <div style="font-weight:700;font-size:0.95rem;color:var(--success);">Approved</div>
               <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Exception logged. Original prompt sent.</div>
             </div>
-            <div class="card" style="max-width:200px;padding:20px;border-color:rgba(239,84,102,0.3);">
+            <div class="card" id="hiw-deny-card" style="max-width:200px;padding:20px;border-color:rgba(239,84,102,0.3);">
               <div style="font-size:1.4rem;margin-bottom:10px;">❌</div>
               <div style="font-weight:700;font-size:0.95rem;color:var(--danger);">Denied</div>
               <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Prompt blocked. Employee notified.</div>
@@ -259,7 +257,10 @@
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="../js/main.js"></script>
 <script src="../js/animations.js"></script>
+<script src="../js/how-it-works.js"></script>
 </body>
 </html>

@@ -811,7 +811,27 @@ p  { color: var(--muted); line-height: 1.8; }
 =================================================== */
 .hiw-hero { padding: 140px 0 80px; text-align: center; }
 
-.hiw-steps { counter-reset: step; }
+.hiw-steps { counter-reset: step; position: relative; }
+
+.hiw-spine {
+  position: absolute;
+  left: 31px;
+  top: 32px;
+  bottom: 32px;
+  width: 2px;
+  background: var(--border);
+  z-index: 0;
+  overflow: hidden;
+}
+
+.hiw-spine-fill {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, var(--primary), rgba(20, 200, 166, 0.25));
+  box-shadow: 0 0 12px rgba(20, 200, 166, 0.6);
+}
 
 .hiw-step {
   display: grid;
@@ -820,6 +840,8 @@ p  { color: var(--muted); line-height: 1.8; }
   align-items: start;
   padding: 48px 0;
   border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
 }
 
 .hiw-step:last-child { border-bottom: none; }
@@ -827,7 +849,7 @@ p  { color: var(--muted); line-height: 1.8; }
 .hiw-step-num {
   width: 64px; height: 64px;
   border-radius: 50%;
-  background: rgba(0,209,178,0.1);
+  background: rgba(20, 200, 166, 0.1);
   border: 2px solid var(--primary);
   display: flex;
   align-items: center;
@@ -837,6 +859,13 @@ p  { color: var(--muted); line-height: 1.8; }
   color: var(--primary);
   font-family: var(--font-display);
   flex-shrink: 0;
+  position: relative;
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.hiw-step-num.active {
+  box-shadow: 0 0 0 6px rgba(20, 200, 166, 0.12), 0 0 22px rgba(20, 200, 166, 0.55);
+  transform: scale(1.08);
 }
 
 .hiw-step-content h3 { margin-bottom: 12px; }
@@ -856,6 +885,72 @@ p  { color: var(--muted); line-height: 1.8; }
 .code-after  { color: var(--success); }
 .code-label  { color: #8C95A6; font-size: 0.75rem; }
 .code-tag    { color: #14C8A6; }
+
+.hiw-typed-line {
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--danger);
+}
+
+.hiw-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 0.95em;
+  background: var(--primary);
+  margin-left: 2px;
+  vertical-align: -2px;
+  animation: blink 0.9s step-end infinite;
+}
+
+/* .hiw-json-line, .hiw-modal-preview, .hiw-finding-row are visible by
+   default (no-JS fallback shows the finished state) — GSAP hides them
+   with gsap.set right before animating each one in. */
+.hiw-modal-preview {
+  margin-top: 24px;
+  background: var(--surface2);
+  border: 1px solid var(--danger);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 420px;
+}
+
+.hiw-finding-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.hiw-redact-wrap {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Default state matches every other "finished" demo on the site: the
+   safe tag is what shows; raw text is the hidden start-of-animation
+   state GSAP reveals backwards from. */
+.hiw-redact-raw {
+  opacity: 0;
+  transition: color 0.35s ease;
+}
+
+.hiw-redact-safe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .hiw-spine { left: 31px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-cursor { animation: none; }
+}
 
 /* ===================================================
    CONTACT PAGE
@@ -1297,6 +1392,7 @@ p  { color: var(--muted); line-height: 1.8; }
   .comparison-table { font-size: 0.8rem; }
   .comparison-table th, .comparison-table td { padding: 10px 12px; }
   .hiw-step { grid-template-columns: 1fr; gap: 16px; }
+  .hiw-spine { display: none; }
 }
 
 @media (max-width: 480px) {
