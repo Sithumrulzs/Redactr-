@@ -481,6 +481,23 @@ p  { color: var(--muted); line-height: 1.8; }
   transform: translateY(-4px);
 }
 
+/* Approve/Deny outcome cards (How It Works, step 5) — hover glows
+   match the outcome's own semantic color instead of the generic
+   card-hover teal. Resting border colors live here (not inline) so
+   the :hover rules below can actually override them. */
+#hiw-approve-card { border-color: rgba(20, 200, 166, 0.3); }
+#hiw-deny-card { border-color: rgba(239, 84, 102, 0.3); }
+
+#hiw-approve-card:hover {
+  border-color: var(--success);
+  box-shadow: 0 0 28px rgba(20, 200, 166, 0.45);
+}
+
+#hiw-deny-card:hover {
+  border-color: var(--danger);
+  box-shadow: 0 0 28px rgba(239, 84, 102, 0.45);
+}
+
 .card-icon {
   width: 52px; height: 52px;
   border-radius: var(--radius-sm);
@@ -689,7 +706,7 @@ p  { color: var(--muted); line-height: 1.8; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 28px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .pricing-card {
@@ -699,6 +716,18 @@ p  { color: var(--muted); line-height: 1.8; }
   padding: 36px 32px;
   position: relative;
   transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Plans have different feature-list lengths, so without this the three
+   cards settle at different heights and their CTA buttons end up at
+   different vertical positions. align-items:stretch above makes every
+   card match the tallest one's height; margin-top:auto here pushes
+   each card's own button down to the same bottom edge regardless of
+   how much feature-list content precedes it. */
+.pricing-card > .btn {
+  margin-top: auto;
 }
 
 .pricing-card:hover,

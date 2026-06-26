@@ -153,13 +153,16 @@ document.addEventListener('DOMContentLoaded', () => {
       start: 'top 65%',
       once: true,
       onEnter: () => {
+        // clearProps removes the inline box-shadow once the intro pulse
+        // settles — otherwise it lingers and blocks the CSS :hover glow
+        // rules (inline styles always beat stylesheet rules).
         gsap.timeline()
           .from(approveCard, { scale: 0.85, opacity: 0.4, duration: 0.35, ease: 'back.out(1.6)' })
           .to(approveCard, { boxShadow: '0 0 24px rgba(20,200,166,0.35)', duration: 0.3 })
-          .to(approveCard, { boxShadow: 'none', duration: 0.4 })
+          .to(approveCard, { boxShadow: 'none', duration: 0.4, clearProps: 'boxShadow' })
           .from(denyCard, { scale: 0.85, opacity: 0.4, duration: 0.35, ease: 'back.out(1.6)' }, '+=0.15')
           .to(denyCard, { boxShadow: '0 0 24px rgba(239,84,102,0.35)', duration: 0.3 })
-          .to(denyCard, { boxShadow: 'none', duration: 0.4 });
+          .to(denyCard, { boxShadow: 'none', duration: 0.4, clearProps: 'boxShadow' });
       },
     });
   }
