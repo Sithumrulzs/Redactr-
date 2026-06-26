@@ -141,6 +141,12 @@ p  { color: var(--muted); line-height: 1.8; }
   font-family: var(--font-main);
   transition: var(--transition);
   white-space: nowrap;
+  /* .btn-primary/.btn-outline set overflow:hidden for the shine-sweep
+     effect, which makes flexbox's automatic min-width resolve to 0
+     instead of the label's content width — without this, a button in
+     a tight flex row (rather than its siblings) silently shrinks and
+     clips its own text instead of the row just wrapping/overflowing. */
+  flex-shrink: 0;
 }
 
 .btn-primary {
