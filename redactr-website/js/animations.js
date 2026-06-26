@@ -390,4 +390,94 @@ document.addEventListener('DOMContentLoaded', () => {
       runDemo();
     }
   }
+
+  /* ── Use Case — live chatbot simulation (GSAP/ScrollTrigger) ──
+     The only GSAP usage on the site so far — CDN scripts are loaded in
+     index.html right before main.js. Builds a real GSAP timeline (not
+     the hand-rolled promise/setTimeout pattern the leak-detection demo
+     above uses) and plays it once the section scrolls into view, then
+     loops with a pause, matching that demo's cadence. */
+  buildUseCaseDemo();
+
+  function buildUseCaseDemo() {
+    const section = document.getElementById('usecase');
+    if (!section) return;
+
+    const chatField = document.getElementById('chat-input-field');
+    const typedEl = document.getElementById('chat-input-typed');
+    const preEl = document.getElementById('chat-input-pre');
+    const placeholderEl = document.getElementById('chat-input-placeholder');
+    const secretEl = document.getElementById('chat-input-secret');
+    const safeEl = document.getElementById('chat-input-safe');
+    const badgeEl = document.getElementById('chat-leak-badge');
+    const sendBtn = document.getElementById('chat-send-btn');
+    const finalMsg = document.getElementById('chat-msg-final');
+
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+      return; // HTML defaults already show the finished, safe end-state.
+    }
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (reducedMotion) {
+      gsap.set(typedEl, { width: '0ch' });
+      gsap.set(safeEl, { opacity: 1 });
+      gsap.set(secretEl, { opacity: 0 });
+      gsap.set(finalMsg, { opacity: 1, y: 0 });
+      return;
+    }
+
+    // Pre-text + secret text only — typedEl's own textContent would also
+    // pull in the hidden [SECRET_1] replacement text and overcount.
+    const charCount = preEl.textContent.length + secretEl.textContent.length;
+
+    function resetState() {
+      gsap.set(typedEl, { width: '0ch', opacity: 1 });
+      gsap.set(placeholderEl, { opacity: 1 });
+      gsap.set(secretEl, { opacity: 1, clearProps: 'color', textShadow: 'none' });
+      gsap.set(safeEl, { opacity: 0 });
+      gsap.set(badgeEl, { opacity: 0, y: 6, scale: 0.96 });
+      gsap.set(sendBtn, { scale: 1 });
+      gsap.set(finalMsg, { opacity: 0, y: 16 });
+      chatField.classList.remove('leak-detected');
+    }
+
+    function buildTimeline() {
+      resetState();
+      const tl = gsap.timeline({ repeat: -1, repeatDelay: 2.6 });
+
+      tl.to(placeholderEl, { opacity: 0, duration: 0.2 })
+        // Typing — same width(ch) reveal technique as the hero terminal.
+        .to(typedEl, { width: `${charCount}ch`, duration: Math.max(1.4, charCount * 0.045), ease: 'none' })
+        .to({}, { duration: 0.45 }) // brief pause, cursor blinking, before send
+        // Send button: quick scale down and back up.
+        .to(sendBtn, { scale: 0.82, duration: 0.12, ease: 'power2.out' })
+        .to(sendBtn, { scale: 1, duration: 0.18, ease: 'back.out(2)' })
+        // Intercept: border flashes crimson, tooltip pops up.
+        .add(() => chatField.classList.add('leak-detected'))
+        .to(badgeEl, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: 'back.out(1.6)' })
+        .to({}, { duration: 1.0 }) // hold the warning so it's actually readable
+        // Redaction: amber glow, then crossfade into the turquoise safe tag.
+        .to(secretEl, { color: '#F4B740', textShadow: '0 0 12px rgba(244,183,64,0.6)', duration: 0.3 })
+        .to({}, { duration: 0.45 })
+        .to(secretEl, { opacity: 0, duration: 0.25 })
+        .to(safeEl, { opacity: 1, duration: 0.3 }, '<0.1')
+        .add(() => chatField.classList.remove('leak-detected'))
+        .to(badgeEl, { opacity: 0, y: 6, scale: 0.96, duration: 0.3 })
+        .to({}, { duration: 0.35 })
+        // Clear the input and slide the now-safe prompt into chat history.
+        .to(typedEl, { opacity: 0, duration: 0.25 })
+        .add(() => { gsap.set(typedEl, { width: '0ch', opacity: 1 }); gsap.set(placeholderEl, { opacity: 1 }); })
+        .to(finalMsg, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' });
+
+      return tl;
+    }
+
+    let started = false;
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top 75%',
+      onEnter: () => { if (!started) { started = true; buildTimeline(); } },
+      onEnterBack: () => { if (!started) { started = true; buildTimeline(); } },
+    });
+  }
 });

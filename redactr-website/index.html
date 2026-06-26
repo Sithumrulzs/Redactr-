@@ -272,6 +272,56 @@
 </section>
 
 <!-- ══════════════════════════════════════════════
+     USE CASE — LIVE CHATBOT SIMULATION
+══════════════════════════════════════════════ -->
+<section class="section usecase-section" id="usecase">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Use Case</div>
+      <h2>Watch It Stop a Leak <span class="text-primary gradient-text">Before It's Sent</span></h2>
+      <p>A simulated conversation with ChatGPT — exactly what an employee sees the moment Redactr steps in.</p>
+    </div>
+
+    <div class="usecase-stage reveal">
+      <div class="chat-window" id="chat-window">
+        <div class="chat-window-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <span class="chat-window-title">ChatGPT</span>
+        </div>
+
+        <div class="chat-history" id="chat-history">
+          <div class="chat-msg" id="chat-msg-final">
+            <div class="chat-msg-bubble">
+              Can you review this code? My AWS key is <span class="grad-text chat-msg-tag">[SECRET_1]</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-row">
+          <div class="chat-input-field" id="chat-input-field">
+            <span class="chat-input-placeholder" id="chat-input-placeholder">Message ChatGPT…</span>
+            <span class="chat-input-typed" id="chat-input-typed"
+              ><span id="chat-input-pre">Can you review this code? My AWS key is </span><span class="chat-input-secret-wrap"
+                ><span id="chat-input-secret">AKIAIOSFODNN7EXAMPLE</span><span id="chat-input-safe" class="grad-text">[SECRET_1]</span></span
+              ><span class="chat-input-cursor" id="chat-input-cursor"></span
+            ></span>
+            <div class="chat-leak-badge" id="chat-leak-badge">🚨 Leak Prevented: AWS Key Detected</div>
+          </div>
+          <button class="chat-send-btn" id="chat-send-btn" type="button" aria-label="Send message">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
      LIVE LEAK-DETECTION SHOWCASE
 ══════════════════════════════════════════════ -->
 <section class="section demo-section" id="live-demo">
@@ -502,6 +552,8 @@
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="js/main.js"></script>
 <script src="js/animations.js"></script>
 <script src="js/cart.js"></script>
