@@ -314,7 +314,7 @@ p  { color: var(--muted); line-height: 1.8; }
   display: none;
   position: fixed;
   top: 70px; left: 0; right: 0;
-  background: rgba(11, 16, 32, 0.98);
+  background: rgba(20, 24, 31, 0.98);
   backdrop-filter: blur(20px);
   padding: 20px 24px 28px;
   border-bottom: 1px solid var(--border);
@@ -323,14 +323,18 @@ p  { color: var(--muted); line-height: 1.8; }
   gap: 4px;
 }
 .nav-mobile.open { display: flex; }
-.nav-mobile a {
+/* :not(.btn) — without this, the CTA link's higher-specificity .btn-primary
+   text color was being overridden by this rule, making the button's text
+   nearly unreadable (muted grey on a bright teal background). */
+.nav-mobile a:not(.btn) {
   padding: 12px 16px;
   border-radius: var(--radius-sm);
   color: var(--muted);
   font-weight: 500;
   transition: var(--transition);
 }
-.nav-mobile a:hover { color: var(--primary); background: rgba(0,209,178,0.05); }
+.nav-mobile a:not(.btn):hover { color: var(--primary); background: rgba(20,200,166,0.05); }
+.nav-mobile a.btn { text-align: center; }
 
 /* ===================================================
    HERO
@@ -882,6 +886,36 @@ p  { color: var(--muted); line-height: 1.8; }
 /* Comparison table */
 .comparison-section { padding: 60px 0; }
 
+.comparison-scroll-hint {
+  display: none;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 24px;
+  margin-bottom: -8px;
+}
+
+.comparison-scroll-wrap {
+  position: relative;
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  .comparison-scroll-hint { display: block; }
+
+  /* Fade hint on the right edge — signals there's more table to swipe
+     to, since the Enterprise column is otherwise cropped with no
+     visual cue that it's scrollable rather than just cut off. */
+  .comparison-scroll-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 32px;
+    background: linear-gradient(90deg, transparent, var(--bg) 90%);
+    pointer-events: none;
+  }
+}
+
 .comparison-table {
   width: 100%;
   border-collapse: collapse;
@@ -909,10 +943,10 @@ p  { color: var(--muted); line-height: 1.8; }
   color: var(--muted);
 }
 
-.comparison-table tr:hover td { background: rgba(0,209,178,0.03); }
+.comparison-table tr:hover td { background: rgba(20,200,166,0.03); }
 
 .check-cell  { color: var(--success); font-size: 1.1rem; }
-.x-cell      { color: #374151; font-size: 1.1rem; }
+.x-cell      { color: var(--muted); opacity: 0.4; font-size: 1.1rem; }
 
 /* ===================================================
    HOW IT WORKS PAGE
@@ -1032,28 +1066,39 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .hiw-redact-wrap {
   position: relative;
-  display: inline-block;
-  white-space: nowrap;
+  display: inline;
 }
 
 /* Default state matches every other "finished" demo on the site: the
    safe tag is what shows; raw text is the hidden start-of-animation
-   state GSAP reveals backwards from. */
+   state GSAP reveals backwards from.
+   This is a hard display:none swap rather than an opacity crossfade —
+   an absolutely-positioned overlay would reserve box width for
+   whichever of the two strings is longer (almost always the raw PII),
+   leaving a visible gap before whatever text follows the tag once the
+   line wraps on narrow screens. Swapping display means only the
+   currently-shown string ever takes up space. */
 .hiw-redact-raw {
-  opacity: 0;
+  display: none;
   transition: color 0.35s ease;
 }
 
 .hiw-redact-safe {
-  position: absolute;
-  left: 0;
-  top: 0;
   font-weight: 700;
-  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
   .hiw-spine { left: 31px; }
+
+  /* The typewriter effect's fixed ch-width + nowrap only makes sense
+     when the line actually fits on one row — on narrow phones the
+     longest demo line (57 chars) doesn't, and nowrap was blowing the
+     whole page out horizontally instead of wrapping. */
+  .hiw-typed-line {
+    white-space: normal;
+    overflow: visible;
+    width: auto !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

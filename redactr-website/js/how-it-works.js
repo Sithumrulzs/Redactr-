@@ -55,6 +55,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const lines = lineIds.map((id) => document.getElementById(id));
     const cursor = document.getElementById('hiw-cursor-1');
     if (!lines[0] || !cursor) return;
+
+    // Below 768px the lines wrap (see the matching media query in
+    // styles.css) — a ch-width grow animation doesn't read as a
+    // typewriter on wrapped text, so just fade lines in in sequence.
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      gsap.set(lines, { opacity: 0 });
+      ScrollTrigger.create({
+        trigger: '#hiw-step-1',
+        start: 'top 65%',
+        once: true,
+        onEnter: () => gsap.to(lines, { opacity: 1, duration: 0.3, stagger: 0.25, ease: 'power1.out' }),
+      });
+      return;
+    }
+
     const lengths = lines.map((el) => el.textContent.length);
 
     ScrollTrigger.create({
@@ -123,8 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pairs[0][0]) return;
 
     pairs.forEach(([raw, safe]) => {
-      gsap.set(raw, { opacity: 1, clearProps: 'color' });
-      gsap.set(safe, { opacity: 0 });
+      gsap.set(raw, { display: 'inline', clearProps: 'color' });
+      gsap.set(safe, { display: 'none' });
     });
 
     ScrollTrigger.create({
@@ -135,8 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tl = gsap.timeline();
         pairs.forEach(([raw, safe], i) => {
           tl.to(raw, { color: '#F4B740', textShadow: '0 0 10px rgba(244,183,64,0.6)', duration: 0.25 }, i * 0.35)
-            .to(raw, { opacity: 0, duration: 0.2 }, i * 0.35 + 0.35)
-            .to(safe, { opacity: 1, duration: 0.25 }, i * 0.35 + 0.4);
+            .add(() => { raw.style.display = 'none'; safe.style.display = 'inline'; }, i * 0.35 + 0.45);
         });
       },
     });
