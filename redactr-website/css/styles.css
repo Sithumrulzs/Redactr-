@@ -149,26 +149,63 @@ p  { color: var(--muted); line-height: 1.8; }
   flex-shrink: 0;
 }
 
+/* Tactile depth recipe adapted from the supplied reference's
+   .btn-modern-light/.btn-modern-dark — same layered shadow physics,
+   recolored to the brand palette instead of pure white/black. */
 .btn-primary {
-  background: var(--primary);
-  color: #14181F;
-  box-shadow: 0 0 24px rgba(20, 200, 166, 0.35);
+  background: linear-gradient(180deg, var(--accent) 0%, var(--primary) 100%);
+  color: #0B1020;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 12px 24px -4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .btn-primary:hover {
-  background: var(--accent);
-  box-shadow: 0 0 40px rgba(20, 200, 166, 0.55);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 6px 12px -2px rgba(0, 0, 0, 0.3),
+    0 20px 32px -6px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.15);
+}
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    inset 0 3px 6px rgba(0, 0, 0, 0.2);
 }
 
 .btn-outline {
-  background: transparent;
+  background: linear-gradient(180deg, var(--surface2) 0%, var(--surface) 100%);
   color: var(--text);
-  border: 1.5px solid rgba(248, 250, 252, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 12px 24px -4px rgba(0, 0, 0, 0.7),
+    inset 0 1px 1px rgba(255, 255, 255, 0.06),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.5);
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .btn-outline:hover {
   border-color: var(--primary);
   color: var(--primary);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 1px rgba(20, 200, 166, 0.15),
+    0 6px 12px -2px rgba(0, 0, 0, 0.5),
+    0 20px 32px -6px rgba(0, 0, 0, 0.8),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.5);
+}
+.btn-outline:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.6);
 }
 
 .btn-ghost {
@@ -320,10 +357,28 @@ p  { color: var(--muted); line-height: 1.8; }
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,209,178,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,209,178,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(20,200,166,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20,200,166,0.05) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
+  /* Fades the grid out toward the edges instead of a hard rectangle. */
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+}
+
+/* Subtle film-grain texture overlay, identical recipe to the supplied
+   reference component — purely textural, no color, so it works on any
+   palette. */
+.film-grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
 }
 
 .hero-content {
@@ -2331,12 +2386,12 @@ p  { color: var(--muted); line-height: 1.8; }
 .glass-depth {
   position: relative;
   background: linear-gradient(145deg, var(--surface2) 0%, var(--bg) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(20, 200, 166, 0.08);
   box-shadow:
-    0 40px 80px -20px rgba(0, 0, 0, 0.7),
-    0 16px 32px -16px rgba(0, 0, 0, 0.6),
-    inset 0 1px 1px rgba(255, 255, 255, 0.08),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.5);
+    0 40px 100px -20px rgba(0, 0, 0, 0.9),
+    0 20px 40px -20px rgba(0, 0, 0, 0.8),
+    inset 0 1px 2px rgba(255, 255, 255, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }

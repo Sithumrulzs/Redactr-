@@ -71,15 +71,58 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ── Glass-depth sheen (mouse-tracked light across glass cards) ── */
+  /* ── Glass-depth sheen (mouse-tracked light across glass cards) ──
+     RAF-throttled — only the latest position per frame is applied, so
+     a fast mouse doesn't queue up redundant style writes. */
   if (!reducedMotion) {
     document.querySelectorAll('.glass-depth').forEach((card) => {
-      card.addEventListener('mousemove', (e) => {
+      let pendingEvent = null;
+      let frameRequested = false;
+
+      function applySheen() {
+        frameRequested = false;
+        if (!pendingEvent) return;
         const rect = card.getBoundingClientRect();
-        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        card.style.setProperty('--mouse-x', `${pendingEvent.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${pendingEvent.clientY - rect.top}px`);
+        pendingEvent = null;
+      }
+
+      card.addEventListener('mousemove', (e) => {
+        pendingEvent = e;
+        if (!frameRequested) {
+          frameRequested = true;
+          requestAnimationFrame(applySheen);
+        }
       });
     });
+  }
+
+  /* ── Hero chat-window tilt (global mouse position, RAF + GSAP) ──
+     Mirrors the reference component's mockup tilt: tracks the cursor
+     across the whole viewport (not just while hovering the card) so
+     the card settles back to flat smoothly via GSAP's own easing
+     rather than snapping when the mouse leaves it. */
+  if (!reducedMotion && typeof gsap !== 'undefined') {
+    const tiltTarget = document.getElementById('hero-chat-window');
+    if (tiltTarget) {
+      let tiltFrame = null;
+      window.addEventListener('mousemove', (e) => {
+        if (window.scrollY > window.innerHeight * 1.5) return; // hero long out of view
+        if (tiltFrame) cancelAnimationFrame(tiltFrame);
+        tiltFrame = requestAnimationFrame(() => {
+          const xVal = (e.clientX / window.innerWidth - 0.5) * 2;
+          const yVal = (e.clientY / window.innerHeight - 0.5) * 2;
+          gsap.to(tiltTarget, {
+            rotationY: xVal * 6,
+            rotationX: -yVal * 6,
+            transformPerspective: 900,
+            ease: 'power3.out',
+            duration: 1.1,
+          });
+        });
+      });
+    }
   }
 
   /* ── Animated counters (hero stats, etc.) ─────────── */
