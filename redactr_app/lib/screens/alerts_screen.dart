@@ -61,16 +61,25 @@ class _AlertsScreenState extends State<AlertsScreen> {
                     ),
                   ),
                 ),
-                Row(
-                  children: [
-                    _filterChip('All', null),
-                    const SizedBox(width: AppSpacing.sm),
-                    _filterChip('Pending', AlertStatus.pending),
-                    const SizedBox(width: AppSpacing.sm),
-                    _filterChip('Approved', AlertStatus.approved),
-                    const SizedBox(width: AppSpacing.sm),
-                    _filterChip('Denied', AlertStatus.denied),
-                  ],
+                // Four chips at this label width don't reliably fit
+                // alongside the screen's 16px side padding on the
+                // narrowest common phones (e.g. 360px Galaxy S8) — a
+                // plain Row here would clip/overflow. Scrolling
+                // horizontally is the standard Flutter fix for a
+                // filter-chip row instead of trying to compress labels.
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _filterChip('All', null),
+                      const SizedBox(width: AppSpacing.sm),
+                      _filterChip('Pending', AlertStatus.pending),
+                      const SizedBox(width: AppSpacing.sm),
+                      _filterChip('Approved', AlertStatus.approved),
+                      const SizedBox(width: AppSpacing.sm),
+                      _filterChip('Denied', AlertStatus.denied),
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -16,7 +16,16 @@ class SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          // Expanded + ellipsis: no current caller passes `trailing`, but
+          // without this a long title would overflow off-screen the
+          // moment one is added, since Row gives Text no width limit.
+          Expanded(
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           ?trailing,
         ],
       ),
