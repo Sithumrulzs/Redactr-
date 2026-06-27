@@ -114,6 +114,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Pricing toggle (monthly / annual) ────────────
   const toggleOpts = document.querySelectorAll('.toggle-opt');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function animatePriceTo(el, from, to) {
+    if (reducedMotion || from === to) {
+      el.textContent = to;
+      return;
+    }
+    const start = performance.now();
+    const duration = 450;
+    function tick(now) {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(from + (to - from) * eased);
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = to;
+    }
+    requestAnimationFrame(tick);
+  }
+
   toggleOpts.forEach(opt => {
     opt.addEventListener('click', () => {
       toggleOpts.forEach(o => o.classList.remove('active'));
@@ -122,14 +141,33 @@ document.addEventListener('DOMContentLoaded', () => {
       const isAnnual = opt.dataset.period === 'annual';
       document.querySelectorAll('[data-monthly]').forEach(el => {
         const monthly = parseFloat(el.dataset.monthly);
-        const display = isAnnual
-          ? `$${(monthly * 0.8).toFixed(0)}`
-          : `$${monthly}`;
-        el.querySelector('.price-num').textContent = display;
+        const target = isAnnual ? Math.round(monthly * 0.8) : monthly;
+        const numEl = el.querySelector('.price-num');
+        const current = parseFloat(numEl.textContent) || monthly;
+        animatePriceTo(numEl, current, target);
       });
 
       if (isAnnual) {
         showToast('Annual billing selected — save 20%!', 'info');
+
+        // Confetti burst from the toggle's position — brand colors only.
+        if (!reducedMotion && typeof confetti === 'function') {
+          const rect = opt.closest('.pricing-toggle').getBoundingClientRect();
+          confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: {
+              x: (rect.left + rect.width / 2) / window.innerWidth,
+              y: (rect.top + rect.height / 2) / window.innerHeight,
+            },
+            colors: ['#14C8A6', '#22DDB8', '#F4B740'],
+            ticks: 200,
+            gravity: 1.2,
+            decay: 0.94,
+            startVelocity: 30,
+            shapes: ['circle'],
+          });
+        }
       }
     });
   });

@@ -46,7 +46,7 @@
 
     <!-- Toggle -->
     <div style="display:flex;justify-content:center;margin-top:32px;">
-      <div class="pricing-toggle">
+      <div class="pricing-toggle" id="pricing-toggle">
         <span class="toggle-opt active" data-period="monthly">Monthly</span>
         <span class="toggle-opt" data-period="annual">Annual <span style="color:var(--success);font-size:0.75rem;margin-left:4px;">Save 20%</span></span>
       </div>
@@ -60,7 +60,7 @@
     <div class="pricing-grid">
 
       <!-- Starter -->
-      <div class="pricing-card reveal" data-monthly="9">
+      <div class="pricing-card" data-monthly="9">
         <div class="plan-name">Starter</div>
         <div class="plan-price">
           <sup>$</sup><span class="price-num">9</span>
@@ -69,15 +69,15 @@
         <div class="plan-desc">Perfect for micro-businesses and freelancers. Up to 5 seats.</div>
 
         <ul class="plan-features">
-          <li class="plan-feature"><span class="feature-check">✓</span> AWS &amp; OpenAI API Key Detection</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Email &amp; Phone Redaction</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Credit Card Protection (Luhn)</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Chrome &amp; Edge Extension</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Manager Mobile App</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Up to 5 employee seats</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Email Support</li>
-          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
-          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> AWS &amp; OpenAI API Key Detection</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Email &amp; Phone Redaction</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Credit Card Protection (Luhn)</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Chrome &amp; Edge Extension</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Manager Mobile App</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Up to 5 employee seats</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Email Support</li>
+          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
+          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
         </ul>
 
         <button class="btn btn-outline btn-block" data-plan-id="starter" onclick="selectPlan('starter')">
@@ -86,8 +86,8 @@
       </div>
 
       <!-- Professional (popular) -->
-      <div class="pricing-card popular reveal" data-monthly="29">
-        <div class="popular-badge">Most Popular</div>
+      <div class="pricing-card popular" data-monthly="29">
+        <div class="popular-badge"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="margin-right:4px;vertical-align:-1px;"><path d="M12 2l2.9 6.26L21.5 9l-5 4.87L17.8 21 12 17.27 6.2 21l1.3-7.13-5-4.87 6.6-.74z"/></svg>Most Popular</div>
         <div class="plan-name">Professional</div>
         <div class="plan-price">
           <sup>$</sup><span class="price-num">29</span>
@@ -96,11 +96,11 @@
         <div class="plan-desc">For growing teams that need visibility and control. Up to 25 seats.</div>
 
         <ul class="plan-features">
-          <li class="plan-feature"><span class="feature-check">✓</span> Everything in Starter</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Up to 25 employee seats</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Priority Support</li>
-          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
-          <li class="plan-feature"><span class="feature-x">✗</span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Everything in Starter</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Up to 25 employee seats</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Priority Support</li>
+          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
+          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
         </ul>
 
         <button class="btn btn-primary btn-block" data-plan-id="professional" onclick="selectPlan('professional')">
@@ -109,7 +109,7 @@
       </div>
 
       <!-- Enterprise -->
-      <div class="pricing-card reveal" data-monthly="99">
+      <div class="pricing-card" data-monthly="99">
         <div class="plan-name">Enterprise</div>
         <div class="plan-price">
           <sup>$</sup><span class="price-num">99</span>
@@ -118,12 +118,12 @@
         <div class="plan-desc">Unlimited seats, on-device AI detection, and dedicated support for large organisations.</div>
 
         <ul class="plan-features">
-          <li class="plan-feature"><span class="feature-check">✓</span> Everything in Professional</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Unlimited employee seats</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> AI Name &amp; Address Detection</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Custom Keyword Detection</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Dedicated Account Manager</li>
-          <li class="plan-feature"><span class="feature-check">✓</span> Custom Contracts</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Everything in Professional</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Unlimited employee seats</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> AI Name &amp; Address Detection</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Custom Keyword Detection</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Dedicated Account Manager</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Custom Contracts</li>
         </ul>
 
         <button class="btn btn-outline btn-block" data-plan-id="enterprise" onclick="selectPlan('enterprise')">
@@ -253,8 +253,12 @@
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script src="../js/main.js"></script>
 <script src="../js/animations.js"></script>
 <script src="../js/cart.js"></script>
+<script src="../js/pricing.js"></script>
 </body>
 </html>
