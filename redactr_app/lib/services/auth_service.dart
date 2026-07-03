@@ -52,4 +52,43 @@ class AuthService {
     await _googleSignIn.signOut();
     await _firebaseAuth.signOut();
   }
+
+  /// Permanently deletes the Firebase Auth account and revokes Google access.
+  ///
+  /// Firebase requires recent authentication before account deletion.
+  /// If the session is stale ([FirebaseAuthException] with code
+  /// `requires-recent-login`), this re-authenticates via Google first, then
+  /// retries. Callers should delete Firestore user data (via
+  /// [CompanyService.deleteUserData]) BEFORE calling this so the server-side
+  /// record is removed even if the client-side step is interrupted.
+  Future<void> deleteAccount() async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) return;
+
+    try {
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        await _reauthenticateWithGoogle(user);
+        await user.delete();
+      } else {
+        rethrow;
+      }
+    }
+
+    // Revoke OAuth grant so the Google account picker shows up clean next
+    // time — same as what iOS/Android apps do on account deletion.
+    await _googleSignIn.disconnect();
+  }
+
+  Future<void> _reauthenticateWithGoogle(User user) async {
+    final googleUser = await _googleSignIn.signIn();
+    if (googleUser == null) throw Exception('Sign-in was cancelled.');
+    final googleAuth = await googleUser.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+    await user.reauthenticateWithCredential(credential);
+  }
 }

@@ -15,15 +15,23 @@ const _apiBaseUrl = "https://redactr-ln5t.onrender.com";
 class CompanyService {
   final FirebaseFirestore _firestore;
 
-  CompanyService({FirebaseFirestore? firestore}) : _firestore = firestore ?? FirebaseFirestore.instance;
+  CompanyService({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  Future<Map<String, dynamic>> _callApi(String method, String path, {Map<String, dynamic>? body}) async {
+  Future<Map<String, dynamic>> _callApi(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+  }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('Not signed in.');
 
     final idToken = await user.getIdToken();
     final uri = Uri.parse('$_apiBaseUrl$path');
-    final headers = {'Authorization': 'Bearer $idToken', 'Content-Type': 'application/json'};
+    final headers = {
+      'Authorization': 'Bearer $idToken',
+      'Content-Type': 'application/json',
+    };
 
     final response = method == 'GET'
         ? await http.get(uri, headers: headers)
@@ -31,7 +39,9 @@ class CompanyService {
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode >= 400) {
-      throw Exception(data['error'] as String? ?? 'Request failed (${response.statusCode}).');
+      throw Exception(
+        data['error'] as String? ?? 'Request failed (${response.statusCode}).',
+      );
     }
     return data;
   }
@@ -48,7 +58,9 @@ class CompanyService {
   }
 
   /// Convenience for UI that wants "Admin · Acme Corp" in one call.
-  Future<({String role, String companyName})?> getRoleAndCompanyName(String uid) async {
+  Future<({String role, String companyName})?> getRoleAndCompanyName(
+    String uid,
+  ) async {
     final profile = await getUserProfile(uid);
     if (profile == null) return null;
     final companyId = profile['companyId'] as String?;
@@ -58,20 +70,25 @@ class CompanyService {
   }
 
   Future<void> claimOrJoinCompany({String? companyName}) async {
-    await _callApi('POST', '/claimOrJoinCompany', body: {
-      if (companyName != null) 'companyName': companyName,
-    });
+    await _callApi(
+      'POST',
+      '/claimOrJoinCompany',
+      body: {'companyName': ?companyName},
+    );
   }
 
   /// Tier-2 NER is gated to the Enterprise plan, per the pricing copy
   /// already on the website — called once after sign-in, never cached
   /// indefinitely client-side.
-  Future<({String plan, bool tier2Allowed, List<String> customKeywords})> getEntitlement() async {
+  Future<({String plan, bool tier2Allowed, List<String> customKeywords})>
+  getEntitlement() async {
     final data = await _callApi('GET', '/getEntitlement');
     return (
       plan: data['plan'] as String? ?? 'starter',
       tier2Allowed: data['tier2Allowed'] as bool? ?? false,
-      customKeywords: (data['customKeywords'] as List<dynamic>?)?.cast<String>() ?? const [],
+      customKeywords:
+          (data['customKeywords'] as List<dynamic>?)?.cast<String>() ??
+          const [],
     );
   }
 
@@ -86,8 +103,13 @@ class CompanyService {
   /// server route deliberately rejects arbitrary patterns to avoid a
   /// ReDoS risk running in every employee's browser.
   Future<List<String>> addCustomKeyword(String keyword) async {
-    final data = await _callApi('POST', '/addCustomKeyword', body: {'keyword': keyword});
-    return (data['customKeywords'] as List<dynamic>?)?.cast<String>() ?? const [];
+    final data = await _callApi(
+      'POST',
+      '/addCustomKeyword',
+      body: {'keyword': keyword},
+    );
+    return (data['customKeywords'] as List<dynamic>?)?.cast<String>() ??
+        const [];
   }
 
   Future<void> removeCustomKeyword(String keyword) async {
@@ -102,7 +124,36 @@ class CompanyService {
         .collection('invites')
         .where('companyId', isEqualTo: companyId)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => {...doc.data(), 'email': doc.id}).toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => {...doc.data(), 'email': doc.id})
+              .toList(),
+        );
+  }
+
+  /// All users that belong to [companyId] — used by TeamScreen.
+  Stream<List<Map<String, dynamic>>> watchTeamMembers(String companyId) {
+    return _firestore
+        .collection('users')
+        .where('companyId', isEqualTo: companyId)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map((doc) => {...doc.data(), 'uid': doc.id})
+            .toList());
+  }
+
+  /// Generates a 7-day download token for the extension zip. Only works for
+  /// admins of companies with an active subscription (i.e. after purchase).
+  /// Returns the full download URL ready to share.
+  Future<String> generateDownloadLink() async {
+    final data = await _callApi('POST', '/generateDownloadToken');
+    return data['downloadUrl'] as String;
+  }
+
+  /// Deletes the caller's users/{uid} Firestore doc. Must be followed by
+  /// Firebase Auth user.delete() on the client to fully remove the account.
+  Future<void> deleteUserData() async {
+    await _callApi('POST', '/deleteAccount');
   }
 
   /// Saves this device's FCM token onto the signed-in user's own doc — the

@@ -3,13 +3,14 @@
    Dark cybersecurity SaaS · Primary #14C8A6
 =================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 /* ---------- CSS Variables ---------- */
 :root {
   --primary:     #14C8A6;
   --accent:      #22DDB8;
   --bg:          #14181F;
+  --bg-2:        #10141B;
   --surface:     #1B212B;
   --surface2:    #232A36;
   --border:      rgba(20, 200, 166, 0.15);
@@ -21,11 +22,21 @@
   --radius:      16px;
   --radius-sm:   8px;
   --radius-lg:   24px;
+  --radius-xl:   32px;
   --shadow:      0 8px 32px rgba(0, 0, 0, 0.4);
   --glow:        0 0 40px rgba(20, 200, 166, 0.15);
   --font-main:   'Inter', 'SF Pro Display', sans-serif;
-  --font-display:'Poppins', 'Inter', sans-serif;
+  --font-display:'Space Grotesk', 'Inter', sans-serif;
   --transition:  0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Premium-minimal glass + motion tokens — additive, used by new
+     components (bento grid, marquee, bar-fill, view-transitions)
+     without altering any existing selector's resting values. */
+  --glass-bg:      rgba(27, 33, 43, 0.55);
+  --glass-border:  rgba(255, 255, 255, 0.08);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast:      160ms;
+  --dur-base:      260ms;
+  --dur-slow:      420ms;
 }
 
 /* ---------- Reset & Base ---------- */
@@ -85,9 +96,17 @@ p  { color: var(--muted); line-height: 1.8; }
   padding: 60px 0;
 }
 
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+/* minmax(0, 1fr) rather than bare 1fr on every grid-template-columns
+   in this file — CSS Grid tracks default their minimum size to the
+   content's min-content (grid-auto's "auto" minimum), so a track with
+   an explicit-width or nowrap descendant (e.g. the hero chat demo's
+   animated-width typed text) can blow the whole grid — and the page —
+   wider than the viewport instead of shrinking to fit. minmax(0, 1fr)
+   is the standard fix: it lets the track shrink to the actual
+   available space and clip/overflow-hidden its own content instead. */
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
 .flex    { display: flex; }
 .flex-center { display: flex; align-items: center; justify-content: center; }
 .flex-between { display: flex; align-items: center; justify-content: space-between; }
@@ -352,8 +371,8 @@ p  { color: var(--muted); line-height: 1.8; }
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,209,178,0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 40% at 80% 60%, rgba(25,229,194,0.06) 0%, transparent 60%);
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,209,178,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 60%, rgba(25,229,194,0.04) 0%, transparent 60%);
   pointer-events: none;
 }
 
@@ -361,8 +380,8 @@ p  { color: var(--muted); line-height: 1.8; }
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(20,200,166,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20,200,166,0.05) 1px, transparent 1px);
+    linear-gradient(rgba(20,200,166,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20,200,166,0.03) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
   /* Fades the grid out toward the edges instead of a hard rectangle. */
@@ -389,6 +408,7 @@ p  { color: var(--muted); line-height: 1.8; }
   position: relative;
   z-index: 1;
   max-width: 700px;
+  min-width: 0;
 }
 
 .hero-badge {
@@ -468,6 +488,7 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .hero-visual {
   position: relative;
+  min-width: 0;
   animation: fadeInRight 0.8s ease 0.3s both;
 }
 
@@ -583,6 +604,19 @@ p  { color: var(--muted); line-height: 1.8; }
   padding: 28px;
 }
 
+/* Reveal-triggered progress bar (risk-scoring breakdown, etc.) — track
+   colour/height stay inline per-instance, .bar-fill just adds the
+   fill-from-0 transition; width is set from data-fill by main.js once
+   the bar's .reveal ancestor becomes visible. */
+.bar-fill {
+  width: 0%;
+  transition: width var(--dur-slow) var(--ease-out-expo);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill { transition: none; }
+}
+
 /* ===================================================
    FEATURES SECTION
 =================================================== */
@@ -594,7 +628,76 @@ p  { color: var(--muted); line-height: 1.8; }
   margin: 0 auto 60px;
 }
 
-.section-header h2 { margin-bottom: 16px; }
+.section-header h2 {
+  margin-bottom: 16px;
+  position: relative;
+  display: inline-block;
+}
+
+/* Small animated underline that draws in once the section header
+   scrolls into view — reuses the existing .reveal/.visible mechanism
+   in main.js, no extra JS needed. */
+.section-header h2::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transform: translateX(-50%);
+  transition: width var(--dur-slow) var(--ease-out-expo) 0.15s;
+}
+
+.section-header.visible h2::after { width: 64px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .section-header h2::after { transition: none; }
+}
+
+/* ===================================================
+   BENTO GRID — asymmetric feature layout
+=================================================== */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: minmax(200px, auto);
+  grid-auto-flow: dense;
+  gap: 24px;
+}
+
+.bento-grid .card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.bento-lg {
+  grid-column: span 2;
+  grid-row: span 2;
+  padding: 40px;
+}
+
+.bento-lg .card-icon {
+  width: 60px;
+  height: 60px;
+  font-size: 1.6rem;
+}
+
+.bento-lg h3 { font-size: 1.4rem; }
+.bento-lg p  { font-size: 0.98rem; max-width: 420px; }
+
+.bento-wide { grid-column: span 2; }
+
+@media (max-width: 1024px) {
+  .bento-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bento-lg, .bento-wide { grid-column: span 2; grid-row: auto; }
+}
+
+@media (max-width: 768px) {
+  .bento-grid { grid-template-columns: minmax(0, 1fr); }
+  .bento-lg, .bento-wide { grid-column: span 1; grid-row: auto; padding: 32px; }
+}
 
 /* ===================================================
    FLOW SECTION
@@ -606,6 +709,33 @@ p  { color: var(--muted); line-height: 1.8; }
   gap: 0;
   align-items: flex-start;
   position: relative;
+}
+
+/* Scroll-linked progress line — fills as the user scrolls past the
+   flow steps (see js/animations.js). Sits behind the per-segment
+   .flow-connector pulses (z-index 0), just a calmer continuous read
+   of overall progress through the pipeline. */
+.flow-progress-track {
+  position: absolute;
+  top: 58px;
+  left: 8%;
+  right: 8%;
+  height: 2px;
+  background: rgba(20, 200, 166, 0.08);
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.flow-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  box-shadow: 0 0 10px rgba(20, 200, 166, 0.5);
+}
+
+@media (max-width: 768px) {
+  .flow-progress-track { display: none; }
 }
 
 .flow-step {
@@ -651,6 +781,54 @@ p  { color: var(--muted); line-height: 1.8; }
    TESTIMONIALS
 =================================================== */
 .testimonials-section { }
+
+/* Auto-scrolling marquee — track holds the 3 testimonial cards
+   duplicated once (see index.html) for a seamless loop; translating
+   exactly -50% moves past one full set. Pauses on hover/focus so the
+   text stays readable, falls back to a static wrapped row under
+   prefers-reduced-motion. */
+.testimonials-marquee {
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  gap: 28px;
+  width: max-content;
+  animation: marqueeScroll 40s linear infinite;
+}
+
+.testimonials-marquee:hover .marquee-track,
+.testimonials-marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+
+.marquee-track .testimonial-card {
+  width: 380px;
+  flex-shrink: 0;
+}
+
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+  .marquee-track .testimonial-card { width: 300px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+  }
+  .marquee-track .testimonial-card[aria-hidden="true"] { display: none; }
+}
 
 .testimonial-card {
   background: var(--surface);
@@ -764,7 +942,7 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 28px;
   align-items: stretch;
 }
@@ -977,7 +1155,7 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .hiw-step {
   display: grid;
-  grid-template-columns: 80px 1fr;
+  grid-template-columns: 80px minmax(0, 1fr);
   gap: 40px;
   align-items: start;
   padding: 48px 0;
@@ -1112,7 +1290,7 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .contact-grid {
   display: grid;
-  grid-template-columns: 1fr 1.5fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
   gap: 48px;
   align-items: start;
 }
@@ -1396,7 +1574,7 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .form-textarea { min-height: 130px; resize: vertical; }
 
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
 
 .disclaimer-box {
   background: rgba(244, 183, 64, 0.08);
@@ -1418,7 +1596,7 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .checkout-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 40px;
   align-items: start;
 }
@@ -1579,7 +1757,7 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   gap: 40px;
   margin-bottom: 48px;
 }
@@ -1719,28 +1897,28 @@ p  { color: var(--muted); line-height: 1.8; }
    RESPONSIVE
 =================================================== */
 @media (max-width: 1024px) {
-  .grid-4 { grid-template-columns: repeat(2, 1fr); }
-  .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
-  .contact-grid { grid-template-columns: 1fr; }
-  .checkout-grid { grid-template-columns: 1fr; }
-  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pricing-grid { grid-template-columns: minmax(0, 1fr); max-width: 420px; margin: 0 auto; }
+  .contact-grid { grid-template-columns: minmax(0, 1fr); }
+  .checkout-grid { grid-template-columns: minmax(0, 1fr); }
+  .footer-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
 
 @media (max-width: 768px) {
   .section { padding: 70px 0; }
-  .grid-2 { grid-template-columns: 1fr; }
-  .grid-3 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .grid-3 { grid-template-columns: minmax(0, 1fr); }
   .nav-links, .nav-actions { display: none; }
   .nav-menu-btn { display: block; }
   .hero-stats { flex-wrap: wrap; gap: 24px; }
   .flow-steps { flex-direction: column; }
   .flow-connector { display: none; }
-  .form-row { grid-template-columns: 1fr; }
-  .footer-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: minmax(0, 1fr); }
+  .footer-grid { grid-template-columns: minmax(0, 1fr); }
   .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
   .comparison-table { font-size: 0.8rem; }
   .comparison-table th, .comparison-table td { padding: 10px 12px; }
-  .hiw-step { grid-template-columns: 1fr; gap: 16px; }
+  .hiw-step { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .hiw-spine { display: none; }
 }
 
@@ -1802,10 +1980,10 @@ p  { color: var(--muted); line-height: 1.8; }
 =================================================== */
 .hero-bg.aurora {
   background:
-    radial-gradient(ellipse 60% 50% at 20% 10%, rgba(0,209,178,0.16) 0%, transparent 70%),
-    radial-gradient(ellipse 45% 45% at 85% 70%, rgba(25,229,194,0.10) 0%, transparent 65%),
-    radial-gradient(ellipse 35% 40% at 50% 100%, rgba(0,209,178,0.08) 0%, transparent 60%);
-  animation: auroraDrift 14s ease-in-out infinite alternate;
+    radial-gradient(ellipse 60% 50% at 20% 10%, rgba(0,209,178,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 45% at 85% 70%, rgba(25,229,194,0.06) 0%, transparent 65%),
+    radial-gradient(ellipse 35% 40% at 50% 100%, rgba(0,209,178,0.05) 0%, transparent 60%);
+  animation: auroraDrift 18s ease-in-out infinite alternate;
 }
 
 @keyframes auroraDrift {
@@ -2030,7 +2208,7 @@ p  { color: var(--muted); line-height: 1.8; }
 =================================================== */
 .demo-stage {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   gap: 32px;
   align-items: stretch;
 }
@@ -2230,7 +2408,7 @@ p  { color: var(--muted); line-height: 1.8; }
 .demo-finding-chip .chip-check.done { color: var(--success); }
 
 @media (max-width: 992px) {
-  .demo-stage { grid-template-columns: 1fr; }
+  .demo-stage { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2322,6 +2500,7 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .chat-input-field {
   flex: 1;
+  min-width: 0;
   position: relative;
   background: var(--surface2);
   border: 1.5px solid var(--border);
@@ -2348,6 +2527,7 @@ p  { color: var(--muted); line-height: 1.8; }
   overflow: hidden;
   white-space: nowrap;
   width: 0ch;
+  max-width: 100%;
   vertical-align: bottom;
   font-family: 'Courier New', monospace;
   font-size: 0.88rem;
@@ -2527,4 +2707,128 @@ p  { color: var(--muted); line-height: 1.8; }
     inset 0 -1px 2px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+/* ===================================================
+   3D INTRO LOADER (index.html only, see js/loader.js)
+   Plays once per browser session — see the html.js-loading /
+   html.no-loader gate below, set by the inline script in <head>
+   before anything paints (avoids a flash of hero content).
+=================================================== */
+#site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+}
+
+#site-loader.hide {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+}
+
+.loader-scene {
+  width: min(46vw, 260px);
+  aspect-ratio: 1;
+}
+
+.loader-scene canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.loader-word {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+  opacity: 0.9;
+}
+
+.loader-word span { color: var(--primary); }
+
+.loader-status {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+  min-height: 1em;
+  text-align: center;
+}
+
+.loader-bar {
+  width: 180px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.loader-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  box-shadow: 0 0 8px rgba(20, 200, 166, 0.6);
+}
+
+/* Hero content stays hidden (no flash, no wasted entrance animation
+   playing underneath the opaque loader) until loader.js hands off by
+   removing this class the moment the 3D intro finishes. */
+html.js-loading .hero-badge,
+html.js-loading .hero h1,
+html.js-loading .hero p.hero-sub,
+html.js-loading .hero-actions,
+html.js-loading .hero-stats,
+html.js-loading .hero-visual {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+/* Reduced-motion / repeat-visit-this-session skip path — hero shows
+   immediately with its normal (unmodified) entrance animation. */
+html.no-loader #site-loader { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  #site-loader { transition: opacity 0.3s ease; }
+}
+
+/* ===================================================
+   CROSS-PAGE VIEW TRANSITIONS
+   Native browser feature (Chromium 111+) — opts every same-origin
+   navigation between the site's pages into a soft fade+scale instead
+   of a hard cut. No JS, no risk to existing behaviour: browsers that
+   don't support it just do a normal navigation. Gated behind
+   reduced-motion like every other animation on this site.
+=================================================== */
+@media not (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  /* Opacity-only — a scale/transform here would scale the ENTIRE
+     captured page snapshot, including the fixed navbar, producing a
+     visible "zoom" glitch on every navigation. Plain crossfade avoids
+     touching layout/transform of anything fixed-position. */
+  ::view-transition-old(root) {
+    animation: viewFadeOut 140ms linear both;
+  }
+
+  ::view-transition-new(root) {
+    animation: viewFadeIn 180ms linear both;
+  }
+
+  @keyframes viewFadeOut {
+    to { opacity: 0; }
+  }
+
+  @keyframes viewFadeIn {
+    from { opacity: 0; }
+  }
 }

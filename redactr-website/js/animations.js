@@ -60,8 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.setProperty('--spot-x', `${px}%`);
         card.style.setProperty('--spot-y', `${py}%`);
 
-        const rotateY = ((x / rect.width) - 0.5) * 6;
-        const rotateX = ((y / rect.height) - 0.5) * -6;
+        // Dialled down from the original ±6deg — the premium-minimal
+        // direction wants a restrained hint of depth, not a showy tilt.
+        const rotateY = ((x / rect.width) - 0.5) * 3;
+        const rotateX = ((y / rect.height) - 0.5) * -3;
         card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
       });
 
@@ -69,6 +71,54 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.transform = '';
       });
     });
+  }
+
+  /* ── Magnetic buttons (desktop, hover-capable pointers only) ──────
+     Primary/outline CTAs pull a few px toward the cursor within their
+     own bounds, then spring back on leave. Direct tracking during
+     mousemove (no transition), a springy transition only on release. */
+  if (!reducedMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.querySelectorAll('.btn-primary, .btn-outline').forEach((btn) => {
+      btn.classList.add('magnetic');
+      const strength = 0.25;
+      const maxOffset = 8;
+
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const relX = e.clientX - (rect.left + rect.width / 2);
+        const relY = e.clientY - (rect.top + rect.height / 2);
+        const x = Math.max(-maxOffset, Math.min(maxOffset, relX * strength));
+        const y = Math.max(-maxOffset, Math.min(maxOffset, relY * strength));
+        btn.style.transition = 'none';
+        btn.style.transform = `translate(${x}px, ${y}px)`;
+      });
+
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        btn.style.transform = '';
+      });
+    });
+  }
+
+  /* ── Homepage flow-section scroll-linked progress line ────────────
+     Same technique as how-it-works.js's spine fill: a scrub tween
+     tied to how far the user has scrolled through the steps. */
+  if (!reducedMotion && typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    const flowSteps = document.getElementById('flow-steps');
+    const flowFill = document.getElementById('flow-progress-fill');
+    if (flowSteps && flowFill) {
+      gsap.registerPlugin(ScrollTrigger);
+      gsap.to(flowFill, {
+        width: '100%',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: flowSteps,
+          start: 'top 70%',
+          end: 'bottom 60%',
+          scrub: 0.5,
+        },
+      });
+    }
   }
 
   /* ── Glass-depth sheen (mouse-tracked light across glass cards) ──

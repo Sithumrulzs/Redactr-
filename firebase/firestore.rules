@@ -33,7 +33,12 @@ service cloud.firestore {
     // field, enforced below — so push notifications don't need a Function
     // round-trip just to register a device.
     match /users/{uid} {
-      allow read: if signedIn() && request.auth.uid == uid;
+      // Own doc always readable. Admins may also read any user doc whose
+      // companyId matches theirs — required for the team-member list query.
+      allow read: if signedIn() && (
+        request.auth.uid == uid ||
+        (isAdmin() && resource.data.companyId == myCompanyId())
+      );
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken']);
       allow create, delete: if false;

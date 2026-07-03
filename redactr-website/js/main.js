@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (entry.isIntersecting) {
           setTimeout(() => {
             entry.target.classList.add('visible');
-          }, i * 80);
+          }, i * 50);
           observer.unobserve(entry.target);
         }
       });
@@ -54,6 +54,24 @@ document.addEventListener('DOMContentLoaded', () => {
     revealEls.forEach(el => observer.observe(el));
   } else {
     revealEls.forEach(el => el.classList.add('visible'));
+  }
+
+  // ── Reveal-triggered progress bars (risk-scoring breakdown, etc.) ──
+  const barFillEls = document.querySelectorAll('.bar-fill[data-fill]');
+  if (barFillEls.length) {
+    if ('IntersectionObserver' in window) {
+      const barObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.width = entry.target.dataset.fill;
+            barObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.5 });
+      barFillEls.forEach(el => barObserver.observe(el));
+    } else {
+      barFillEls.forEach(el => { el.style.width = el.dataset.fill; });
+    }
   }
 
   // ── Toast helper ─────────────────────────────────

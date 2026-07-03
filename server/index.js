@@ -24,9 +24,54 @@ const SEAT_LIMITS = { starter: 5, professional: 25, enterprise: 999999 };
 const app = express();
 app.use(cors());
 app.use(express.json());
-// Serves server/public/redactr-extension.zip at /download/redactr-extension.zip
-// — the file the website's post-purchase page links to.
-app.use("/download", express.static(path.join(__dirname, "public")));
+const { randomUUID } = require("crypto");
+const SERVER_URL = process.env.SERVER_URL || "https://redactr-ln5t.onrender.com";
+
+/**
+ * Creates a 7-day download token in Firestore and returns the full download
+ * URL. Tokens are reusable within their window so the same link can be
+ * forwarded to multiple employees without generating a new one each time.
+ */
+async function createDownloadToken(companyId) {
+  const token = randomUUID();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await db.collection("downloadTokens").doc(token).set({
+    companyId,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+  });
+  return token;
+}
+
+/**
+ * Token-gated extension download — the zip is only reachable with a valid
+ * purchase token so the file can't be scraped or shared before payment.
+ * Returns a path (not full URL) so checkout.js can prepend its own base.
+ */
+app.get("/download", async (req, res) => {
+  const token = String(req.query.token || "");
+  if (!token) {
+    res.status(403).send("A purchase token is required. Complete checkout to receive a download link.");
+    return;
+  }
+  try {
+    const tokenDoc = await db.collection("downloadTokens").doc(token).get();
+    if (!tokenDoc.exists) {
+      res.status(403).send("Invalid or expired download link. Ask your admin to generate a new one from the mobile app.");
+      return;
+    }
+    const { expiresAt } = tokenDoc.data();
+    if (expiresAt && expiresAt.toDate() < new Date()) {
+      await db.collection("downloadTokens").doc(token).delete();
+      res.status(403).send("Download link has expired (7-day limit). Ask your admin to generate a new one.");
+      return;
+    }
+    res.download(path.join(__dirname, "public", "redactr-extension.zip"), "redactr-extension.zip");
+  } catch (error) {
+    console.error("download failed", error);
+    res.status(500).send("Download failed. Please try again.");
+  }
+});
 
 /**
  * Counts the seats a company has already used — every joined user plus
@@ -219,9 +264,10 @@ app.post("/createSubscription", async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
+    const dlToken = await createDownloadToken(companyRef.id);
     res.json({
       ok: true,
-      subscription: { companyId: companyRef.id, downloadUrl: "/download/redactr-extension.zip" },
+      subscription: { companyId: companyRef.id, downloadUrl: `/download?token=${dlToken}` },
     });
   } catch (error) {
     console.error("createSubscription failed", error);
@@ -256,6 +302,36 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("getEntitlement failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
+
+/**
+ * Generates a fresh 7-day download token for the extension zip. Only admins
+ * of companies with an active subscription can call this — it's what the
+ * mobile app uses when the admin shares the extension link with an employee.
+ */
+app.post("/generateDownloadToken", requireAuth, async (req, res) => {
+  try {
+    const callerDoc = await db.collection("users").doc(req.auth.uid).get();
+    if (!callerDoc.exists) {
+      res.status(400).json({ error: "Complete company setup first." });
+      return;
+    }
+    if (callerDoc.data().role !== "admin") {
+      res.status(403).json({ error: "Only admins can generate download links." });
+      return;
+    }
+    const companyId = callerDoc.data().companyId;
+    const companyDoc = await db.collection("companies").doc(companyId).get();
+    if (!companyDoc.exists || companyDoc.data()?.status !== "active") {
+      res.status(403).json({ error: "An active subscription is required to generate download links." });
+      return;
+    }
+    const token = await createDownloadToken(companyId);
+    res.json({ downloadUrl: `${SERVER_URL}/download?token=${token}` });
+  } catch (error) {
+    console.error("generateDownloadToken failed", error);
     res.status(500).json({ error: "Internal error." });
   }
 });
@@ -409,6 +485,23 @@ async function notifyAdmins(companyId, employeeName, body) {
     console.warn("notifyAdmins failed", error);
   }
 }
+
+/**
+ * Deletes the caller's own users/{uid} Firestore doc. The Firebase Auth
+ * account itself is deleted client-side via user.delete() after this call
+ * succeeds — we clean up the database record here so any company/seat counts
+ * are freed immediately regardless of client-side timing.
+ */
+app.post("/deleteAccount", requireAuth, async (req, res) => {
+  try {
+    const uid = req.auth.uid;
+    await db.collection("users").doc(uid).delete();
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("deleteAccount failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
 
 // --- PayPal webhook (Phase 3, optional) ---
 // Ported for completeness. Needs PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET /
