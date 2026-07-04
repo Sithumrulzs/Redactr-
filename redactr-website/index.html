@@ -56,6 +56,13 @@
       background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
       pointer-events: none; z-index: 5;
     }
+    /* Bottom gradient — blends hero into the next section */
+    #rdx-hero::before {
+      content: ""; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 120px;
+      background: linear-gradient(to bottom, transparent, var(--bg, #0B1020));
+      pointer-events: none; z-index: 6;
+    }
 
     /* Letterbox bars */
     .rdx-letterbox {
@@ -385,9 +392,9 @@
     }
 
     #rdx-hero h1 {
-      font-size: clamp(38px, 5.4vw, 68px);
-      line-height: 1.1; font-weight: 700; letter-spacing: -0.02em;
-      margin-bottom: 22px; max-width: 14ch;
+      font-size: clamp(46px, 6.5vw, 86px);
+      line-height: 1.08; font-weight: 700; letter-spacing: -0.03em;
+      margin-bottom: 22px; max-width: 22ch;
     }
     #rdx-hero .rdx-rw { position: relative; display: inline-block; white-space: nowrap; }
     #rdx-hero .rdx-rw::after {
@@ -400,13 +407,16 @@
       animation-delay: var(--d, 0.3s);
     }
     @keyframes rdxWipe { to { transform: scaleX(0); } }
-    #rdx-hero .rdx-rw.rdx-forever { color: transparent; }
-    #rdx-reveal.rdx-on .rdx-rw.rdx-forever::after {
-      animation: rdxFlicker 5s steps(1) infinite; transform: scaleX(1);
+    #rdx-hero .rdx-rw.rdx-forever {
+      color: var(--rdx-teal);
+      background: var(--rdx-teal-dim);
+      border-radius: 8px;
+      padding: 0 10px;
+      box-shadow: inset 0 0 0 1px rgba(20,200,166,0.22);
     }
-    @keyframes rdxFlicker {
-      0%,92%,100% { opacity: 1; }
-      93% { opacity: 0.55; } 94% { opacity: 1; } 96% { opacity: 0.7; }
+    #rdx-reveal.rdx-on .rdx-rw.rdx-forever::after {
+      animation: rdxWipe 0.55s cubic-bezier(0.7,0,0.2,1) forwards;
+      animation-delay: 0.42s;
     }
 
     #rdx-hero .rdx-sub {
@@ -616,7 +626,7 @@
       <div class="rdx-eyebrow"><span class="rdx-dot"></span> AI Data Leak Prevention</div>
       <h1>
         <span class="rdx-rw" style="--d:0.30s">Protect</span>
-        <span class="rdx-rw rdx-forever">Sensitive</span>
+        <span class="rdx-rw rdx-forever" style="--d:0.42s">Sensitive</span>
         <span class="rdx-rw" style="--d:0.54s">Data</span><br>
         <span class="rdx-rw" style="--d:0.66s">Before</span>
         <span class="rdx-rw" style="--d:0.78s">It</span>

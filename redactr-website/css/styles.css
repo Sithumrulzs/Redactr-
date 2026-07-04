@@ -660,7 +660,7 @@ p  { color: var(--muted); line-height: 1.8; }
 =================================================== */
 .bento-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: minmax(200px, auto);
   grid-auto-flow: dense;
   gap: 24px;
@@ -689,12 +689,14 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .bento-wide { grid-column: span 2; }
 
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
   .bento-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .bento-lg, .bento-wide { grid-column: span 2; grid-row: auto; }
+  .bento-lg, .bento-wide { grid-column: span 1; grid-row: auto; }
+  .bento-lg h3 { font-size: 1.1rem; }
+  .bento-lg p  { font-size: 0.92rem; max-width: none; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 560px) {
   .bento-grid { grid-template-columns: minmax(0, 1fr); }
   .bento-lg, .bento-wide { grid-column: span 1; grid-row: auto; padding: 32px; }
 }
@@ -712,14 +714,12 @@ p  { color: var(--muted); line-height: 1.8; }
 }
 
 /* Scroll-linked progress line — fills as the user scrolls past the
-   flow steps (see js/animations.js). Sits behind the per-segment
-   .flow-connector pulses (z-index 0), just a calmer continuous read
-   of overall progress through the pipeline. */
+   flow steps (see js/animations.js). */
 .flow-progress-track {
   position: absolute;
   top: 58px;
-  left: 8%;
-  right: 8%;
+  left: calc(10% + 26px);
+  right: calc(10% + 26px);
   height: 2px;
   background: rgba(20, 200, 166, 0.08);
   z-index: 0;
@@ -734,14 +734,10 @@ p  { color: var(--muted); line-height: 1.8; }
   box-shadow: 0 0 10px rgba(20, 200, 166, 0.5);
 }
 
-@media (max-width: 768px) {
-  .flow-progress-track { display: none; }
-}
-
 .flow-step {
   flex: 1;
   text-align: center;
-  padding: 32px 20px;
+  padding: 32px 16px;
   position: relative;
 }
 
@@ -759,23 +755,58 @@ p  { color: var(--muted); line-height: 1.8; }
   margin: 0 auto 20px;
   font-family: var(--font-display);
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  background-clip: padding-box;
 }
 
 .flow-connector {
   position: absolute;
   top: 58px;
-  left: 50%;
-  right: -50%;
+  left: calc(50% + 26px);
+  right: calc(-50% + 26px);
   height: 2px;
-  background: linear-gradient(90deg, var(--primary), rgba(0,209,178,0.2));
-  z-index: 0;
+  background: linear-gradient(90deg, rgba(20,200,166,0.35), rgba(20,200,166,0.08));
+  z-index: 1;
+  transform: translateY(-50%);
 }
 
 .flow-step:last-child .flow-connector { display: none; }
 
 .flow-step h4 { font-size: 1rem; margin-bottom: 8px; }
 .flow-step p  { font-size: 0.85rem; }
+
+@media (max-width: 768px) {
+  .flow-steps {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .flow-progress-track { display: none; }
+  .flow-step {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 16px;
+    text-align: left;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+  .flow-step:last-child { border-bottom: none; }
+  .flow-step-num { margin: 0; }
+  .flow-step h4 { margin-top: 14px; }
+  .flow-connector {
+    position: absolute;
+    top: auto;
+    bottom: -1px;
+    left: 25px;
+    right: auto;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(20,200,166,0.35), rgba(20,200,166,0.08));
+    transform: none;
+  }
+  .flow-step:last-child .flow-connector { display: none; }
+}
 
 /* ===================================================
    TESTIMONIALS
@@ -1135,13 +1166,14 @@ p  { color: var(--muted); line-height: 1.8; }
 
 .hiw-spine {
   position: absolute;
-  left: 31px;
-  top: 32px;
-  bottom: 32px;
+  left: 32px;
+  top: 80px;
+  bottom: 80px;
   width: 2px;
   background: var(--border);
   z-index: 0;
   overflow: hidden;
+  border-radius: 2px;
 }
 
 .hiw-spine-fill {
@@ -1266,7 +1298,7 @@ p  { color: var(--muted); line-height: 1.8; }
 }
 
 @media (max-width: 768px) {
-  .hiw-spine { left: 31px; }
+  .hiw-spine { left: 32px; }
 
   /* The typewriter effect's fixed ch-width + nowrap only makes sense
      when the line actually fits on one row — on narrow phones the
@@ -2161,6 +2193,7 @@ p  { color: var(--muted); line-height: 1.8; }
 =================================================== */
 .flow-connector {
   overflow: hidden;
+  border-radius: 2px;
 }
 
 .flow-connector::after {
@@ -2178,6 +2211,10 @@ p  { color: var(--muted); line-height: 1.8; }
   15%  { opacity: 1; }
   85%  { opacity: 1; }
   100% { left: 100%; opacity: 0; }
+}
+
+@media (max-width: 768px) {
+  .flow-connector::after { display: none; }
 }
 
 /* Lightweight aurora glow for the secondary pages' hero sections
