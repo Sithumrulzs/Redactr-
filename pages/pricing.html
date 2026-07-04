@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" href="../assets/Logo.png" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <img src="../assets/Logo.png" alt="Redactr" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="pricing.html" class="active">Pricing</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="contact.html" class="btn btn-outline btn-sm">Contact Sales</a>
+      <a href="checkout.html" class="btn btn-primary btn-sm">Checkout</a>
+    </div>
+    <button class="nav-menu-btn">☰</button>
+  </div>
+</nav>
+<nav class="nav-mobile">
+  <a href="../index.html">Home</a>
+  <a href="how-it-works.html">How It Works</a>
+  <a href="pricing.html">Pricing</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<!-- Hero -->
+<section class="pricing-hero">
+  <div class="container">
+    <div class="section-label reveal">Simple Pricing</div>
+    <h1 class="reveal">Protect Your Team <span class="text-primary">Without the Complexity</span></h1>
+    <p class="reveal" style="max-width:520px;margin:20px auto 0;font-size:1.05rem;">
+      Start free, scale as you grow. All plans include the Chrome extension and mobile app. Cancel anytime.
+    </p>
+
+    <!-- Toggle -->
+    <div class="reveal" style="display:flex;justify-content:center;margin-top:32px;">
+      <div class="pricing-toggle" id="pricing-toggle">
+        <span class="toggle-opt active" data-period="monthly">Monthly</span>
+        <span class="toggle-opt" data-period="annual">Annual <span style="color:var(--success);font-size:0.75rem;margin-left:4px;">Save 20%</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing cards -->
+<section class="section-sm">
+  <div class="container">
+    <div class="pricing-grid">
+
+      <!-- Starter -->
+      <div class="pricing-card" data-monthly="9">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">
+          <sup>$</sup><span class="price-num">9</span>
+          <span class="period">/month</span>
+        </div>
+        <div class="plan-desc">Perfect for micro-businesses and freelancers. Up to 5 seats.</div>
+
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> AWS &amp; OpenAI API Key Detection</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Email &amp; Phone Redaction</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Credit Card Protection (Luhn)</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Chrome &amp; Edge Extension</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Manager Mobile App</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Up to 5 employee seats</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Email Support</li>
+          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
+          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
+        </ul>
+
+        <button class="btn btn-outline btn-block" data-plan-id="starter" onclick="selectPlan('starter')">
+          Choose Starter →
+        </button>
+      </div>
+
+      <!-- Professional (popular) -->
+      <div class="pricing-card popular" data-monthly="29">
+        <div class="popular-badge"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="margin-right:4px;vertical-align:-1px;"><path d="M12 2l2.9 6.26L21.5 9l-5 4.87L17.8 21 12 17.27 6.2 21l1.3-7.13-5-4.87 6.6-.74z"/></svg>Most Popular</div>
+        <div class="plan-name">Professional</div>
+        <div class="plan-price">
+          <sup>$</sup><span class="price-num">29</span>
+          <span class="period">/month</span>
+        </div>
+        <div class="plan-desc">For growing teams that need visibility and control. Up to 25 seats.</div>
+
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Everything in Starter</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Up to 25 employee seats</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Priority Support</li>
+          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
+          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
+        </ul>
+
+        <button class="btn btn-primary btn-block" data-plan-id="professional" onclick="selectPlan('professional')">
+          Choose Professional →
+        </button>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="pricing-card" data-monthly="99">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">
+          <sup>$</sup><span class="price-num">99</span>
+          <span class="period">/month</span>
+        </div>
+        <div class="plan-desc">Unlimited seats, on-device AI detection, and dedicated support for large organisations.</div>
+
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Everything in Professional</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Unlimited employee seats</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> AI Name &amp; Address Detection</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Custom Keyword Detection</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Dedicated Account Manager</li>
+          <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Custom Contracts</li>
+        </ul>
+
+        <button class="btn btn-outline btn-block" data-plan-id="enterprise" onclick="selectPlan('enterprise')">
+          Choose Enterprise →
+        </button>
+      </div>
+    </div>
+
+    <!-- Trust badge row -->
+    <div style="display:flex;justify-content:center;gap:32px;margin-top:48px;flex-wrap:wrap;" class="reveal">
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
+        <span style="color:var(--success);">✓</span> No credit card required
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
+        <span style="color:var(--success);">✓</span> Cancel anytime
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
+        <span style="color:var(--success);">✓</span> 14-day free trial
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
+        <span style="color:var(--success);">✓</span> On-device only · no data sent
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison table -->
+<section class="comparison-section" style="padding: 80px 0;">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Compare Plans</div>
+      <h2>Feature <span class="text-primary">Comparison</span></h2>
+    </div>
+
+    <p class="comparison-scroll-hint">Swipe to compare all plans →</p>
+    <div class="comparison-scroll-wrap reveal">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;width:40%;">Feature</th>
+            <th>Starter<br><span style="font-size:0.8rem;color:var(--muted);font-weight:400;">$9/mo</span></th>
+            <th style="color:var(--primary);">Professional<br><span style="font-size:0.8rem;color:var(--muted);font-weight:400;">$29/mo</span></th>
+            <th>Enterprise<br><span style="font-size:0.8rem;color:var(--muted);font-weight:400;">$99/mo</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Detection</td></tr>
+          <tr><td>API Key Detection (AWS, OpenAI)</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Credit Card + Luhn</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Email &amp; Phone</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>IP Address Detection</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>AI Name &amp; Address Detection (on-device)</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>Custom Keyword Detection</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+
+          <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Management</td></tr>
+          <tr><td>Chrome &amp; Edge Extension</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Manager Mobile App (Dashboard, Alerts, Insights)</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Employee Seats</td><td>5</td><td>25</td><td>Unlimited</td></tr>
+          <tr><td>Manager Approve/Deny Alerts</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+
+          <tr><td colspan="4" style="padding:12px 20px;background:rgba(0,209,178,0.05);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);text-align:left;">Support</td></tr>
+          <tr><td>Email Support</td><td class="check-cell">✓</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Priority Support</td><td class="x-cell">✗</td><td class="check-cell">✓</td><td class="check-cell">✓</td></tr>
+          <tr><td>Dedicated Account Manager</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+          <tr><td>Custom Contracts</td><td class="x-cell">✗</td><td class="x-cell">✗</td><td class="check-cell">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:var(--surface);">
+  <div class="container" style="max-width:760px;">
+    <div class="section-header reveal">
+      <div class="section-label">FAQ</div>
+      <h2>Common <span class="text-primary">Questions</span></h2>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;" class="reveal">
+      <div class="card" style="padding:24px;">
+        <h4 style="margin-bottom:8px;">Does Redactr see my employees' prompts?</h4>
+        <p style="font-size:0.9rem;">No. Detection runs entirely on the employee's device. No prompt data is ever sent to Redactr's servers. We physically cannot see what your team types.</p>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h4 style="margin-bottom:8px;">Which AI tools does it protect against?</h4>
+        <p style="font-size:0.9rem;">Currently ChatGPT, Claude.ai, and Gemini.</p>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h4 style="margin-bottom:8px;">What happens if I exceed my seat limit?</h4>
+        <p style="font-size:0.9rem;">Each plan includes a fixed number of employee seats (5 on Starter, 25 on Professional, unlimited on Enterprise). Once you hit your limit, inviting another employee is blocked until you free up a seat or upgrade your plan.</p>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h4 style="margin-bottom:8px;">Can I cancel anytime?</h4>
+        <p style="font-size:0.9rem;">Yes. No lock-in contracts. Cancel from your account dashboard and your plan stays active until the end of the billing period.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="nav-logo" style="display:inline-flex;">
+          <img src="../assets/Logo.png" alt="Redactr" style="width:32px;height:32px;border-radius:8px;" />
+          <span class="logo-text">Redact<span>r</span></span>
+        </a>
+        <p>Shadow AI Data Leak Prevention. Redact before you send.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2025 Redactr. All rights reserved.</div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script src="../js/main.js"></script>
+<script src="../js/animations.js"></script>
+<script src="../js/cart.js"></script>
+<script src="../js/pricing.js"></script>
+</body>
+</html>

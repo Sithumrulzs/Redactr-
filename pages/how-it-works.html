@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How It Works — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" href="../assets/Logo.png" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <img src="../assets/Logo.png" alt="Redactr" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="how-it-works.html" class="active">How It Works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="pricing.html" class="btn btn-outline btn-sm">View Plans</a>
+      <a href="pricing.html" class="btn btn-primary btn-sm">Start Free Trial</a>
+    </div>
+    <button class="nav-menu-btn">☰</button>
+  </div>
+</nav>
+<nav class="nav-mobile">
+  <a href="../index.html">Home</a>
+  <a href="how-it-works.html">How It Works</a>
+  <a href="pricing.html">Pricing</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<!-- Hero -->
+<section class="hiw-hero">
+  <div class="container">
+    <div class="section-label">The Full Workflow</div>
+    <h1>How <span class="text-primary">Redactr</span> Works</h1>
+    <p style="max-width:560px;margin:20px auto 0;font-size:1.1rem;">
+      Five steps. Sub-millisecond detection. Zero data leaves the device. Here's exactly what happens when an employee types a sensitive prompt.
+    </p>
+  </div>
+</section>
+
+<!-- Step-by-step -->
+<section class="section">
+  <div class="container">
+    <div class="hiw-steps" id="hiw-steps">
+      <div class="hiw-spine"><div class="hiw-spine-fill" id="hiw-spine-fill"></div></div>
+
+      <!-- Step 1 -->
+      <div class="hiw-step" id="hiw-step-1">
+        <div class="hiw-step-num">1</div>
+        <div class="hiw-step-content reveal">
+          <div class="section-label">Input</div>
+          <h3>Employee Types a Prompt</h3>
+          <p>
+            The employee opens ChatGPT, Claude, or Gemini in their browser and begins typing a prompt — perhaps asking an AI to help write an email to a customer, debug code, or generate a report.
+          </p>
+          <p style="margin-top:12px;">
+            Redactr runs as a Chrome extension, silently watching the text input field. The employee doesn't notice anything — until a problem is detected.
+          </p>
+          <div class="hiw-code-demo" style="margin-top:20px;">
+            <div class="code-label"># What the employee types</div>
+            <div class="hiw-typed-line" id="hiw-line-1">Please summarise our deal with Acme Corp.</div>
+            <div class="hiw-typed-line" id="hiw-line-2">Their contact is sarah.jones@acme.com, +61 412 345 678.</div>
+            <div class="hiw-typed-line" id="hiw-line-3">Our Stripe key is sk-live-abc123XYZ...<span class="hiw-cursor" id="hiw-cursor-1"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="hiw-step" id="hiw-step-2">
+        <div class="hiw-step-num">2</div>
+        <div class="hiw-step-content reveal">
+          <div class="section-label">Detection</div>
+          <h3>Extension Scans the Prompt</h3>
+          <p>
+            The <code>content/scanner.js</code> file, injected into the chatbot page, passes the text to the detection engine <code>lib/detector.js</code> on every keystroke (debounced for performance).
+          </p>
+          <p style="margin-top:12px;">
+            The detector runs six pattern checks simultaneously — all on-device using regular expressions and the Luhn checksum for card validation. Nothing is sent to a server.
+          </p>
+          <div class="hiw-code-demo" style="margin-top:20px;">
+            <div class="code-label"># Detection engine output (JSON)</div>
+            <div class="code-tag hiw-json-line">&#123;</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;"riskScore": <span id="hiw-risk-score" data-count-to="105" data-count-decimals="0">0</span>,</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;"severity": "CRITICAL",</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;"findings": [</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "EMAIL",   "score": 10, "value": "sarah.jones@acme.com" &#125;,</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "PHONE",   "score": 15, "value": "+61 412 345 678" &#125;,</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;&nbsp;&nbsp;&#123; "type": "API_KEY", "score": 80, "value": "sk-live-abc..." &#125;</div>
+            <div class="code-tag hiw-json-line">&nbsp;&nbsp;]</div>
+            <div class="code-tag hiw-json-line">&#125;</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="hiw-step" id="hiw-step-3">
+        <div class="hiw-step-num">3</div>
+        <div class="hiw-step-content reveal">
+          <div class="section-label">Alert</div>
+          <h3>Leak Detected — Send is Blocked</h3>
+          <p>
+            When the risk score crosses the red threshold (61+), Redactr intercepts the send event and displays a modal overlay showing exactly what was found, the risk score, and the severity level.
+          </p>
+          <p style="margin-top:12px;">
+            The employee sees a clear warning with colour-coded severity. They cannot send until they take action.
+          </p>
+
+          <!-- Fake modal preview -->
+          <div class="hiw-modal-preview" id="hiw-modal-preview">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <svg class="icon-inline" style="color:var(--danger);" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+              <h4 style="color:var(--danger);font-size:1rem;">Sensitive Information Detected</h4>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+              <div class="hiw-finding-row" style="background:rgba(239,84,102,0.08);border:1px solid rgba(239,84,102,0.2);">
+                <span><svg class="icon-inline" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="14.5" r="3.5"/><path d="M10.5 12 19 3.5M16 6.5 18 8.5M13.5 9 15.5 11"/></svg> API Key (Stripe)</span><span class="badge badge-red">+80 pts</span>
+              </div>
+              <div class="hiw-finding-row" style="background:rgba(244,183,64,0.08);border:1px solid rgba(244,183,64,0.2);">
+                <span><svg class="icon-inline" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 2.5a11 11 0 0 0 5 5L16 14l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg> Phone Number</span><span class="badge badge-amber">+15 pts</span>
+              </div>
+              <div class="hiw-finding-row" style="background:rgba(244,183,64,0.08);border:1px solid rgba(244,183,64,0.2);">
+                <span><svg class="icon-inline" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Email Address</span><span class="badge badge-amber">+10 pts</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary btn-sm">Copy Safe Version</button>
+              <button class="btn btn-ghost btn-sm">Request Exception</button>
+              <button class="btn btn-ghost btn-sm">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="hiw-step" id="hiw-step-4">
+        <div class="hiw-step-num">4</div>
+        <div class="hiw-step-content reveal">
+          <div class="section-label">Redaction</div>
+          <h3>Safe Prompt Generated</h3>
+          <p>
+            The redaction engine rewrites the prompt, replacing each sensitive item with a numbered placeholder tag. The employee gets a usable, safe prompt — not just a blocked message.
+          </p>
+          <p style="margin-top:12px;">
+            This is the feature that makes Redactr helpful rather than annoying. Work continues; leaks do not.
+          </p>
+          <div class="hiw-code-demo" style="margin-top:20px;">
+            <div class="code-label"># Original → Safe version (auto-redacted)</div>
+            <div class="code-after">Please summarise our deal with Acme Corp.</div>
+            <div class="code-after">Their contact is <span class="hiw-redact-wrap"><span class="hiw-redact-raw" id="hiw-redact-email">sarah.jones@acme.com</span><span class="hiw-redact-safe grad-text" id="hiw-redact-email-safe">[EMAIL_1]</span></span>, <span class="hiw-redact-wrap"><span class="hiw-redact-raw" id="hiw-redact-phone">+61 412 345 678</span><span class="hiw-redact-safe grad-text" id="hiw-redact-phone-safe">[PHONE_1]</span></span>.</div>
+            <div class="code-after">Our Stripe key is <span class="hiw-redact-wrap"><span class="hiw-redact-raw" id="hiw-redact-key">sk-live-abc123</span><span class="hiw-redact-safe grad-text" id="hiw-redact-key-safe">[SECRET_1]</span></span>.</div>
+          </div>
+          <div style="margin-top:16px;font-size:0.88rem;color:var(--muted);">
+            Tag mapping: <code style="color:var(--primary);">[EMAIL_1]</code> → sarah.jones@acme.com &nbsp;|&nbsp;
+            <code style="color:var(--primary);">[PHONE_1]</code> → +61 412 345 678 &nbsp;|&nbsp;
+            <code style="color:var(--primary);">[SECRET_1]</code> → sk-live-abc123
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="hiw-step" id="hiw-step-5">
+        <div class="hiw-step-num">5</div>
+        <div class="hiw-step-content reveal">
+          <div class="section-label">Approval</div>
+          <h3>Manager Approves or Denies Exception</h3>
+          <p>
+            If the employee genuinely needs to send the original data (e.g. to a vetted AI system), they tap <strong>"Request Exception"</strong>. An alert is pushed to the manager's phone via the Redactr mobile app.
+          </p>
+          <p style="margin-top:12px;">
+            The manager sees the employee name, the type of data, the risk score, and the full prompt context. They tap <strong>Approve</strong> or <strong>Deny</strong> and the extension acts immediately.
+          </p>
+          <div style="margin-top:20px;display:flex;gap:16px;flex-wrap:wrap;">
+            <div class="card" id="hiw-approve-card" style="max-width:200px;padding:20px;">
+              <div style="color:var(--success);margin-bottom:10px;"><svg class="icon-inline" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
+              <div style="font-weight:700;font-size:0.95rem;color:var(--success);">Approved</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Exception logged. Original prompt sent.</div>
+            </div>
+            <div class="card" id="hiw-deny-card" style="max-width:200px;padding:20px;">
+              <div style="color:var(--danger);margin-bottom:10px;"><svg class="icon-inline" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></div>
+              <div style="font-weight:700;font-size:0.95rem;color:var(--danger);">Denied</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Prompt blocked. Employee notified.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Architecture overview -->
+<section class="section" style="background:var(--surface);">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Architecture</div>
+      <h2>Three Components. <span class="text-primary">One Mission.</span></h2>
+    </div>
+    <div class="grid-3">
+      <div class="card reveal">
+        <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <h3>Website</h3>
+        <p>Plain HTML/CSS/JS. Markets and sells the subscription, then hands off to the backend to create the company and admin invite on purchase. PayPal Sandbox for payment.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+        <h3>Chrome &amp; Edge Extension</h3>
+        <p>Manifest V3. Content script injected into ChatGPT, Claude, Gemini. Detection runs entirely in-browser — only blocked-prompt metadata, never the matched text, ever leaves the device.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+        <h3>Flutter App</h3>
+        <p>Manager's control centre. Shows real leak alerts, risk scores, and employee names from Firestore. Approve or Deny with one tap, synced live.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:48px;" class="reveal">
+      <a href="pricing.html" class="btn btn-primary btn-lg"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg> &nbsp;Get Protected Now</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="nav-logo" style="display:inline-flex;">
+          <img src="../assets/Logo.png" alt="Redactr" style="width:32px;height:32px;border-radius:8px;" />
+          <span class="logo-text">Redact<span>r</span></span>
+        </a>
+        <p>Shadow AI Data Leak Prevention. Redact before you send.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="pricing.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2025 Redactr. All rights reserved.</div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="../js/main.js"></script>
+<script src="../js/animations.js"></script>
+<script src="../js/how-it-works.js"></script>
+</body>
+</html>
