@@ -7,6 +7,7 @@
   <meta name="description" content="Redactr automatically detects and redacts sensitive information before employees send prompts to ChatGPT, Claude, Gemini and other AI tools." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" href="assets/Logo.png" />
   <script>
@@ -23,6 +24,451 @@
       document.documentElement.classList.add(reduced || played ? 'no-loader' : 'js-loading');
     })();
   </script>
+
+  <!-- ── Cinematic Hero Styles (all scoped to #rdx-hero) ── -->
+  <style>
+    /* Custom properties + container */
+    #rdx-hero {
+      --rdx-ink:      #14181F;
+      --rdx-slate:    #232A36;
+      --rdx-slate-2:  #2C3542;
+      --rdx-teal:     #14C8A6;
+      --rdx-teal-dim: rgba(20,200,166,0.14);
+      --rdx-red:      #FF5247;
+      --rdx-red-dim:  rgba(255,82,71,0.12);
+      --rdx-text:     #EDF1F5;
+      --rdx-text-dim: #8A95A5;
+      --rdx-border:   rgba(255,255,255,0.08);
+
+      position: relative;
+      height: 100dvh;
+      height: 100vh; /* fallback */
+      overflow: hidden;
+      isolation: isolate; /* contain z-indexes — navbar stays above */
+      background: var(--rdx-ink);
+      color: var(--rdx-text);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Vignette */
+    #rdx-hero::after {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+      pointer-events: none; z-index: 5;
+    }
+
+    /* Letterbox bars */
+    .rdx-letterbox {
+      position: absolute; left: 0; right: 0;
+      height: 9vh; background: #000; z-index: 6;
+      transition: transform 1s cubic-bezier(0.7,0,0.2,1);
+    }
+    .rdx-letterbox.rdx-top    { top: 0;    transform: translateY(-100%); }
+    .rdx-letterbox.rdx-bottom { bottom: 0; transform: translateY(100%); }
+    #rdx-hero.rdx-rolling .rdx-letterbox.rdx-top    { transform: translateY(0); }
+    #rdx-hero.rdx-rolling .rdx-letterbox.rdx-bottom { transform: translateY(0); }
+
+    /* Red flash */
+    #rdx-flash {
+      position: absolute; inset: 0;
+      background: var(--rdx-red);
+      opacity: 0; z-index: 7; pointer-events: none;
+    }
+    #rdx-flash.rdx-hit { animation: rdxFlashHit 0.35s ease-out; }
+    @keyframes rdxFlashHit { 0% { opacity: 0.55; } 100% { opacity: 0; } }
+
+    /* Glyph canvas */
+    #rdx-glyphs { position: absolute; inset: 0; z-index: 0; opacity: 0.5; pointer-events: none; }
+
+    /* The World — camera target */
+    #rdx-world {
+      position: absolute; left: 0; top: 0;
+      width: 100%; height: 100%;
+      transform-origin: 0 0;
+      will-change: transform, filter, opacity;
+      z-index: 1; transition: filter 1.2s ease, opacity 1.2s ease;
+    }
+    #rdx-world.rdx-recede { filter: blur(14px) brightness(0.45); opacity: 0.5; }
+
+    #rdx-shake-rig { width: 100%; height: 100%; }
+    #rdx-shake-rig.rdx-shake { animation: rdxCamShake 0.5s cubic-bezier(0.36,0.07,0.19,0.97); }
+    @keyframes rdxCamShake {
+      10% { transform: translate(-10px, 6px) rotate(-0.4deg); }
+      25% { transform: translate(9px, -5px) rotate(0.35deg); }
+      45% { transform: translate(-7px, 4px) rotate(-0.25deg); }
+      65% { transform: translate(5px, -3px); }
+      85% { transform: translate(-2px, 1px); }
+    }
+
+    /* Browser scene */
+    #rdx-hero .rdx-scene {
+      position: absolute; left: 50%; top: 52%;
+      transform: translate(-50%, -50%);
+      width: min(760px, 82vw); perspective: 1400px;
+    }
+    #rdx-browser {
+      background: var(--rdx-slate);
+      border: 1px solid var(--rdx-border); border-radius: 16px;
+      overflow: visible;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+      transform: rotateX(4deg) rotateY(-3deg);
+      transition: transform 1.4s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.4s ease, border-color 0.4s ease;
+    }
+    #rdx-browser.rdx-flat  { transform: rotateX(0deg) rotateY(0deg); }
+    #rdx-browser.rdx-alert {
+      border-color: rgba(255,82,71,0.65);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 60px rgba(255,82,71,0.28);
+    }
+    #rdx-browser.rdx-safe {
+      border-color: rgba(20,200,166,0.5);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 60px rgba(20,200,166,0.2);
+    }
+
+    /* Toolbar */
+    #rdx-hero .rdx-toolbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px;
+      background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--rdx-border);
+      border-radius: 16px 16px 0 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: var(--rdx-text-dim); position: relative;
+    }
+    #rdx-hero .rdx-lights { display: flex; gap: 6px; }
+    #rdx-hero .rdx-lights span { width: 10px; height: 10px; border-radius: 50%; background: var(--rdx-slate-2); }
+    #rdx-hero .rdx-url { flex: 1; background: var(--rdx-ink); padding: 5px 14px; border-radius: 6px; text-align: center; }
+
+    /* Extension icon */
+    #rdx-extIcon {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: var(--rdx-ink); display: grid; place-items: center;
+      border: 1px solid var(--rdx-border); position: relative;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    #rdx-extIcon svg { width: 14px; height: 14px; }
+    #rdx-extIcon.rdx-live {
+      border-color: var(--rdx-red);
+      box-shadow: 0 0 16px rgba(255,82,71,0.55);
+      animation: rdxIconPing 0.9s ease infinite;
+    }
+    @keyframes rdxIconPing { 50% { box-shadow: 0 0 26px rgba(255,82,71,0.8); } }
+    #rdx-extIcon .rdx-notif {
+      position: absolute; top: -5px; right: -5px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--rdx-red); color: #fff;
+      font-size: 9px; font-weight: 700;
+      display: grid; place-items: center;
+      opacity: 0; transform: scale(0);
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #rdx-extIcon.rdx-live .rdx-notif { opacity: 1; transform: scale(1); }
+
+    /* Chat area */
+    #rdx-hero .rdx-chat-area { padding: 26px 24px 22px; }
+    #rdx-hero .rdx-ai-msg {
+      font-size: 13.5px; color: var(--rdx-text-dim);
+      line-height: 1.6; margin-bottom: 18px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    #rdx-hero .rdx-ai-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--rdx-slate-2); flex-shrink: 0;
+      display: grid; place-items: center; font-size: 12px;
+    }
+
+    /* Prompt box */
+    #rdx-promptBox {
+      background: var(--rdx-ink); border: 1px solid var(--rdx-border);
+      border-radius: 12px; padding: 16px 16px 42px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px; line-height: 1.75; min-height: 108px;
+      position: relative; word-break: break-word;
+      transition: border-color 0.3s ease;
+    }
+    #rdx-browser.rdx-alert #rdx-promptBox { border-color: rgba(255,82,71,0.5); }
+
+    /* Send button */
+    #rdx-sendBtn {
+      position: absolute; right: 10px; bottom: 8px;
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--rdx-slate-2); display: grid; place-items: center;
+      color: var(--rdx-text-dim); font-size: 14px; transition: all 0.25s ease;
+    }
+    #rdx-sendBtn.rdx-armed   { background: var(--rdx-teal); color: #06201A; }
+    #rdx-sendBtn.rdx-blocked { background: var(--rdx-red);  color: #fff; }
+
+    /* Typing caret */
+    #rdx-hero .rdx-caret {
+      display: inline-block; width: 8px; height: 17px;
+      background: var(--rdx-teal); vertical-align: -3px;
+      animation: rdxBlink 0.9s steps(1) infinite;
+      box-shadow: 0 0 10px rgba(20,200,166,0.8);
+    }
+    @keyframes rdxBlink { 50% { opacity: 0; } }
+
+    /* Leak highlight */
+    #rdx-hero .rdx-leak {
+      color: var(--rdx-red); background: var(--rdx-red-dim);
+      border-radius: 4px; padding: 1px 4px;
+      box-shadow: 0 0 14px rgba(255,82,71,0.35);
+      transition: all 0.3s ease;
+    }
+    #rdx-hero .rdx-leak.rdx-struck { text-decoration: line-through; opacity: 0.55; }
+
+    /* Safe redaction chip */
+    #rdx-hero .rdx-chip {
+      display: inline-block;
+      color: #06201A; background: var(--rdx-teal);
+      border-radius: 5px; padding: 1px 8px;
+      font-weight: 700; font-size: 12.5px;
+      animation: rdxChipIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 0 18px rgba(20,200,166,0.45);
+    }
+    @keyframes rdxChipIn { from { transform: scale(0.3); opacity: 0; } }
+
+    /* Teal sweep */
+    #rdx-sweep {
+      position: absolute; inset: 0; border-radius: 16px;
+      background: linear-gradient(105deg, transparent 30%, rgba(20,200,166,0.22) 50%, transparent 70%);
+      transform: translateX(-110%); pointer-events: none;
+    }
+    #rdx-sweep.rdx-go { animation: rdxSweepGo 0.7s cubic-bezier(0.6,0,0.3,1); }
+    @keyframes rdxSweepGo { to { transform: translateX(110%); } }
+
+    /* Enter keycap */
+    #rdx-keycap {
+      position: absolute; right: 42px; bottom: -34px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 700;
+      color: var(--rdx-text); background: var(--rdx-slate-2);
+      border: 1px solid var(--rdx-border); border-bottom-width: 4px;
+      border-radius: 8px; padding: 8px 16px;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.25s ease, transform 0.1s ease; z-index: 3;
+    }
+    #rdx-keycap.rdx-show { opacity: 1; transform: translateY(0); }
+    #rdx-keycap.rdx-press {
+      transform: translateY(3px); border-bottom-width: 1px;
+      background: var(--rdx-red); color: #fff;
+      box-shadow: 0 0 24px rgba(255,82,71,0.6);
+    }
+
+    /* Extension popup */
+    #rdx-popup {
+      position: absolute; top: 46px; right: -14px; width: 300px;
+      background: var(--rdx-ink); border: 1px solid var(--rdx-border);
+      border-radius: 14px;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,82,71,0.15);
+      z-index: 10; font-family: 'Space Grotesk', sans-serif;
+      opacity: 0; transform: translateY(-14px) scale(0.92);
+      transform-origin: top right;
+      transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34,1.4,0.5,1);
+      pointer-events: none;
+    }
+    #rdx-popup.rdx-show { opacity: 1; transform: translateY(0) scale(1); }
+    #rdx-popup::before {
+      content: ""; position: absolute; top: -6px; right: 22px;
+      width: 12px; height: 12px; background: var(--rdx-ink);
+      border-left: 1px solid var(--rdx-border);
+      border-top: 1px solid var(--rdx-border);
+      transform: rotate(45deg);
+    }
+    #rdx-hero .rdx-pp-head {
+      display: flex; align-items: center; gap: 9px;
+      padding: 13px 16px; border-bottom: 1px solid var(--rdx-border);
+    }
+    #rdx-hero .rdx-pp-logo {
+      width: 24px; height: 24px; border-radius: 7px;
+      background: linear-gradient(135deg, var(--rdx-teal), #0E8F77);
+      display: grid; place-items: center;
+    }
+    #rdx-hero .rdx-pp-logo svg { width: 13px; height: 13px; }
+    #rdx-hero .rdx-pp-name { font-weight: 700; font-size: 14px; letter-spacing: -0.01em; }
+    #rdx-hero .rdx-pp-state {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      color: var(--rdx-red); background: var(--rdx-red-dim);
+      border: 1px solid rgba(255,82,71,0.4);
+      padding: 3px 8px; border-radius: 100px;
+    }
+    #rdx-hero .rdx-pp-body { padding: 14px 16px 16px; }
+    #rdx-hero .rdx-pp-alert {
+      font-size: 12.5px; color: var(--rdx-text-dim);
+      margin-bottom: 12px; line-height: 1.5;
+    }
+    #rdx-hero .rdx-pp-alert b { color: var(--rdx-text); }
+    #rdx-hero .rdx-pp-detect {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--rdx-slate);
+      border: 1px solid rgba(255,82,71,0.35);
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;
+    }
+    #rdx-hero .rdx-pp-detect .rdx-ic {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--rdx-red-dim); color: var(--rdx-red);
+      display: grid; place-items: center; font-size: 14px; flex-shrink: 0;
+    }
+    #rdx-hero .rdx-pp-detect .rdx-t1 { font-size: 13px; font-weight: 500; }
+    #rdx-hero .rdx-pp-detect .rdx-t2 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; color: var(--rdx-text-dim); margin-top: 2px;
+    }
+    #rdx-hero .rdx-pp-detect .rdx-conf {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 700; color: var(--rdx-red);
+    }
+    #rdx-hero .rdx-pp-risk { margin-bottom: 14px; }
+    #rdx-hero .rdx-pp-risk .rdx-lbl {
+      display: flex; justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--rdx-text-dim); margin-bottom: 6px;
+    }
+    #rdx-hero .rdx-pp-risk .rdx-lbl b { color: var(--rdx-red); }
+    #rdx-hero .rdx-pp-risk .rdx-bar {
+      height: 6px; border-radius: 100px;
+      background: var(--rdx-slate-2); overflow: hidden;
+    }
+    #rdx-hero .rdx-pp-risk .rdx-fill {
+      height: 100%; width: 0%; border-radius: 100px;
+      background: linear-gradient(90deg, #F5A623, var(--rdx-red));
+      transition: width 0.8s cubic-bezier(0.2,0.8,0.3,1);
+    }
+    #rdx-hero .rdx-pp-actions { display: flex; gap: 8px; }
+    #rdx-hero .rdx-pp-btn {
+      flex: 1; font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px; font-weight: 700;
+      padding: 10px 0; border-radius: 9px;
+      border: 1px solid transparent; text-align: center;
+      cursor: pointer; background: none; transition: all 0.2s ease;
+    }
+    #rdx-hero .rdx-pp-btn.rdx-primary { background: var(--rdx-teal); color: #06201A; position: relative; overflow: hidden; }
+    #rdx-hero .rdx-pp-btn.rdx-ghost { background: transparent; border-color: var(--rdx-border); color: var(--rdx-text-dim); }
+    #rdx-hero .rdx-pp-btn.rdx-primary.rdx-clicked { animation: rdxBtnClick 0.35s ease; }
+    @keyframes rdxBtnClick { 30% { transform: scale(0.93); box-shadow: 0 0 0 6px rgba(20,200,166,0.25); } }
+
+    /* Fake cursor */
+    #rdx-cursor {
+      position: absolute; width: 18px; height: 18px; z-index: 12;
+      opacity: 0;
+      transition: opacity 0.3s ease, top 0.7s cubic-bezier(0.3,0.7,0.3,1), left 0.7s cubic-bezier(0.3,0.7,0.3,1);
+      pointer-events: none;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+    }
+
+    /* Headline reveal */
+    #rdx-reveal {
+      position: absolute; inset: 0; z-index: 8;
+      display: grid; place-items: center; text-align: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.8s ease;
+    }
+    #rdx-reveal.rdx-on { opacity: 1; pointer-events: auto; }
+
+    #rdx-hero .rdx-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--rdx-teal);
+      border: 1px solid rgba(20,200,166,0.35); background: var(--rdx-teal-dim);
+      padding: 6px 14px; border-radius: 100px; margin-bottom: 26px;
+      opacity: 0; transform: translateY(14px); transition: all 0.6s ease 0.1s;
+    }
+    #rdx-reveal.rdx-on .rdx-eyebrow { opacity: 1; transform: translateY(0); }
+    #rdx-hero .rdx-eyebrow .rdx-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--rdx-teal);
+      animation: rdxPulse 2s ease-in-out infinite;
+    }
+    @keyframes rdxPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(20,200,166,0.5); }
+      50%      { box-shadow: 0 0 0 6px rgba(20,200,166,0); }
+    }
+
+    #rdx-hero h1 {
+      font-size: clamp(38px, 5.4vw, 68px);
+      line-height: 1.1; font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 22px; max-width: 14ch;
+    }
+    #rdx-hero .rdx-rw { position: relative; display: inline-block; white-space: nowrap; }
+    #rdx-hero .rdx-rw::after {
+      content: ""; position: absolute; inset: 5% -2%;
+      background: #000; border-radius: 4px;
+      transform-origin: right center; transform: scaleX(1);
+    }
+    #rdx-reveal.rdx-on .rdx-rw::after {
+      animation: rdxWipe 0.55s cubic-bezier(0.7,0,0.2,1) forwards;
+      animation-delay: var(--d, 0.3s);
+    }
+    @keyframes rdxWipe { to { transform: scaleX(0); } }
+    #rdx-hero .rdx-rw.rdx-forever { color: transparent; }
+    #rdx-reveal.rdx-on .rdx-rw.rdx-forever::after {
+      animation: rdxFlicker 5s steps(1) infinite; transform: scaleX(1);
+    }
+    @keyframes rdxFlicker {
+      0%,92%,100% { opacity: 1; }
+      93% { opacity: 0.55; } 94% { opacity: 1; } 96% { opacity: 0.7; }
+    }
+
+    #rdx-hero .rdx-sub {
+      font-size: 17px; line-height: 1.65;
+      color: var(--rdx-text-dim); max-width: 480px;
+      margin: 0 auto 34px; opacity: 0; transform: translateY(16px);
+      transition: all 0.6s ease 1.1s;
+    }
+    #rdx-reveal.rdx-on .rdx-sub { opacity: 1; transform: translateY(0); }
+    #rdx-hero .rdx-sub strong { color: var(--rdx-text); font-weight: 500; }
+
+    #rdx-hero .rdx-cta-row {
+      display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+      opacity: 0; transform: translateY(16px); transition: all 0.6s ease 1.35s;
+    }
+    #rdx-reveal.rdx-on .rdx-cta-row { opacity: 1; transform: translateY(0); }
+
+    #rdx-hero .rdx-btn {
+      font-size: 15px; font-weight: 500;
+      padding: 14px 28px; border-radius: 10px;
+      cursor: pointer; border: 1px solid transparent;
+      text-decoration: none; display: inline-block;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    #rdx-hero .rdx-btn:hover { transform: translateY(-2px); }
+    #rdx-hero .rdx-btn.rdx-btn-primary { background: var(--rdx-teal); color: #06201A; }
+    #rdx-hero .rdx-btn.rdx-btn-primary:hover { box-shadow: 0 8px 28px rgba(20,200,166,0.35); }
+    #rdx-hero .rdx-btn.rdx-btn-ghost { background: transparent; color: var(--rdx-text); border-color: var(--rdx-border); }
+    #rdx-hero .rdx-btn.rdx-btn-ghost:hover { border-color: rgba(255,255,255,0.25); }
+
+    /* Skip / Replay — absolute so they stay inside the hero */
+    #rdx-skip, #rdx-replay {
+      position: absolute; bottom: 22px; right: 24px; z-index: 20;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--rdx-text-dim);
+      background: rgba(35,42,54,0.7); backdrop-filter: blur(6px);
+      border: 1px solid var(--rdx-border); border-radius: 100px;
+      padding: 9px 18px; cursor: pointer; transition: all 0.2s ease;
+    }
+    #rdx-skip:hover, #rdx-replay:hover { color: var(--rdx-text); border-color: rgba(255,255,255,0.25); }
+    #rdx-replay { display: none; }
+
+    #rdx-caption {
+      position: absolute; bottom: calc(9vh + 18px); left: 0; right: 0;
+      text-align: center; font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--rdx-text-dim); z-index: 6;
+      opacity: 0; transition: opacity 0.4s ease; pointer-events: none;
+    }
+    #rdx-caption.rdx-show { opacity: 0.85; }
+
+    @media (max-width: 720px) {
+      #rdx-popup { right: -6px; width: 268px; }
+      #rdx-hero .rdx-scene { top: 48%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #rdx-hero *, #rdx-hero *::before, #rdx-hero *::after {
+        animation: none !important; transition: none !important;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -75,112 +521,466 @@
 </nav>
 
 <!-- ══════════════════════════════════════════════
-     HERO
+     CINEMATIC HERO
 ══════════════════════════════════════════════ -->
-<section class="hero" id="hero">
-  <div class="hero-bg aurora"></div>
-  <div class="hero-grid"></div>
-  <canvas class="particle-canvas"></canvas>
-  <div class="film-grain" aria-hidden="true"></div>
+<section id="rdx-hero" aria-label="Redactr product demo">
 
-  <div class="container">
-    <div class="grid-2" style="gap: 60px; align-items: center;">
+  <canvas id="rdx-glyphs" aria-hidden="true"></canvas>
+  <div class="rdx-letterbox rdx-top"    aria-hidden="true"></div>
+  <div class="rdx-letterbox rdx-bottom" aria-hidden="true"></div>
+  <div id="rdx-flash"   aria-hidden="true"></div>
+  <div id="rdx-caption" aria-hidden="true"></div>
 
-      <!-- Left: Copy -->
-      <div class="hero-content">
-        <div class="hero-badge">
-          <span class="hero-badge-dot"></span>
-          AI Data Leak Prevention
-        </div>
+  <!-- THE WORLD: everything the camera can look at -->
+  <div id="rdx-world" aria-hidden="true">
+    <div id="rdx-shake-rig">
+      <div class="rdx-scene">
+        <div id="rdx-browser">
+          <div id="rdx-sweep"></div>
 
-        <h1>Protect <span class="highlight gradient-text">Sensitive Data</span> Before It Reaches AI</h1>
-
-        <p class="hero-sub">
-          Redactr automatically detects and redacts sensitive information before employees send prompts to ChatGPT, Claude, Gemini, and other AI tools. Your data stays yours.
-        </p>
-
-        <div class="hero-actions">
-          <a href="pages/pricing.html" class="btn btn-primary btn-lg">
-            <svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg> &nbsp;Start Free Trial
-          </a>
-          <a href="pages/how-it-works.html" class="btn btn-outline btn-lg">
-            ▶ &nbsp;Watch Demo
-          </a>
-        </div>
-
-        <div class="hero-stats">
-          <div class="hero-stat-item">
-            <div class="stat-val" data-count-to="99.8" data-count-suffix="%" data-count-decimals="1">99.8%</div>
-            <div class="stat-lbl">Detection Rate</div>
-          </div>
-          <div class="hero-stat-item">
-            <div class="stat-val" data-count-to="1" data-count-prefix="&lt;" data-count-suffix="ms">&lt;1ms</div>
-            <div class="stat-lbl">Scan Time</div>
-          </div>
-          <div class="hero-stat-item">
-            <div class="stat-val">On-Device</div>
-            <div class="stat-lbl">No Data Sent</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Live chat demo — real typing, intercepted before send -->
-      <div class="hero-visual">
-        <div class="chat-window glass-depth" id="hero-chat-window">
-          <div class="chat-window-header">
-            <div class="terminal-dot red"></div>
-            <div class="terminal-dot yellow"></div>
-            <div class="terminal-dot green"></div>
-            <span class="chat-window-title">ChatGPT</span>
+          <div class="rdx-toolbar">
+            <div class="rdx-lights"><span></span><span></span><span></span></div>
+            <div class="rdx-url">chatgpt.com</div>
+            <div id="rdx-extIcon">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 2L4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4z" fill="#14C8A6"/>
+                <rect x="8" y="10.5" width="8" height="3" rx="1.5" fill="#06201A"/>
+              </svg>
+              <span class="rdx-notif" aria-hidden="true">1</span>
+            </div>
           </div>
 
-          <div class="chat-history" id="hero-chat-history">
-            <div class="chat-msg" id="hero-chat-msg-final">
-              <div class="chat-msg-bubble">
-                Can you review this code? My AWS key is <span class="grad-text chat-msg-tag">[SECRET_1]</span>
+          <div class="rdx-chat-area">
+            <div class="rdx-ai-msg">
+              <div class="rdx-ai-avatar">✳</div>
+              <div>Hi! How can I help you today?</div>
+            </div>
+            <div id="rdx-promptBox">
+              <span class="rdx-caret" id="rdx-caret"></span>
+              <div id="rdx-sendBtn">➤</div>
+            </div>
+          </div>
+
+          <!-- Extension popup anchored to the toolbar icon -->
+          <div id="rdx-popup" role="status" aria-live="polite" aria-label="Redactr security alert">
+            <div class="rdx-pp-head">
+              <div class="rdx-pp-logo">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 2L4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4z" fill="#06201A"/>
+                  <rect x="8" y="10.5" width="8" height="3" rx="1.5" fill="#14C8A6"/>
+                </svg>
+              </div>
+              <div class="rdx-pp-name">Redactr</div>
+              <div class="rdx-pp-state">SEND BLOCKED</div>
+            </div>
+            <div class="rdx-pp-body">
+              <div class="rdx-pp-alert">
+                <b>1 secret detected</b> in this prompt. It was intercepted before leaving your browser.
+              </div>
+              <div class="rdx-pp-detect">
+                <div class="rdx-ic">⚠</div>
+                <div>
+                  <div class="rdx-t1">AWS Access Key</div>
+                  <div class="rdx-t2">AKIA••••••••EXAMPLE</div>
+                </div>
+                <div class="rdx-conf">98%</div>
+              </div>
+              <div class="rdx-pp-risk">
+                <div class="rdx-lbl"><span>Leak Risk</span><b id="rdx-riskPct">0%</b></div>
+                <div class="rdx-bar"><div class="rdx-fill" id="rdx-riskFill"></div></div>
+              </div>
+              <div class="rdx-pp-actions">
+                <button class="rdx-pp-btn rdx-primary" id="rdx-redactBtn"
+                        aria-label="Redact sensitive data and send prompt">Redact &amp; Send</button>
+                <button class="rdx-pp-btn rdx-ghost"
+                        aria-label="Send without redacting">Send Anyway</button>
               </div>
             </div>
           </div>
 
-          <div class="chat-input-row">
-            <div class="chat-input-field" id="hero-chat-input-field">
-              <span class="chat-input-placeholder" id="hero-chat-input-placeholder">Message ChatGPT…</span>
-              <span class="chat-input-typed" id="hero-chat-input-typed"
-                ><span id="hero-chat-input-pre">Can you review this code? My AWS key is </span><span class="chat-input-secret-wrap"
-                  ><span id="hero-chat-input-secret">AKIAIOSFODNN7EXAMPLE</span><span id="hero-chat-input-safe" class="grad-text">[SECRET_1]</span></span
-                ><span class="chat-input-cursor" id="hero-chat-input-cursor"></span
-              ></span>
-              <div class="chat-leak-badge" id="hero-chat-leak-badge"><svg class="icon-inline" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg> Leak Prevented: AWS Key Detected</div>
-            </div>
-            <button class="chat-send-btn" id="hero-chat-send-btn" type="button" aria-label="Send message">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-            </button>
-          </div>
-        </div>
+          <div id="rdx-keycap" aria-hidden="true">⏎ ENTER</div>
+        </div><!-- /#rdx-browser -->
 
-        <!-- Floating badge — cycles through recent catches to feel live -->
-        <div
-          class="hero-live-badge glass-depth"
-          data-live-badge='[
-            {"title":"3 leaks blocked","sub":"Just now · ChatGPT"},
-            {"title":"API key redacted","sub":"12s ago · Claude"},
-            {"title":"Card number blocked","sub":"41s ago · Gemini"}
-          ]'
-        >
-          <svg class="icon-inline" style="color:var(--primary);" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <div>
-            <div class="badge-title" style="font-weight:700;font-size:0.9rem;">3 leaks blocked</div>
-            <div class="badge-sub" style="font-size:0.75rem;color:var(--muted);">Just now · ChatGPT</div>
-          </div>
-        </div>
+        <!-- Fake cursor inside .rdx-scene so coordinates are local -->
+        <svg id="rdx-cursor" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 3l14 8-6 1.5L16 19l-3 1.5-3-6.5L5 18V3z"
+                fill="#EDF1F5" stroke="#14181F" stroke-width="1.5"/>
+        </svg>
+      </div><!-- /.rdx-scene -->
+    </div><!-- /#rdx-shake-rig -->
+  </div><!-- /#rdx-world -->
+
+  <!-- FINAL REVEAL — real DOM text for SEO and screen readers -->
+  <div id="rdx-reveal">
+    <div>
+      <div class="rdx-eyebrow"><span class="rdx-dot"></span> AI Data Leak Prevention</div>
+      <h1>
+        <span class="rdx-rw" style="--d:0.30s">Protect</span>
+        <span class="rdx-rw rdx-forever">Sensitive</span>
+        <span class="rdx-rw" style="--d:0.54s">Data</span><br>
+        <span class="rdx-rw" style="--d:0.66s">Before</span>
+        <span class="rdx-rw" style="--d:0.78s">It</span>
+        <span class="rdx-rw" style="--d:0.90s">Reaches</span>
+        <span class="rdx-rw" style="--d:1.02s">AI</span>
+      </h1>
+      <p class="rdx-sub">
+        Redactr caught that key <strong>before it left the browser</strong>.
+        Every keystroke, every prompt, every AI tool — scanned on-device in under a millisecond.
+      </p>
+      <div class="rdx-cta-row">
+        <a class="rdx-btn rdx-btn-primary" href="pages/pricing.html">Start Free Trial</a>
+        <a class="rdx-btn rdx-btn-ghost"   href="#">Add to Chrome</a>
       </div>
-
     </div>
-  </div>
-</section>
+  </div><!-- /#rdx-reveal -->
+
+  <button id="rdx-skip"   aria-label="Skip intro animation">Skip intro ↑</button>
+  <button id="rdx-replay" aria-label="Replay intro animation" style="display:none;">↺ Replay intro</button>
+
+</section><!-- /#rdx-hero -->
+
+<!-- ── Cinematic hero controller — IIFE, zero globals ── -->
+<script>
+(function () {
+  'use strict';
+
+  var heroEl  = document.getElementById('rdx-hero');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── ambient glyph canvas ── */
+  var canvas    = document.getElementById('rdx-glyphs');
+  var rafPaused = false;
+
+  if (!reduced) {
+    var ctx   = canvas.getContext('2d');
+    var CHARS = 'A K 4 @ 7 x 9 { } $ # % + = ; :'.split(' ');
+    var W, H, parts = [];
+
+    var resizeCanvas = function () {
+      W = canvas.width  = heroEl.clientWidth;
+      H = canvas.height = heroEl.clientHeight;
+    };
+    resizeCanvas();
+
+    for (var i = 0; i < Math.min(60, heroEl.clientWidth / 20); i++) {
+      parts.push({
+        x: Math.random() * (W || 800),
+        y: Math.random() * (H || 600),
+        v: 0.2 + Math.random() * 0.5,
+        c: CHARS[(Math.random() * CHARS.length) | 0],
+        s: 10 + Math.random() * 6,
+        red: Math.random() < 0.07,
+        conv: false
+      });
+    }
+
+    (function tick() {
+      if (!rafPaused) {
+        ctx.clearRect(0, 0, W, H);
+        for (var j = 0; j < parts.length; j++) {
+          var p = parts[j];
+          p.x += p.v;
+          if (p.red && !p.conv && p.x > W * 0.62) p.conv = true;
+          if (p.x > W + 20) {
+            p.x = -20; p.y = Math.random() * H;
+            p.red = Math.random() < 0.07; p.conv = false;
+          }
+          var a = 0.05 + (p.s - 10) / 6 * 0.05;
+          ctx.fillStyle = (p.red && !p.conv) ? 'rgba(255,82,71,'  + (a + 0.1) + ')'
+                        : (p.red &&  p.conv) ? 'rgba(20,200,166,' + (a + 0.1) + ')'
+                        :                      'rgba(138,149,165,' + a + ')';
+          ctx.font = p.s + 'px "JetBrains Mono",monospace';
+          ctx.fillText(p.red && p.conv ? '▮' : p.c, p.x, p.y);
+        }
+      }
+      requestAnimationFrame(tick);
+    })();
+
+    /* Resize glyph canvas with the hero */
+    if (window.ResizeObserver) {
+      new ResizeObserver(resizeCanvas).observe(heroEl);
+    } else {
+      window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('orientationchange', resizeCanvas);
+    }
+  }
+
+  /* ── pause RAF when hero is off-screen or tab hidden ── */
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      rafPaused = !entries[0].isIntersecting;
+    }, { threshold: 0 }).observe(heroEl);
+  }
+  document.addEventListener('visibilitychange', function () {
+    rafPaused = document.hidden;
+  });
+
+  /* ── element refs ── */
+  var rdxWorld     = document.getElementById('rdx-world');
+  var rdxRig       = document.getElementById('rdx-shake-rig');
+  var rdxBrowser   = document.getElementById('rdx-browser');
+  var rdxBox       = document.getElementById('rdx-promptBox');
+  var rdxCaret     = document.getElementById('rdx-caret');
+  var rdxSendBtn   = document.getElementById('rdx-sendBtn');
+  var rdxKeycap    = document.getElementById('rdx-keycap');
+  var rdxExtIcon   = document.getElementById('rdx-extIcon');
+  var rdxPopup     = document.getElementById('rdx-popup');
+  var rdxRiskFill  = document.getElementById('rdx-riskFill');
+  var rdxRiskPct   = document.getElementById('rdx-riskPct');
+  var rdxRedactBtn = document.getElementById('rdx-redactBtn');
+  var rdxCursor    = document.getElementById('rdx-cursor');
+  var rdxSweep     = document.getElementById('rdx-sweep');
+  var rdxFlash     = document.getElementById('rdx-flash');
+  var rdxReveal    = document.getElementById('rdx-reveal');
+  var rdxCaption   = document.getElementById('rdx-caption');
+  var rdxSkipBtn   = document.getElementById('rdx-skip');
+  var rdxReplayBtn = document.getElementById('rdx-replay');
+
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var skipped = false;
+  var introFinished = false;
+
+  /* ── responsive zoom: 640-1023px reduces zoom 20%; <640px: static ── */
+  function zoomFactor() { return heroEl.clientWidth >= 1024 ? 1.0 : 0.8; }
+  function ez(z) { return z * zoomFactor(); }
+
+  /* ── camera system ──
+     #rdx-world sits at position:absolute left:0 top:0 inside #rdx-hero.
+     getBoundingClientRect is viewport-relative; subtract heroEl's rect
+     to get hero-local coords for the camera translate solve. */
+  function worldCenterOf(el) {
+    var hr = heroEl.getBoundingClientRect();
+    var r  = el.getBoundingClientRect();
+    var m  = new DOMMatrixReadOnly(getComputedStyle(rdxWorld).transform);
+    var s  = m.a || 1, tx = m.e || 0, ty = m.f || 0;
+    return {
+      cx: (r.left - hr.left + r.width  / 2 - tx) / s,
+      cy: (r.top  - hr.top  + r.height / 2 - ty) / s
+    };
+  }
+
+  function camera(el, zoom, dur, ease) {
+    var ezoom = el ? ez(zoom) : 1;
+    rdxWorld.style.transition =
+      'transform ' + dur + 'ms ' + (ease || 'cubic-bezier(0.25,0.8,0.25,1)') +
+      ', filter 1.2s ease, opacity 1.2s ease';
+    if (!el) { rdxWorld.style.transform = 'translate(0px,0px) scale(1)'; return; }
+    var c = worldCenterOf(el);
+    var tx = heroEl.clientWidth  / 2 - c.cx * ezoom;
+    var ty = heroEl.clientHeight / 2 - c.cy * ezoom;
+    rdxWorld.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + ezoom + ')';
+  }
+
+  function say(text) { rdxCaption.textContent = text; rdxCaption.classList.add('rdx-show'); }
+  function hush()    { rdxCaption.classList.remove('rdx-show'); }
+
+  function typeInto(target, text, speed) {
+    var chars = text.split(''), idx = 0;
+    return new Promise(function go(resolve) {
+      if (skipped || idx >= chars.length) { resolve(); return; }
+      target.textContent += chars[idx++];
+      setTimeout(function () { go(resolve); }, speed);
+    });
+  }
+
+  function resetScene() {
+    skipped = false; introFinished = false;
+    heroEl.classList.add('rdx-rolling');
+    rdxWorld.classList.remove('rdx-recede');
+    rdxWorld.style.transition = 'none';
+    rdxWorld.style.transform  = 'translate(0,0) scale(1)';
+    rdxBrowser.className      = '';
+    rdxBox.innerHTML          = '';
+    rdxBox.appendChild(rdxCaret);
+    rdxBox.appendChild(rdxSendBtn);
+    rdxCaret.style.display    = 'inline-block';
+    rdxSendBtn.className      = '';
+    rdxSendBtn.textContent    = '➤';
+    rdxKeycap.classList.remove('rdx-show', 'rdx-press');
+    rdxExtIcon.classList.remove('rdx-live');
+    rdxPopup.classList.remove('rdx-show');
+    rdxRiskFill.style.width   = '0%';
+    rdxRiskPct.textContent    = '0%';
+    rdxRedactBtn.classList.remove('rdx-clicked');
+    rdxCursor.style.opacity   = '0';
+    rdxReveal.classList.remove('rdx-on');
+    hush();
+    rdxReplayBtn.style.display = 'none';
+    rdxSkipBtn.style.display   = 'block';
+  }
+
+  /* ── 7-shot cinematic sequence ── */
+  async function play() {
+    resetScene();
+    await sleep(60);
+
+    /* SHOT 1 — WIDE. Letterbox closes, tilted browser breathes. */
+    say('LIVE · CHATGPT.COM');
+    camera(null, 1, 10);
+    await sleep(300); if (skipped) return;
+    rdxBrowser.classList.add('rdx-flat');
+    await sleep(1300); if (skipped) return;
+
+    /* SHOT 2 — PUSH-IN on the input field; typing starts. */
+    camera(rdxBox, 1.55, 1600, 'cubic-bezier(0.3,0.6,0.2,1)');
+    say('USER IS TYPING…');
+    await sleep(700); if (skipped) return;
+
+    var pre  = document.createElement('span');
+    var leak = document.createElement('span');
+    leak.className = 'rdx-leak';
+    rdxBox.insertBefore(pre,  rdxCaret);
+    rdxBox.insertBefore(leak, rdxCaret);
+    await typeInto(pre, 'Debug this script — my AWS key is ', 36); if (skipped) return;
+
+    /* SHOT 3 — EXTREME CLOSE-UP tracking the secret. */
+    camera(rdxBox, 2.3, 1200, 'cubic-bezier(0.35,0.7,0.25,1)');
+    say('SECRET ENTERING PROMPT');
+    await typeInto(leak, 'AKIAIOSFODNN7EXAMPLE', 55); if (skipped) return;
+    rdxSendBtn.classList.add('rdx-armed');
+    await sleep(350); if (skipped) return;
+
+    /* SHOT 4 — THE ENTER. Keycap slam, red flash, snap zoom-out, shake. */
+    rdxKeycap.classList.add('rdx-show');
+    await sleep(500); if (skipped) return;
+    rdxKeycap.classList.add('rdx-press');
+    rdxFlash.classList.remove('rdx-hit'); void rdxFlash.offsetWidth; rdxFlash.classList.add('rdx-hit');
+    camera(rdxBrowser, 1.0, 450, 'cubic-bezier(0.2,0.9,0.3,1)');
+    rdxRig.classList.remove('rdx-shake'); void rdxRig.offsetWidth; rdxRig.classList.add('rdx-shake');
+    rdxBrowser.classList.add('rdx-alert');
+    rdxSendBtn.classList.remove('rdx-armed');
+    rdxSendBtn.classList.add('rdx-blocked');
+    rdxSendBtn.textContent  = '✕';
+    rdxCaret.style.display  = 'none';
+    say('SEND INTERCEPTED');
+    await sleep(300);
+    rdxKeycap.classList.remove('rdx-press');
+    await sleep(500); if (skipped) return;
+    rdxKeycap.classList.remove('rdx-show');
+
+    /* SHOT 5 — PAN to the extension icon; popup drops from toolbar. */
+    rdxExtIcon.classList.add('rdx-live');
+    await sleep(450); if (skipped) return;
+    camera(rdxExtIcon, 1.35, 900, 'cubic-bezier(0.3,0.7,0.25,1)');
+    await sleep(550); if (skipped) return;
+    rdxPopup.classList.add('rdx-show');
+    say('REDACTR · SEND BLOCKED');
+    await sleep(350);
+    rdxRiskFill.style.width = '94%';
+    rdxRiskPct.textContent  = '94%';
+    camera(rdxPopup, 1.5, 900, 'cubic-bezier(0.3,0.7,0.25,1)');
+    await sleep(1400); if (skipped) return;
+
+    /* SHOT 6 — cursor glides over, clicks "Redact & Send", teal sweep. */
+    positionCursor(rdxRedactBtn, 40, 46);
+    rdxCursor.style.opacity = '1';
+    await sleep(80);
+    positionCursor(rdxRedactBtn, 0, 0);
+    await sleep(760); if (skipped) return;
+    rdxRedactBtn.classList.add('rdx-clicked');
+    await sleep(320);
+    rdxCursor.style.opacity = '0';
+    rdxPopup.classList.remove('rdx-show');
+    rdxExtIcon.classList.remove('rdx-live');
+
+    camera(rdxBox, 1.5, 700, 'cubic-bezier(0.2,0.9,0.3,1)');
+    say('REDACTING…');
+    leak.classList.add('rdx-struck');
+    await sleep(420); if (skipped) return;
+    leak.className   = 'rdx-chip';
+    leak.textContent = '[SECRET_1]';
+    rdxSweep.classList.remove('rdx-go'); void rdxSweep.offsetWidth; rdxSweep.classList.add('rdx-go');
+    rdxBrowser.classList.remove('rdx-alert');
+    rdxBrowser.classList.add('rdx-safe');
+    rdxSendBtn.classList.remove('rdx-blocked');
+    rdxSendBtn.classList.add('rdx-armed');
+    rdxSendBtn.textContent = '✓';
+    say('SAFE PROMPT SENT ✓');
+    await sleep(1500); if (skipped) return;
+
+    /* SHOT 7 — THE REVEAL. Scene recedes; headline wipes in. */
+    finale();
+  }
+
+  function positionCursor(targetEl, dx, dy) {
+    var sceneEl = heroEl.querySelector('.rdx-scene');
+    var x = 0, y = 0, n = targetEl;
+    while (n && n !== sceneEl) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+    rdxCursor.style.left = (x + targetEl.offsetWidth  / 2 - 4 + dx) + 'px';
+    rdxCursor.style.top  = (y + targetEl.offsetHeight / 2 - 2 + dy) + 'px';
+  }
+
+  function finale() {
+    introFinished = true;
+    heroEl.classList.remove('rdx-rolling');
+    hush();
+    camera(null, 1, 1400, 'cubic-bezier(0.3,0.7,0.2,1)');
+    rdxWorld.classList.add('rdx-recede');
+    rdxReveal.classList.add('rdx-on');
+    rdxSkipBtn.style.display   = 'none';
+    rdxReplayBtn.style.display = 'block';
+  }
+
+  /* Static finale — for reduced-motion / mobile / returning visitors */
+  function finaleImmediate() {
+    introFinished = true;
+    heroEl.classList.remove('rdx-rolling');
+    rdxBrowser.className   = 'rdx-flat rdx-safe';
+    rdxBox.innerHTML       = '';
+    rdxBox.appendChild(rdxCaret);
+    rdxCaret.style.display = 'none';
+    var pre  = document.createElement('span');
+    pre.textContent = 'Debug this script — my AWS key is ';
+    var chip = document.createElement('span');
+    chip.className   = 'rdx-chip';
+    chip.textContent = '[SECRET_1]';
+    rdxBox.appendChild(pre);
+    rdxBox.appendChild(chip);
+    rdxBox.appendChild(rdxSendBtn);
+    rdxSendBtn.className   = 'rdx-armed';
+    rdxSendBtn.textContent = '✓';
+    rdxWorld.classList.add('rdx-recede');
+    rdxWorld.style.transition = 'none';
+    rdxReveal.classList.add('rdx-on');
+    rdxSkipBtn.style.display   = 'none';
+    rdxReplayBtn.style.display = 'block';
+  }
+
+  /* ── controls ── */
+  rdxSkipBtn.addEventListener('click', function () {
+    skipped = true; setTimeout(finale, 50);
+  });
+  rdxReplayBtn.addEventListener('click', function () {
+    if (heroEl.clientWidth < 640 || reduced) { finaleImmediate(); } else { play(); }
+  });
+
+  /* Scroll past hero while intro is playing → jump to finale */
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting && !introFinished && !skipped) {
+        skipped = true; setTimeout(finale, 50);
+      }
+    }, { threshold: 0.05 }).observe(heroEl);
+  }
+
+  /* ── decide: full cinematic / static finale / returning visitor ── */
+  var heroW = heroEl.clientWidth;
+  var introSeen = false;
+  try { introSeen = !!sessionStorage.getItem('rdx_intro_seen'); } catch (e) {}
+
+  if (reduced) {
+    finaleImmediate();          /* accessibility */
+  } else if (heroW < 640) {
+    finaleImmediate();          /* mobile — static frame */
+  } else if (introSeen) {
+    finaleImmediate();          /* returning visitor */
+  } else {
+    try { sessionStorage.setItem('rdx_intro_seen', '1'); } catch (e) {}
+    setTimeout(play, 400);     /* first visit — play the sequence */
+  }
+
+})();
+</script>
 
 <!-- ══════════════════════════════════════════════
      TRUSTED BY (logos strip)
@@ -513,8 +1313,7 @@
           </div>
         </div>
 
-        <!-- Duplicate set for a seamless marquee loop — hidden from
-             assistive tech since it repeats the same three quotes. -->
+        <!-- Duplicate set for seamless marquee loop — hidden from assistive tech -->
         <div class="testimonial-card" aria-hidden="true">
           <div class="testimonial-stars">★★★★★</div>
           <p class="testimonial-text">
@@ -613,7 +1412,6 @@
         <a href="#">Compliance</a>
       </div>
     </div>
-
 
     <div class="footer-bottom">
       <div>© 2025 Redactr. All rights reserved.</div>
