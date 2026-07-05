@@ -46,6 +46,7 @@ html {
   scroll-behavior: smooth;
   font-size: 16px;
   scroll-padding-top: 90px;
+  overflow-x: hidden;
 }
 
 body {
@@ -2114,20 +2115,75 @@ p  { color: var(--muted); line-height: 1.8; }
 
 @media (max-width: 768px) {
   /* ── Spacing ── */
-  .section    { padding: 64px 0; }
-  .section-sm { padding: 44px 0; }
+  .container { padding: 0 18px; }
+  .section    { padding: 68px 0; }
+  .section-sm { padding: 42px 0; }
 
-  /* ── Grids ── */
-  .grid-2 { grid-template-columns: minmax(0, 1fr); }
-  .grid-3 { grid-template-columns: minmax(0, 1fr); }
+  /* ── Typography ── */
+  h1 { font-size: clamp(1.9rem, 7vw, 2.7rem); line-height: 1.18; }
+  h2 { font-size: clamp(1.45rem, 5.8vw, 2rem); line-height: 1.2; }
+  h3 { font-size: clamp(1.08rem, 4.2vw, 1.3rem); line-height: 1.25; }
+  p  { line-height: 1.7; }
+
+  /* ── Grids & stacks ── */
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .hero-actions, .hero-stats, .demo-stage, .contact-grid, .checkout-grid, .footer-bottom { flex-direction: column; align-items: stretch; gap: 18px; }
+  .hero-stats { gap: 18px; }
+  .section-header { margin-bottom: 36px; }
 
   /* ── Nav ── */
-  .nav-links, .nav-actions { display: none; }
-  .nav-menu-btn { display: block; }
+  .navbar {
+    top: 10px;
+    width: calc(100% - 16px);
+    min-height: 64px;
+    padding: 8px 10px;
+    border-radius: 24px;
+  }
+  .nav-inner { gap: 10px; }
+  .nav-logo { font-size: 1.1rem; gap: 8px; }
+  .nav-logo img { width: 36px; height: 36px; }
+  .nav-links { display: none; }
+  .nav-actions { display: flex; gap: 8px; margin-left: auto; }
+  .nav-actions .btn-outline { display: none; }
+  .nav-actions .btn-primary { padding: 10px 14px; font-size: 0.85rem; }
+  .nav-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    min-height: 48px;
+    margin-left: 4px;
+  }
+
+  /* ── Buttons & interactive controls ── */
+  button,
+  .btn,
+  .nav-menu-btn,
+  .nav-links a,
+  .nav-mobile a,
+  .toggle-opt,
+  .form-input,
+  .form-textarea,
+  .form-select,
+  .chat-send-btn {
+    min-height: 48px;
+  }
+  .btn,
+  .nav-actions .btn,
+  .nav-mobile a.btn {
+    justify-content: center;
+    padding-block: 12px;
+  }
+  .form-input,
+  .form-textarea,
+  .form-select {
+    font-size: 16px;
+    min-height: 48px;
+  }
+  .form-textarea { min-height: 140px; }
 
   /* ── Hero (non-cinematic pages) ── */
   .hero-stats { flex-wrap: wrap; gap: 24px; }
-  .section-header { margin-bottom: 40px; }
 
   /* ── Page-level hero sections ── */
   .pricing-hero  { padding: 100px 0 50px; }
@@ -2159,7 +2215,8 @@ p  { color: var(--muted); line-height: 1.8; }
   .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
 
   /* ── Pricing grid — full width on small screens ── */
-  .pricing-grid { max-width: 100%; }
+  .pricing-grid { grid-template-columns: minmax(0, 1fr); max-width: 100%; gap: 20px; }
+  .pricing-card { padding: 28px 24px; }
 }
 
 @media (max-width: 480px) {
