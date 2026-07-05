@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ── Card tilt + spotlight ─────────────────────────── */
   if (!reducedMotion) {
-    document.querySelectorAll('.card, .testimonial-card').forEach((card) => {
+    document.querySelectorAll('.card, .testimonial-card, .pricing-card').forEach((card) => {
       card.classList.add('tilt');
 
       card.addEventListener('mousemove', (e) => {

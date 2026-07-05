@@ -7,7 +7,7 @@
   <meta name="description" content="Redactr automatically detects and redacts sensitive information before employees send prompts to ChatGPT, Claude, Gemini and other AI tools." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" href="assets/Logo.png" />
   <script>
@@ -29,25 +29,25 @@
   <style>
     /* Custom properties + container */
     #rdx-hero {
-      --rdx-ink:      #14181F;
-      --rdx-slate:    #232A36;
-      --rdx-slate-2:  #2C3542;
+      --rdx-ink:      #181D27;
+      --rdx-slate:    #273445;
+      --rdx-slate-2:  #314454;
       --rdx-teal:     #14C8A6;
-      --rdx-teal-dim: rgba(20,200,166,0.14);
+      --rdx-teal-dim: rgba(20,200,166,0.16);
       --rdx-red:      #FF5247;
-      --rdx-red-dim:  rgba(255,82,71,0.12);
-      --rdx-text:     #EDF1F5;
-      --rdx-text-dim: #8A95A5;
-      --rdx-border:   rgba(255,255,255,0.08);
+      --rdx-red-dim:  rgba(255,82,71,0.14);
+      --rdx-text:     #F5F8FC;
+      --rdx-text-dim: #A0ACC0;
+      --rdx-border:   rgba(255,255,255,0.12);
 
       position: relative;
       height: 100dvh;
       height: 100vh; /* fallback */
       overflow: hidden;
       isolation: isolate; /* contain z-indexes — navbar stays above */
-      background: var(--rdx-ink);
+      background: linear-gradient(135deg, #181D27 0%, #1E2734 100%);
       color: var(--rdx-text);
-      font-family: 'Space Grotesk', sans-serif;
+      font-family: 'Manrope', 'Inter', sans-serif;
     }
 
     /* Vignette */
@@ -56,6 +56,7 @@
       background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
       pointer-events: none; z-index: 5;
     }
+
     /* Bottom gradient — blends hero into the next section */
     #rdx-hero::before {
       content: ""; position: absolute; bottom: 0; left: 0; right: 0;
@@ -152,6 +153,7 @@
       transition: box-shadow 0.3s ease, border-color 0.3s ease;
     }
     #rdx-extIcon svg { width: 14px; height: 14px; }
+    #rdx-extIcon img { width: 16px; height: 16px; border-radius: 4px; object-fit: cover; }
     #rdx-extIcon.rdx-live {
       border-color: var(--rdx-red);
       box-shadow: 0 0 16px rgba(255,82,71,0.55);
@@ -199,6 +201,54 @@
       width: 30px; height: 30px; border-radius: 8px;
       background: var(--rdx-slate-2); display: grid; place-items: center;
       color: var(--rdx-text-dim); font-size: 14px; transition: all 0.25s ease;
+    }
+
+    #rdx-hero .rdx-btn,
+    #rdx-hero .rdx-pp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--rdx-text);
+      font-weight: 600;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.06);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease, background 0.35s ease;
+    }
+
+    #rdx-hero .rdx-btn:hover,
+    #rdx-hero .rdx-pp-btn:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 16px 34px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+
+    #rdx-hero .rdx-btn:active,
+    #rdx-hero .rdx-pp-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    #rdx-hero .rdx-btn.rdx-btn-primary,
+    #rdx-hero .rdx-pp-btn.rdx-primary {
+      background: linear-gradient(135deg, var(--rdx-teal), #0C8E78);
+      color: #06201A;
+      border-color: rgba(255,255,255,0.16);
+    }
+
+    #rdx-hero .rdx-btn.rdx-btn-ghost,
+    #rdx-hero .rdx-pp-btn.rdx-ghost {
+      background: rgba(20,24,31,0.45);
+      color: var(--rdx-text);
+    }
+
+    #rdx-hero .rdx-btn.rdx-btn-ghost:hover,
+    #rdx-hero .rdx-pp-btn.rdx-ghost:hover {
+      border-color: rgba(20,200,166,0.4);
+      background: rgba(20,200,166,0.13);
     }
     #rdx-sendBtn.rdx-armed   { background: var(--rdx-teal); color: #06201A; }
     #rdx-sendBtn.rdx-blocked { background: var(--rdx-red);  color: #fff; }
@@ -285,11 +335,18 @@
     }
     #rdx-hero .rdx-pp-logo {
       width: 24px; height: 24px; border-radius: 7px;
-      background: linear-gradient(135deg, var(--rdx-teal), #0E8F77);
-      display: grid; place-items: center;
+      overflow: hidden; display: grid; place-items: center;
+      background: transparent;
     }
-    #rdx-hero .rdx-pp-logo svg { width: 13px; height: 13px; }
-    #rdx-hero .rdx-pp-name { font-weight: 700; font-size: 14px; letter-spacing: -0.01em; }
+    #rdx-hero .rdx-pp-logo img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      border-radius: 7px;
+    }
+    #rdx-hero .rdx-pp-name {
+      font-weight: 700; font-size: 14px; letter-spacing: -0.01em;
+      color: var(--rdx-text);
+    }
+    #rdx-hero .rdx-pp-name span { color: var(--primary); }
     #rdx-hero .rdx-pp-state {
       margin-left: auto;
       font-family: 'JetBrains Mono', monospace;
@@ -414,9 +471,52 @@
       padding: 0 10px;
       box-shadow: inset 0 0 0 1px rgba(20,200,166,0.22);
     }
+    #rdx-hero .rdx-rw.rdx-forever.rdx-spotlight {
+      position: relative;
+      overflow: visible;
+      color: var(--rdx-teal);
+      background: transparent;
+      padding: 0 10px;
+      text-shadow:
+        0 0 8px rgba(20,200,166,0.38),
+        0 0 18px rgba(20,200,166,0.2);
+      animation: rdxSpotlightPulse 2.4s ease-in-out infinite;
+    }
+    #rdx-hero .rdx-rw.rdx-forever.rdx-spotlight::before {
+      content: "";
+      position: absolute;
+      inset: -2px -6px;
+      border: 1px solid rgba(20,200,166,0.75);
+      border-radius: 10px;
+      box-shadow:
+        0 0 0 1px rgba(20,200,166,0.18),
+        0 0 16px rgba(20,200,166,0.35),
+        inset 0 0 12px rgba(20,200,166,0.16);
+      transform: scale(0.98);
+      opacity: 0.95;
+      pointer-events: none;
+    }
+    #rdx-hero .rdx-rw.rdx-forever.rdx-spotlight::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 10px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.28) 40%, transparent 100%);
+      transform: translateX(-120%);
+      animation: rdxSpotlightSweep 2.2s ease-in-out infinite;
+      pointer-events: none;
+    }
     #rdx-reveal.rdx-on .rdx-rw.rdx-forever::after {
       animation: rdxWipe 0.55s cubic-bezier(0.7,0,0.2,1) forwards;
       animation-delay: 0.42s;
+    }
+    @keyframes rdxSpotlightPulse {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-2px) scale(1.02); }
+    }
+    @keyframes rdxSpotlightSweep {
+      0% { transform: translateX(-125%); }
+      100% { transform: translateX(125%); }
     }
 
     #rdx-hero .rdx-sub {
@@ -552,10 +652,7 @@
             <div class="rdx-lights"><span></span><span></span><span></span></div>
             <div class="rdx-url">chatgpt.com</div>
             <div id="rdx-extIcon">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 2L4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4z" fill="#14C8A6"/>
-                <rect x="8" y="10.5" width="8" height="3" rx="1.5" fill="#06201A"/>
-              </svg>
+              <img src="assets/Logo.png" alt="Redactr" />
               <span class="rdx-notif" aria-hidden="true">1</span>
             </div>
           </div>
@@ -575,12 +672,9 @@
           <div id="rdx-popup" role="status" aria-live="polite" aria-label="Redactr security alert">
             <div class="rdx-pp-head">
               <div class="rdx-pp-logo">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 2L4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4z" fill="#06201A"/>
-                  <rect x="8" y="10.5" width="8" height="3" rx="1.5" fill="#14C8A6"/>
-                </svg>
+                <img src="assets/Logo.png" alt="Redactr logo" />
               </div>
-              <div class="rdx-pp-name">Redactr</div>
+              <div class="rdx-pp-name">Redact<span>r</span></div>
               <div class="rdx-pp-state">SEND BLOCKED</div>
             </div>
             <div class="rdx-pp-body">
@@ -626,8 +720,8 @@
       <div class="rdx-eyebrow"><span class="rdx-dot"></span> AI Data Leak Prevention</div>
       <h1>
         <span class="rdx-rw" style="--d:0.30s">Protect</span>
-        <span class="rdx-rw rdx-forever" style="--d:0.42s">Sensitive</span>
-        <span class="rdx-rw" style="--d:0.54s">Data</span><br>
+        <span class="rdx-rw rdx-forever rdx-spotlight" style="--d:0.42s">Sensitive</span>
+        <span class="rdx-rw rdx-forever rdx-spotlight" style="--d:0.54s">Data</span><br>
         <span class="rdx-rw" style="--d:0.66s">Before</span>
         <span class="rdx-rw" style="--d:0.78s">It</span>
         <span class="rdx-rw" style="--d:0.90s">Reaches</span>
@@ -1020,7 +1114,7 @@
     </div>
 
     <div class="bento-grid">
-      <div class="card reveal bento-lg">
+      <div class="card reveal">
         <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="14.5" r="3.5"/><path d="M10.5 12 19 3.5M16 6.5 18 8.5M13.5 9 15.5 11"/></svg></div>
         <h3>API Key Detection</h3>
         <p>Catches AWS access keys and OpenAI-style API keys before they escape into AI chat logs — the single most common way a small team leaks production credentials.</p>
