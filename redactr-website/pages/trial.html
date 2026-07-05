@@ -7,228 +7,313 @@
   <link rel="stylesheet" href="../css/styles.css" />
   <link rel="icon" href="../assets/Logo.png" />
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body { font-family: 'Inter', 'Segoe UI', sans-serif; }
+
+    /* ── Aurora background ── */
     .trial-page {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
+      padding: 100px 20px 60px;
+      position: relative;
+      overflow: hidden;
+      background: #070b14;
     }
+    .trial-page::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(20,200,166,0.13) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(99,102,241,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 60% at 50% 100%, rgba(20,200,166,0.07) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Floating glass card ── */
     .trial-card {
-      background: var(--card-bg, #151c2c);
-      border: 1px solid var(--border, rgba(255,255,255,0.08));
-      border-radius: 20px;
-      padding: 48px 40px;
-      max-width: 420px;
+      position: relative;
+      z-index: 1;
+      background: rgba(15, 20, 35, 0.72);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 28px;
+      padding: 52px 44px;
+      max-width: 440px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+      box-shadow:
+        0 0 0 1px rgba(20,200,166,0.08),
+        0 32px 80px rgba(0,0,0,0.55),
+        0 8px 24px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.07);
     }
-    .trial-logo {
-      width: 52px;
+
+    /* ── Sign-in view ── */
+    .trial-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(20,200,166,0.1);
+      border: 1px solid rgba(20,200,166,0.25);
+      border-radius: 999px;
+      padding: 5px 14px 5px 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #14c8a6;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
       margin-bottom: 24px;
     }
-    .trial-card h1 {
-      font-size: 1.7rem;
-      font-weight: 800;
-      margin: 0 0 10px;
-      letter-spacing: -0.02em;
+    .trial-pill-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #14c8a6;
+      box-shadow: 0 0 8px #14c8a6;
+      animation: pulse-dot 2s ease-in-out infinite;
     }
-    .trial-card h1 span {
-      color: var(--primary, #14c8a6);
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    .trial-card h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      margin: 0 0 12px;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      color: #fff;
+    }
+    .trial-card h1 .h1-teal {
+      background: linear-gradient(135deg, #14c8a6, #5eead4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .trial-sub {
-      color: var(--text-dim, #8c9bb5);
-      font-size: 0.95rem;
-      line-height: 1.55;
-      margin: 0 0 32px;
+      color: rgba(200,210,230,0.55);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin: 0 0 28px;
+      font-weight: 400;
     }
+
+    /* Divider */
+    .trial-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+      margin: 0 0 24px;
+    }
+
     .trial-perks {
       list-style: none;
-      margin: 0 0 32px;
+      margin: 0 0 28px;
       padding: 0;
       text-align: left;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 11px;
     }
     .trial-perks li {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 0.88rem;
-      color: var(--text, #e8eaf0);
+      gap: 11px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: rgba(220,230,245,0.82);
     }
-    .trial-perks li::before {
-      content: "✓";
+    .perk-check {
       flex-shrink: 0;
-      width: 20px;
-      height: 20px;
-      background: rgba(20, 200, 166, 0.15);
+      width: 18px; height: 18px;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary, #14c8a6);
-      font-size: 0.75rem;
-      font-weight: 800;
-      line-height: 20px;
-      text-align: center;
+      background: rgba(20,200,166,0.15);
+      border: 1px solid rgba(20,200,166,0.3);
+      display: flex; align-items: center; justify-content: center;
+      color: #14c8a6;
+      font-size: 0.65rem;
+      font-weight: 900;
     }
+
     .btn-google-trial {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
       width: 100%;
-      padding: 14px;
-      background: #ffffff;
-      color: #1f1f1f;
-      font-size: 0.92rem;
+      padding: 15px;
+      background: #fff;
+      color: #111;
+      font-size: 0.9rem;
       font-weight: 700;
       border: none;
-      border-radius: 10px;
+      border-radius: 14px;
       cursor: pointer;
-      transition: opacity 0.15s;
+      transition: box-shadow 0.2s, transform 0.15s;
+      font-family: inherit;
+      letter-spacing: -0.01em;
     }
-    .btn-google-trial:hover { opacity: 0.9; }
-    .btn-google-trial:disabled { opacity: 0.55; cursor: default; }
-    .btn-google-trial svg { flex-shrink: 0; }
+    .btn-google-trial:hover {
+      box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+      transform: translateY(-1px);
+    }
+    .btn-google-trial:active { transform: translateY(0); }
+    .btn-google-trial:disabled { opacity: 0.5; cursor: default; transform: none; }
+
     .trial-note {
-      margin-top: 18px;
-      font-size: 0.75rem;
-      color: var(--text-dim, #8c9bb5);
+      margin-top: 16px;
+      font-size: 0.72rem;
+      color: rgba(180,190,210,0.45);
+      line-height: 1.5;
     }
-    .trial-note a {
-      color: var(--primary, #14c8a6);
-      text-decoration: none;
-    }
+    .trial-note a { color: rgba(20,200,166,0.8); text-decoration: none; }
+    .trial-note a:hover { color: #14c8a6; }
+
     .trial-error {
       margin-top: 14px;
-      padding: 10px 14px;
-      background: rgba(239, 84, 102, 0.12);
-      border: 1px solid rgba(239, 84, 102, 0.3);
-      border-radius: 8px;
-      color: #ef5466;
+      padding: 11px 14px;
+      background: rgba(239,84,102,0.1);
+      border: 1px solid rgba(239,84,102,0.25);
+      border-radius: 10px;
+      color: #f87181;
       font-size: 0.8rem;
       line-height: 1.4;
       display: none;
+      text-align: left;
     }
+
+    /* ── Success view ── */
     .trial-success {
       display: none;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 18px;
     }
-    .trial-success-icon {
-      width: 64px;
-      height: 64px;
+    .success-icon-wrap {
+      width: 70px; height: 70px;
       border-radius: 50%;
-      background: rgba(20, 200, 166, 0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
+      background: radial-gradient(circle, rgba(20,200,166,0.2), rgba(20,200,166,0.05));
+      border: 1px solid rgba(20,200,166,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 0 32px rgba(20,200,166,0.2);
     }
     .trial-success h2 {
-      font-size: 1.4rem;
-      font-weight: 800;
+      font-size: 1.6rem;
+      font-weight: 900;
       margin: 0;
+      letter-spacing: -0.04em;
+      color: #fff;
     }
-    .trial-success p {
-      color: var(--text-dim, #8c9bb5);
-      font-size: 0.88rem;
-      line-height: 1.55;
+    .trial-success > p {
+      color: rgba(200,210,230,0.55);
+      font-size: 0.86rem;
+      line-height: 1.6;
       margin: 0;
+      text-align: center;
     }
     .trial-days-badge {
-      background: rgba(20, 200, 166, 0.12);
-      border: 1px solid rgba(20, 200, 166, 0.3);
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--primary, #14c8a6);
+      background: rgba(20,200,166,0.1);
+      border: 1px solid rgba(20,200,166,0.25);
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #14c8a6;
+      letter-spacing: -0.02em;
+      width: 100%;
+      text-align: center;
     }
     .btn-download {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 14px 28px;
-      background: linear-gradient(135deg, #14c8a6 0%, #0fa98c 100%);
-      color: #0b1020;
+      padding: 15px;
+      background: linear-gradient(135deg, #14c8a6 0%, #0d9e82 100%);
+      color: #051510;
       font-weight: 800;
       font-size: 0.92rem;
-      border-radius: 10px;
+      border-radius: 14px;
       text-decoration: none;
       width: 100%;
-      box-sizing: border-box;
+      transition: box-shadow 0.2s, transform 0.15s;
+      letter-spacing: -0.01em;
     }
-    .btn-download:hover { opacity: 0.92; }
+    .btn-download:hover {
+      box-shadow: 0 8px 28px rgba(20,200,166,0.35);
+      transform: translateY(-1px);
+    }
     .email-sent-note {
       display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(20,200,166,0.08);
-      border: 1px solid rgba(20,200,166,0.2);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 0.78rem;
-      color: var(--text-dim, #8c9bb5);
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(20,200,166,0.06);
+      border: 1px solid rgba(20,200,166,0.15);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.77rem;
+      color: rgba(180,200,220,0.65);
       text-align: left;
+      width: 100%;
+      line-height: 1.5;
     }
-    .email-sent-note span.check { color: #14c8a6; font-size: 1rem; flex-shrink: 0; }
+    .email-sent-note .check { color: #14c8a6; flex-shrink: 0; margin-top: 1px; }
+    .email-sent-note strong { color: rgba(220,235,255,0.85); font-weight: 600; }
+
+    /* Mobile section */
     .mobile-section {
       border-top: 1px solid rgba(255,255,255,0.07);
-      padding-top: 20px;
-      margin-top: 4px;
+      padding-top: 22px;
       width: 100%;
     }
-    .mobile-section h3 {
-      font-size: 0.85rem;
+    .mobile-section-label {
+      font-size: 0.68rem;
       font-weight: 700;
-      color: var(--text-dim, #8c9bb5);
+      color: rgba(160,175,200,0.5);
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
       margin: 0 0 14px;
+      text-align: left;
     }
-    .mobile-inner {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-    }
+    .mobile-inner { display: flex; gap: 14px; align-items: flex-start; }
     #qr-canvas {
       border-radius: 10px;
       overflow: hidden;
       flex-shrink: 0;
       background: #fff;
-      padding: 6px;
+      padding: 5px;
     }
-    .store-badges {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex: 1;
-    }
+    .store-badges { display: flex; flex-direction: column; gap: 8px; flex: 1; }
     .store-badge {
       display: flex;
       align-items: center;
       gap: 10px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      padding: 10px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 11px;
+      padding: 10px 13px;
       text-decoration: none;
-      color: var(--text, #e8eaf0);
-      font-size: 0.78rem;
-      transition: background 0.15s;
+      color: #e8eaf0;
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
     }
-    .store-badge:hover { background: rgba(255,255,255,0.09); }
-    .store-badge .store-icon { font-size: 1.4rem; flex-shrink: 0; }
-    .store-badge .store-label { font-size: 0.65rem; color: var(--text-dim, #8c9bb5); display: block; }
-    .store-badge .store-name { font-weight: 700; font-size: 0.82rem; display: block; }
+    .store-badge:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(20,200,166,0.2);
+      transform: translateY(-1px);
+    }
+    .store-badge .store-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .store-badge .store-label { font-size: 0.6rem; color: rgba(160,175,200,0.55); display: block; letter-spacing: 0.3px; }
+    .store-badge .store-name { font-weight: 700; font-size: 0.8rem; display: block; color: #e8eaf0; }
+    .qr-hint { font-size: 0.68rem; color: rgba(160,175,200,0.4); margin: 10px 0 0; text-align: center; }
   </style>
 </head>
 <body>
@@ -263,15 +348,22 @@
 
     <!-- Sign-in state -->
     <div id="trial-signin-view">
-      <img src="../assets/Logo.png" alt="Redactr" class="trial-logo" />
-      <h1>Start Your <span>7-Day</span> Free Trial</h1>
-      <p class="trial-sub">No credit card required. Full access to the Chrome extension for 7 days.</p>
+      <div class="trial-pill">
+        <span class="trial-pill-dot"></span>
+        No credit card required
+      </div>
+      <h1>Try Redactr<br><span class="h1-teal">Free for 7 Days</span></h1>
+      <p class="trial-sub">Full extension access, zero commitment. Cancel or upgrade anytime.</p>
+
+      <div class="trial-divider"></div>
+
       <ul class="trial-perks">
-        <li>Tier-1 keyword scanning on all major AI tools</li>
-        <li>Works on ChatGPT, Claude, Gemini & more</li>
-        <li>View-only dashboard access on mobile</li>
-        <li>Upgrade anytime to keep your data</li>
+        <li><span class="perk-check">✓</span> Tier-1 scanning on all major AI tools</li>
+        <li><span class="perk-check">✓</span> ChatGPT, Claude, Gemini &amp; more</li>
+        <li><span class="perk-check">✓</span> View-only mobile dashboard</li>
+        <li><span class="perk-check">✓</span> Upgrade anytime, keep your data</li>
       </ul>
+
       <button class="btn-google-trial" id="trial-signin-btn">
         <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -279,35 +371,36 @@
           <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/>
           <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
         </svg>
-        Sign in with Google to activate trial
+        Continue with Google
       </button>
+
       <div class="trial-error" id="trial-error"></div>
+
       <p class="trial-note">
-        By continuing you agree to our
-        <a href="contact.html">Terms of Service</a>.
+        By continuing you agree to our <a href="contact.html">Terms of Service</a>. &nbsp;·&nbsp;
         Already have a plan? <a href="pricing.html">View pricing →</a>
       </p>
     </div>
 
     <!-- Success state -->
     <div class="trial-success" id="trial-success-view">
-      <div class="trial-success-icon">🎉</div>
-      <h2>Trial Activated!</h2>
+      <div class="success-icon-wrap">🎉</div>
+      <h2>You're in.</h2>
       <div class="trial-days-badge" id="trial-days-badge">7 days remaining</div>
-      <p>Sign in with this same Google account inside the extension to start protecting your prompts.</p>
+      <p>Sign in with this same Google account inside the extension to start protecting your prompts instantly.</p>
 
       <a href="#" class="btn-download" id="trial-download-btn">
-        ↓ Download Chrome Extension
+        ↓ &nbsp;Download Chrome Extension
       </a>
 
       <div class="email-sent-note" id="email-sent-note" style="display:none;">
         <span class="check">✓</span>
-        <span>A confirmation email with your download link has been sent to <strong id="email-sent-to"></strong></span>
+        <span>Confirmation email sent to <strong id="email-sent-to"></strong></span>
       </div>
 
       <!-- Mobile app section -->
       <div class="mobile-section">
-        <h3>Mobile App</h3>
+        <p class="mobile-section-label">Get the mobile app</p>
         <div class="mobile-inner">
           <div id="qr-canvas"></div>
           <div class="store-badges">
@@ -327,7 +420,7 @@
             </a>
           </div>
         </div>
-        <p style="font-size:0.72rem;color:var(--text-dim,#8c9bb5);margin:10px 0 0;text-align:center;">Scan QR to open store links on your phone</p>
+        <p class="qr-hint">Scan QR with your phone to open store links</p>
       </div>
     </div>
 

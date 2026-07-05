@@ -343,51 +343,102 @@ async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, downloadUrl
   const from = process.env.EMAIL_FROM || "Redactr <onboarding@resend.dev>";
   const name = displayName || toEmail.split("@")[0];
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
-<body style="margin:0;padding:0;background:#0b1020;font-family:'Segoe UI',Arial,sans-serif;color:#e8eaf0;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0b1020;padding:40px 0;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#151c2c;border-radius:16px;border:1px solid rgba(255,255,255,0.08);overflow:hidden;max-width:560px;width:100%;">
-        <tr><td style="background:linear-gradient(135deg,#14c8a6,#0fa98c);padding:32px 40px;text-align:center;">
-          <h1 style="margin:0;font-size:24px;font-weight:800;color:#0b1020;letter-spacing:-0.5px;">🎉 Trial Activated!</h1>
-        </td></tr>
-        <tr><td style="padding:36px 40px;">
-          <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Hi ${name},</p>
-          <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#8c9bb5;">Your <strong style="color:#14c8a6;">${days}-day free trial</strong> of Redactr is now active. You have full access to Tier-1 keyword scanning on ChatGPT, Claude, Gemini, and more.</p>
+  const trialEndFormatted = new Date(trialEnd).toLocaleDateString("en-US", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+  const siteUrl = "https://redactr-swart.vercel.app";
 
-          <div style="background:#0b1020;border-radius:12px;border:1px solid rgba(20,200,166,0.2);padding:20px 24px;margin:0 0 28px;">
-            <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:1px;color:#8c9bb5;">TRIAL ENDS</p>
-            <p style="margin:0;font-size:18px;font-weight:800;color:#14c8a6;">${new Date(trialEnd).toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</p>
-          </div>
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Your Redactr Trial is Active</title>
+</head>
+<body style="margin:0;padding:0;background:#07090f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',Arial,sans-serif;">
 
-          <p style="margin:0 0 16px;font-size:14px;font-weight:700;color:#e8eaf0;">Get started in 2 steps:</p>
-          <table cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 28px;">
-            <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-              <span style="display:inline-block;width:24px;height:24px;border-radius:50%;background:#14c8a6;color:#0b1020;font-size:12px;font-weight:800;text-align:center;line-height:24px;margin-right:12px;">1</span>
-              <span style="font-size:14px;color:#e8eaf0;">Install the Chrome extension below</span>
-            </td></tr>
-            <tr><td style="padding:10px 0;">
-              <span style="display:inline-block;width:24px;height:24px;border-radius:50%;background:#14c8a6;color:#0b1020;font-size:12px;font-weight:800;text-align:center;line-height:24px;margin-right:12px;">2</span>
-              <span style="font-size:14px;color:#e8eaf0;">Sign in with this Google account in the extension</span>
-            </td></tr>
-          </table>
+<!-- Outer wrapper -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#07090f;min-height:100vh;">
+<tr><td align="center" style="padding:48px 16px;">
 
-          <div style="text-align:center;margin:0 0 28px;">
-            <a href="${downloadUrl}" style="display:inline-block;background:linear-gradient(135deg,#14c8a6,#0fa98c);color:#0b1020;font-weight:800;font-size:15px;text-decoration:none;padding:14px 32px;border-radius:10px;">↓ Download Chrome Extension</a>
-          </div>
+  <!-- Card -->
+  <table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;background:#0f1420;border-radius:20px;border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
 
-          <p style="margin:0 0 8px;font-size:13px;color:#8c9bb5;text-align:center;">Want full dashboard access? Upgrade anytime before your trial ends.</p>
-          <p style="text-align:center;margin:0;"><a href="${SERVER_URL.replace("onrender.com","vercel.app").replace("redactr-ln5t","redactr-swart")}/pages/pricing.html" style="color:#14c8a6;font-size:13px;text-decoration:none;font-weight:600;">View pricing →</a></p>
-        </td></tr>
-        <tr><td style="padding:20px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
-          <p style="margin:0;font-size:12px;color:#8c9bb5;">You received this because you signed up for a Redactr trial at redactr-swart.vercel.app</p>
+    <!-- Top accent bar -->
+    <tr><td style="background:linear-gradient(90deg,#0d9e82,#14c8a6,#5eead4);height:3px;font-size:0;line-height:0;">&nbsp;</td></tr>
+
+    <!-- Header -->
+    <tr><td style="padding:40px 44px 0;text-align:left;">
+      <p style="margin:0 0 28px;font-size:13px;font-weight:700;color:#14c8a6;letter-spacing:1.2px;text-transform:uppercase;">Redactr</p>
+      <h1 style="margin:0 0 12px;font-size:28px;font-weight:800;color:#ffffff;letter-spacing:-0.04em;line-height:1.15;">Your free trial<br>is now active.</h1>
+      <p style="margin:0;font-size:15px;color:rgba(180,195,220,0.6);line-height:1.65;font-weight:400;">Hi ${name} — you have <strong style="color:#ffffff;font-weight:700;">${days} days</strong> of full Redactr access starting today.</p>
+    </td></tr>
+
+    <!-- Divider -->
+    <tr><td style="padding:28px 44px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));font-size:0;">&nbsp;</td></tr></table></td></tr>
+
+    <!-- Trial end date block -->
+    <tr><td style="padding:24px 44px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0a0e1a;border-radius:14px;border:1px solid rgba(20,200,166,0.15);">
+        <tr><td style="padding:20px 24px;">
+          <p style="margin:0 0 6px;font-size:10px;font-weight:700;color:rgba(160,175,200,0.5);letter-spacing:1.4px;text-transform:uppercase;">Trial ends</p>
+          <p style="margin:0;font-size:20px;font-weight:800;color:#14c8a6;letter-spacing:-0.03em;">${trialEndFormatted}</p>
         </td></tr>
       </table>
     </td></tr>
+
+    <!-- Steps -->
+    <tr><td style="padding:28px 44px 0;">
+      <p style="margin:0 0 16px;font-size:12px;font-weight:700;color:rgba(160,175,200,0.5);letter-spacing:1.2px;text-transform:uppercase;">Get started</p>
+
+      <!-- Step 1 -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
+        <tr>
+          <td width="32" valign="top" style="padding-top:1px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:rgba(20,200,166,0.12);border:1px solid rgba(20,200,166,0.25);text-align:center;line-height:26px;font-size:12px;font-weight:800;color:#14c8a6;">1</div>
+          </td>
+          <td style="padding-left:12px;vertical-align:top;">
+            <p style="margin:0;font-size:14px;font-weight:600;color:#e8eaf0;line-height:1.5;">Install the Chrome extension</p>
+            <p style="margin:4px 0 0;font-size:13px;color:rgba(180,195,220,0.5);">Download and load it into your browser</p>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Step 2 -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="32" valign="top" style="padding-top:1px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:rgba(20,200,166,0.12);border:1px solid rgba(20,200,166,0.25);text-align:center;line-height:26px;font-size:12px;font-weight:800;color:#14c8a6;">2</div>
+          </td>
+          <td style="padding-left:12px;vertical-align:top;">
+            <p style="margin:0;font-size:14px;font-weight:600;color:#e8eaf0;line-height:1.5;">Sign in with this Google account</p>
+            <p style="margin:4px 0 0;font-size:13px;color:rgba(180,195,220,0.5);">Use <span style="color:rgba(220,235,255,0.75);font-weight:500;">${toEmail}</span> inside the extension</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+
+    <!-- CTA button -->
+    <tr><td style="padding:28px 44px 0;text-align:center;">
+      <a href="${downloadUrl}" style="display:inline-block;background:linear-gradient(135deg,#14c8a6,#0d9e82);color:#041510;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;letter-spacing:-0.02em;">↓ &nbsp;Download Chrome Extension</a>
+    </td></tr>
+
+    <!-- Upgrade nudge -->
+    <tr><td style="padding:20px 44px 0;text-align:center;">
+      <p style="margin:0;font-size:13px;color:rgba(160,175,200,0.4);line-height:1.6;">Want the full dashboard &amp; team features? <a href="${siteUrl}/pages/pricing.html" style="color:#14c8a6;text-decoration:none;font-weight:600;">View plans →</a></p>
+    </td></tr>
+
+    <!-- Divider -->
+    <tr><td style="padding:32px 44px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:1px;background:rgba(255,255,255,0.06);font-size:0;">&nbsp;</td></tr></table></td></tr>
+
+    <!-- Footer -->
+    <tr><td style="padding:20px 44px 32px;">
+      <p style="margin:0;font-size:11px;color:rgba(140,155,180,0.35);line-height:1.6;">You're receiving this because you signed up for a Redactr free trial at <a href="${siteUrl}" style="color:rgba(140,155,180,0.5);text-decoration:none;">redactr-swart.vercel.app</a>.</p>
+    </td></tr>
+
   </table>
+
+</td></tr>
+</table>
+
 </body>
 </html>`;
 
