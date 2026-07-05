@@ -1017,6 +1017,11 @@ p  { color: var(--muted); line-height: 1.8; }
   text-align: center;
 }
 
+.pricing-section {
+  position: relative;
+  overflow: hidden;
+}
+
 .pricing-toggle {
   display: inline-flex;
   align-items: center;
@@ -1048,6 +1053,7 @@ p  { color: var(--muted); line-height: 1.8; }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   align-items: stretch;
+  perspective: 1200px;
 }
 
 .pricing-card {
@@ -1056,12 +1062,51 @@ p  { color: var(--muted); line-height: 1.8; }
   border-radius: var(--radius-lg);
   padding: 36px 32px;
   position: relative;
-  transition: box-shadow 0.35s ease, border-color 0.35s ease, background 0.35s ease;
   display: flex;
   flex-direction: column;
   opacity: 0;
-  transform: translateY(24px);
-  animation: pricingCardReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform: translateY(32px) scale(0.96);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    background 0.35s ease;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+}
+
+.pricing-card.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.pricing-card[data-card-index="0"].is-visible {
+  transform: translateY(0) translateX(8px) rotateY(8deg) scale(0.97);
+}
+
+.pricing-card[data-card-index="2"].is-visible {
+  transform: translateY(0) translateX(-8px) rotateY(-8deg) scale(0.97);
+}
+
+.pricing-card[data-card-index="1"].is-visible {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.pricing-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.06) 40%, transparent 80%);
+  transform: translateX(-120%);
+  transition: transform 0.8s ease;
+  pointer-events: none;
+}
+
+.pricing-card:hover::before,
+.pricing-card.popular::before {
+  transform: translateX(120%);
 }
 
 /* Plans have different feature-list lengths, so without this the three
@@ -1080,8 +1125,16 @@ p  { color: var(--muted); line-height: 1.8; }
   box-shadow: var(--glow);
 }
 
+.pricing-card:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
 .pricing-card.popular {
   background: linear-gradient(135deg, rgba(20,200,166,0.08), var(--surface));
+}
+
+.pricing-card.popular:hover {
+  transform: translateY(-10px) scale(1.03);
 }
 
 .popular-badge {
@@ -1159,17 +1212,6 @@ p  { color: var(--muted); line-height: 1.8; }
 @keyframes pricingPriceFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-2px); }
-}
-
-@keyframes pricingCardReveal {
-  0% {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .plan-desc {

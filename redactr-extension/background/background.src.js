@@ -65,6 +65,8 @@ const DEFAULT_STATE = {
   plan: null,
   joinError: null, // set when signed in but no invite exists for this email yet
   customKeywords: [], // Enterprise-only, admin-managed (see getEntitlement)
+  trialDaysLeft: 0,
+  trialExpired: false,
 };
 
 const OFFSCREEN_PATH = "offscreen/offscreen.html";
@@ -100,10 +102,14 @@ async function joinCompany() {
   try {
     await callApi("POST", "/claimOrJoinCompany");
     await chrome.storage.local.set({ joinError: null });
-    await fetchEntitlement();
   } catch (error) {
+    // Trial users have no company invite — claimOrJoinCompany returns 400,
+    // but we still need to fetch their entitlement (which will hit the
+    // trials/{uid} path on the server). Non-trial 400s surface as joinError.
     await chrome.storage.local.set({ joinError: String(error.message || error) });
   }
+  // Always fetch entitlement regardless — trial users bypass company join.
+  await fetchEntitlement();
 }
 
 /**
@@ -117,7 +123,13 @@ async function fetchEntitlement() {
       plan: data.plan,
       tier2Allowed: data.tier2Allowed,
       customKeywords: data.customKeywords ?? [],
+      trialDaysLeft: data.trialDaysLeft ?? 0,
+      trialExpired: data.trialExpired ?? false,
     });
+    // Clear joinError for trial users — their "no company" state is expected.
+    if (data.plan === "trial" || data.plan === "trial_expired") {
+      await chrome.storage.local.set({ joinError: null });
+    }
   } catch (error) {
     console.warn("Redactr: failed to fetch entitlement", error);
   }

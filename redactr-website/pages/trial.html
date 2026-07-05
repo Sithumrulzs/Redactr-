@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Start Free Trial — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" href="../assets/Logo.png" />
+  <style>
+    .trial-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .trial-card {
+      background: var(--card-bg, #151c2c);
+      border: 1px solid var(--border, rgba(255,255,255,0.08));
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    }
+    .trial-logo {
+      width: 52px;
+      margin-bottom: 24px;
+    }
+    .trial-card h1 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
+    }
+    .trial-card h1 span {
+      color: var(--primary, #14c8a6);
+    }
+    .trial-sub {
+      color: var(--text-dim, #8c9bb5);
+      font-size: 0.95rem;
+      line-height: 1.55;
+      margin: 0 0 32px;
+    }
+    .trial-perks {
+      list-style: none;
+      margin: 0 0 32px;
+      padding: 0;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .trial-perks li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: var(--text, #e8eaf0);
+    }
+    .trial-perks li::before {
+      content: "✓";
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      background: rgba(20, 200, 166, 0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary, #14c8a6);
+      font-size: 0.75rem;
+      font-weight: 800;
+      line-height: 20px;
+      text-align: center;
+    }
+    .btn-google-trial {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px;
+      background: #ffffff;
+      color: #1f1f1f;
+      font-size: 0.92rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-google-trial:hover { opacity: 0.9; }
+    .btn-google-trial:disabled { opacity: 0.55; cursor: default; }
+    .btn-google-trial svg { flex-shrink: 0; }
+    .trial-note {
+      margin-top: 18px;
+      font-size: 0.75rem;
+      color: var(--text-dim, #8c9bb5);
+    }
+    .trial-note a {
+      color: var(--primary, #14c8a6);
+      text-decoration: none;
+    }
+    .trial-error {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: rgba(239, 84, 102, 0.12);
+      border: 1px solid rgba(239, 84, 102, 0.3);
+      border-radius: 8px;
+      color: #ef5466;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      display: none;
+    }
+    .trial-success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .trial-success-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(20, 200, 166, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
+    .trial-success h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin: 0;
+    }
+    .trial-success p {
+      color: var(--text-dim, #8c9bb5);
+      font-size: 0.88rem;
+      line-height: 1.55;
+      margin: 0;
+    }
+    .trial-days-badge {
+      background: rgba(20, 200, 166, 0.12);
+      border: 1px solid rgba(20, 200, 166, 0.3);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary, #14c8a6);
+    }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #14c8a6 0%, #0fa98c 100%);
+      color: #0b1020;
+      font-weight: 800;
+      font-size: 0.92rem;
+      border-radius: 10px;
+      text-decoration: none;
+      width: 100%;
+    }
+    .btn-download:hover { opacity: 0.92; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <img src="../assets/Logo.png" alt="Redactr" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="pricing.html" class="btn btn-outline btn-sm">View Plans</a>
+    </div>
+    <button class="nav-menu-btn">☰</button>
+  </div>
+</nav>
+<nav class="nav-mobile">
+  <a href="../index.html">Home</a>
+  <a href="how-it-works.html">How It Works</a>
+  <a href="pricing.html">Pricing</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<div class="trial-page">
+  <div class="trial-card">
+
+    <!-- Sign-in state -->
+    <div id="trial-signin-view">
+      <img src="../assets/Logo.png" alt="Redactr" class="trial-logo" />
+      <h1>Start Your <span>7-Day</span> Free Trial</h1>
+      <p class="trial-sub">No credit card required. Full access to the Chrome extension for 7 days.</p>
+      <ul class="trial-perks">
+        <li>Tier-1 keyword scanning on all major AI tools</li>
+        <li>Works on ChatGPT, Claude, Gemini & more</li>
+        <li>View-only dashboard access on mobile</li>
+        <li>Upgrade anytime to keep your data</li>
+      </ul>
+      <button class="btn-google-trial" id="trial-signin-btn">
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+          <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Sign in with Google to activate trial
+      </button>
+      <div class="trial-error" id="trial-error"></div>
+      <p class="trial-note">
+        By continuing you agree to our
+        <a href="contact.html">Terms of Service</a>.
+        Already have a plan? <a href="pricing.html">View pricing →</a>
+      </p>
+    </div>
+
+    <!-- Success state -->
+    <div class="trial-success" id="trial-success-view">
+      <div class="trial-success-icon">🎉</div>
+      <h2>Trial Activated!</h2>
+      <div class="trial-days-badge" id="trial-days-badge">7 days remaining</div>
+      <p>
+        Download the Chrome extension and sign in with the same Google account to start protecting your prompts.
+      </p>
+      <a href="#" class="btn-download" id="trial-download-btn">
+        ↓ Download Chrome Extension
+      </a>
+      <p style="font-size:0.75rem;color:var(--text-dim,#8c9bb5);margin-top:4px;">
+        Mobile app available on the App Store &amp; Google Play — sign in to access the dashboard.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase JS SDK (compat build for simplicity) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBTg49GkhytsgHECw-_SagfU_TIV57ncck",
+    authDomain: "redactr-ea568.firebaseapp.com",
+    projectId: "redactr-ea568",
+    appId: "1:116258256150:web:b407a3c35fabc82c0a4c37",
+  };
+  const API_BASE_URL = "https://redactr-ln5t.onrender.com";
+
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+
+  const signinView = document.getElementById("trial-signin-view");
+  const successView = document.getElementById("trial-success-view");
+  const signinBtn = document.getElementById("trial-signin-btn");
+  const errorEl = document.getElementById("trial-error");
+  const daysBadge = document.getElementById("trial-days-badge");
+  const downloadBtn = document.getElementById("trial-download-btn");
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.style.display = "block";
+  }
+
+  function showSuccess(trialEnd) {
+    const days = Math.max(0, Math.ceil((new Date(trialEnd) - Date.now()) / 86400000));
+    daysBadge.textContent = `${days} day${days !== 1 ? "s" : ""} remaining`;
+    signinView.style.display = "none";
+    successView.style.display = "flex";
+  }
+
+  signinBtn.addEventListener("click", async () => {
+    signinBtn.disabled = true;
+    signinBtn.textContent = "Signing in…";
+    errorEl.style.display = "none";
+
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await auth.signInWithPopup(provider);
+      const idToken = await result.user.getIdToken();
+
+      signinBtn.textContent = "Activating trial…";
+
+      const resp = await fetch(`${API_BASE_URL}/createTrial`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Failed to activate trial.");
+
+      showSuccess(data.trialEnd);
+    } catch (err) {
+      showError(err.message || "Something went wrong. Please try again.");
+      signinBtn.disabled = false;
+      signinBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/></svg> Sign in with Google to activate trial`;
+    }
+  });
+</script>
+</body>
+</html>

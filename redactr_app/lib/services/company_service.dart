@@ -79,8 +79,9 @@ class CompanyService {
 
   /// Tier-2 NER is gated to the Enterprise plan, per the pricing copy
   /// already on the website — called once after sign-in, never cached
-  /// indefinitely client-side.
-  Future<({String plan, bool tier2Allowed, List<String> customKeywords})>
+  /// indefinitely client-side. Trial users return plan="trial" with
+  /// trialDaysLeft and trialExpired populated.
+  Future<({String plan, bool tier2Allowed, List<String> customKeywords, int trialDaysLeft, bool trialExpired})>
   getEntitlement() async {
     final data = await _callApi('GET', '/getEntitlement');
     return (
@@ -89,7 +90,16 @@ class CompanyService {
       customKeywords:
           (data['customKeywords'] as List<dynamic>?)?.cast<String>() ??
           const [],
+      trialDaysLeft: data['trialDaysLeft'] as int? ?? 0,
+      trialExpired: data['trialExpired'] as bool? ?? false,
     );
+  }
+
+  /// Activates a 7-day free trial for the signed-in user. Safe to call
+  /// repeatedly — returns immediately if a trial is already active.
+  Future<DateTime> createTrial() async {
+    final data = await _callApi('POST', '/createTrial');
+    return DateTime.parse(data['trialEnd'] as String);
   }
 
   /// Admin-only — writes an invites/{email} doc server-side so the next

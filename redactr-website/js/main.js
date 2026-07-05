@@ -56,6 +56,35 @@ document.addEventListener('DOMContentLoaded', () => {
     revealEls.forEach(el => el.classList.add('visible'));
   }
 
+  // ── Pricing card reveal animation ─────────────
+  const pricingCards = document.querySelectorAll('.pricing-card');
+  if (pricingCards.length) {
+    pricingCards.forEach((card, index) => {
+      card.style.setProperty('--card-delay', `${index * 120}ms`);
+    });
+
+    if ('IntersectionObserver' in window) {
+      const pricingObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const card = entry.target;
+            const index = Number(card.dataset.cardIndex || 0);
+            setTimeout(() => {
+              card.classList.add('is-visible');
+            }, index * 120);
+            pricingObserver.unobserve(card);
+          }
+        });
+      }, { threshold: 0.2 });
+
+      pricingCards.forEach(card => pricingObserver.observe(card));
+    } else {
+      pricingCards.forEach((card, index) => {
+        setTimeout(() => card.classList.add('is-visible'), index * 120);
+      });
+    }
+  }
+
   // ── Reveal-triggered progress bars (risk-scoring breakdown, etc.) ──
   const barFillEls = document.querySelectorAll('.bar-fill[data-fill]');
   if (barFillEls.length) {

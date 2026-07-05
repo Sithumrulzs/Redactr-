@@ -159,13 +159,32 @@ class _ProfileGateState extends State<_ProfileGate> {
   @override
   void initState() {
     super.initState();
-    _profileFuture = _companyService.getUserProfile(widget.uid);
+    _profileFuture = _resolveProfile();
     _registerFcmToken();
+  }
+
+  /// Checks company profile first; if none, falls back to trial entitlement
+  /// so trial users don't land on CompanySetupScreen.
+  Future<Map<String, dynamic>?> _resolveProfile() async {
+    final profile = await _companyService.getUserProfile(widget.uid);
+    if (profile != null) return profile;
+    try {
+      final e = await _companyService.getEntitlement();
+      if (e.plan == 'trial' || e.plan == 'trial_expired') {
+        return {
+          '__trial': true,
+          'plan': e.plan,
+          'trialDaysLeft': e.trialDaysLeft,
+          'trialExpired': e.trialExpired,
+        };
+      }
+    } catch (_) {}
+    return null;
   }
 
   void _refresh() {
     setState(() {
-      _profileFuture = _companyService.getUserProfile(widget.uid);
+      _profileFuture = _resolveProfile();
     });
   }
 
@@ -193,6 +212,12 @@ class _ProfileGateState extends State<_ProfileGate> {
           );
         } else if (snapshot.data == null) {
           inner = CompanySetupScreen(onCompanyReady: _refresh);
+        } else if (snapshot.data!.containsKey('__trial')) {
+          inner = TrialShell(
+            plan: snapshot.data!['plan'] as String,
+            trialDaysLeft: snapshot.data!['trialDaysLeft'] as int,
+            trialExpired: snapshot.data!['trialExpired'] as bool,
+          );
         } else {
           final companyId = snapshot.data!['companyId'] as String;
           inner = RootShell(companyId: companyId);
@@ -205,6 +230,219 @@ class _ProfileGateState extends State<_ProfileGate> {
           child: inner,
         );
       },
+    );
+  }
+}
+
+// ── Trial shell — minimal view-only app for trial users ──────────────────────
+
+class TrialShell extends StatelessWidget {
+  final String plan;
+  final int trialDaysLeft;
+  final bool trialExpired;
+
+  const TrialShell({
+    super.key,
+    required this.plan,
+    required this.trialDaysLeft,
+    required this.trialExpired,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: AppSpacing.xxl),
+              Center(
+                child: Image.asset(
+                  'assets/branding/icon512.png',
+                  width: 72,
+                  height: 72,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Center(
+                child: Text(
+                  'Redactr',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxl),
+
+              // Trial status card
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: trialExpired
+                      ? AppColors.danger.withValues(alpha: 0.08)
+                      : AppColors.primary.withValues(alpha: 0.08),
+                  border: Border.all(
+                    color: trialExpired
+                        ? AppColors.danger.withValues(alpha: 0.3)
+                        : AppColors.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      trialExpired
+                          ? Icons.timer_off_outlined
+                          : Icons.timer_outlined,
+                      color: trialExpired ? AppColors.danger : AppColors.primary,
+                      size: 36,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      trialExpired
+                          ? 'Your free trial has ended'
+                          : '$trialDaysLeft day${trialDaysLeft != 1 ? 's' : ''} left in your trial',
+                      style: TextStyle(
+                        color: trialExpired ? AppColors.danger : AppColors.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      trialExpired
+                          ? 'Upgrade to a paid plan to continue protecting your business.'
+                          : 'You have full extension access during your trial. The mobile app dashboard is available after upgrading.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+
+              // Upgrade button
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.background,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text(
+                  'View Pricing & Upgrade',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              if (!trialExpired) ...[
+                OutlinedButton(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textDim,
+                    side: const BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Download Chrome Extension',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: AppColors.surface,
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'TRIAL INCLUDES',
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      SizedBox(height: AppSpacing.sm),
+                      _TrialFeatureRow(
+                        icon: Icons.check_circle_outline,
+                        text: 'Full Tier-1 keyword scanning on all AI tools',
+                      ),
+                      _TrialFeatureRow(
+                        icon: Icons.check_circle_outline,
+                        text: 'Works on ChatGPT, Claude, Gemini & more',
+                      ),
+                      _TrialFeatureRow(
+                        icon: Icons.lock_outline,
+                        text: 'Dashboard & alerts — upgrade to unlock',
+                        locked: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TrialFeatureRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final bool locked;
+
+  const _TrialFeatureRow({
+    required this.icon,
+    required this.text,
+    this.locked = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: locked ? AppColors.textMuted : AppColors.primary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                color: locked ? AppColors.textMuted : AppColors.text,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

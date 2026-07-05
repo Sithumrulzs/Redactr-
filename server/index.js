@@ -286,8 +286,28 @@ app.post("/createSubscription", async (req, res) => {
 app.get("/getEntitlement", requireAuth, async (req, res) => {
   try {
     const callerDoc = await db.collection("users").doc(req.auth.uid).get();
+
     if (!callerDoc.exists) {
-      res.status(400).json({ error: "Complete company setup first." });
+      // Not a company member — check for an active trial.
+      const trialDoc = await db.collection("trials").doc(req.auth.uid).get();
+      if (!trialDoc.exists) {
+        res.status(400).json({ error: "Complete company setup first." });
+        return;
+      }
+      const trial = trialDoc.data();
+      const now = Date.now();
+      const trialEnd = trial.trialEnd?.toDate?.() ?? new Date(0);
+      const trialActive = trial.trialActive && trialEnd > now;
+      const trialDaysLeft = trialActive
+        ? Math.max(0, Math.ceil((trialEnd - now) / 86400000))
+        : 0;
+      res.json({
+        plan: trialActive ? "trial" : "trial_expired",
+        tier2Allowed: false,
+        customKeywords: [],
+        trialDaysLeft,
+        trialExpired: !trialActive,
+      });
       return;
     }
 
@@ -299,9 +319,44 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
       plan,
       tier2Allowed,
       customKeywords: tier2Allowed ? companyDoc.data()?.customKeywords ?? [] : [],
+      trialDaysLeft: 0,
+      trialExpired: false,
     });
   } catch (error) {
     console.error("getEntitlement failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
+
+/**
+ * Creates a 7-day free trial for a signed-in user who hasn't yet joined a
+ * company. Safe to call multiple times — a second call is a no-op when a
+ * trial is already active so the user can't refresh their 7 days.
+ */
+app.post("/createTrial", requireAuth, async (req, res) => {
+  try {
+    const trialRef = db.collection("trials").doc(req.auth.uid);
+    const existing = await trialRef.get();
+    if (existing.exists && existing.data().trialActive) {
+      const trialEnd = existing.data().trialEnd?.toDate?.() ?? new Date(0);
+      res.json({ ok: true, trialEnd: trialEnd.toISOString(), alreadyActive: true });
+      return;
+    }
+    const now = new Date();
+    const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    await trialRef.set({
+      uid: req.auth.uid,
+      email: req.auth.email ?? "",
+      displayName: req.auth.name ?? "",
+      plan: "trial",
+      trialStart: admin.firestore.Timestamp.fromDate(now),
+      trialEnd: admin.firestore.Timestamp.fromDate(trialEnd),
+      trialActive: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    res.json({ ok: true, trialEnd: trialEnd.toISOString(), alreadyActive: false });
+  } catch (error) {
+    console.error("createTrial failed", error);
     res.status(500).json({ error: "Internal error." });
   }
 });

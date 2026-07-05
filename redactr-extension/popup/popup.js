@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const authEmailEl = document.getElementById("auth-email");
   const authAvatarEl = document.getElementById("auth-avatar");
   const joinErrorEl = document.getElementById("join-error");
+  const trialBannerEl = document.getElementById("trial-banner");
+  const trialTextEl = document.getElementById("trial-text");
 
   function renderAuth(authUser, joinError) {
     signedOutEl.classList.toggle("hidden", !!authUser);
@@ -61,6 +63,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     error: "Failed to load — Tier-1 still active",
   };
 
+  function renderTrialBanner(plan, trialDaysLeft, trialExpired) {
+    const isTrial = plan === "trial" || plan === "trial_expired";
+    trialBannerEl.classList.toggle("hidden", !isTrial);
+    if (!isTrial) return;
+    if (trialExpired || plan === "trial_expired") {
+      trialBannerEl.classList.add("trial-expired");
+      trialTextEl.textContent = "Your free trial has expired.";
+    } else {
+      trialBannerEl.classList.remove("trial-expired");
+      trialTextEl.textContent = `${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left in free trial.`;
+    }
+  }
+
   function renderTier2Status(status, tier2Enabled, tier2Allowed) {
     if (!tier2Allowed) {
       tier2StatusEl.textContent = "Enterprise plan required";
@@ -84,9 +99,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     authUser: null,
     tier2Allowed: false,
     joinError: null,
+    plan: null,
+    trialDaysLeft: 0,
+    trialExpired: false,
   });
 
   renderAuth(state.authUser, state.joinError);
+  renderTrialBanner(state.plan, state.trialDaysLeft, state.trialExpired);
   counterEl.textContent = state.leaksPrevented;
   toggleEl.checked = state.enabled;
   statusEl.textContent = state.enabled
@@ -134,6 +153,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderAuth(changes.authUser.newValue, changes.joinError ? changes.joinError.newValue : null);
     } else if (changes.joinError) {
       renderJoinError(changes.joinError.newValue);
+    }
+    if (changes.plan || changes.trialDaysLeft || changes.trialExpired) {
+      const currentState = {};
+      if (changes.plan) currentState.plan = changes.plan.newValue;
+      if (changes.trialDaysLeft) currentState.trialDaysLeft = changes.trialDaysLeft.newValue;
+      if (changes.trialExpired) currentState.trialExpired = changes.trialExpired.newValue;
+      chrome.storage.local.get({ plan: null, trialDaysLeft: 0, trialExpired: false }, (s) => {
+        renderTrialBanner(
+          currentState.plan ?? s.plan,
+          currentState.trialDaysLeft ?? s.trialDaysLeft,
+          currentState.trialExpired ?? s.trialExpired
+        );
+      });
     }
   });
 });
