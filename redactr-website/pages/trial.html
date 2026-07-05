@@ -314,6 +314,21 @@
     .store-badge .store-label { font-size: 0.6rem; color: rgba(160,175,200,0.55); display: block; letter-spacing: 0.3px; }
     .store-badge .store-name { font-weight: 700; font-size: 0.8rem; display: block; color: #e8eaf0; }
     .qr-hint { font-size: 0.68rem; color: rgba(160,175,200,0.4); margin: 10px 0 0; text-align: center; }
+
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      .trial-page { padding: 80px 16px 40px; }
+      .trial-card { padding: 36px 22px; border-radius: 22px; }
+      .trial-card h1 { font-size: 1.7rem; }
+    }
+    @media (max-width: 420px) {
+      .trial-card { padding: 28px 16px; border-radius: 18px; }
+      .trial-card h1 { font-size: 1.5rem; }
+      .trial-sub { font-size: 0.85rem; }
+      .mobile-inner { flex-direction: column; align-items: center; gap: 16px; }
+      #qr-canvas { margin: 0 auto; }
+      .store-badges { width: 100%; }
+    }
   </style>
 </head>
 <body>

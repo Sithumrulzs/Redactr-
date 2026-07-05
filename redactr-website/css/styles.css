@@ -2113,28 +2113,92 @@ p  { color: var(--muted); line-height: 1.8; }
 }
 
 @media (max-width: 768px) {
-  .section { padding: 70px 0; }
+  /* ── Spacing ── */
+  .section    { padding: 64px 0; }
+  .section-sm { padding: 44px 0; }
+
+  /* ── Grids ── */
   .grid-2 { grid-template-columns: minmax(0, 1fr); }
   .grid-3 { grid-template-columns: minmax(0, 1fr); }
+
+  /* ── Nav ── */
   .nav-links, .nav-actions { display: none; }
   .nav-menu-btn { display: block; }
+
+  /* ── Hero (non-cinematic pages) ── */
   .hero-stats { flex-wrap: wrap; gap: 24px; }
-  .flow-steps { flex-direction: column; }
-  .flow-connector { display: none; }
+  .section-header { margin-bottom: 40px; }
+
+  /* ── Page-level hero sections ── */
+  .pricing-hero  { padding: 100px 0 50px; }
+  .hiw-hero      { padding: 100px 0 48px; }
+  .contact-hero  { padding: 100px 0 40px; }
+  .checkout-hero { padding: 80px 0 32px; }
+
+  /* ── How It Works ── */
+  .hiw-step   { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .hiw-spine  { display: none; }
+  .hiw-code-demo { overflow-x: auto; }
+  .hiw-modal-preview { max-width: 100%; }
+
+  /* ── Forms ── */
   .form-row { grid-template-columns: minmax(0, 1fr); }
-  .footer-grid { grid-template-columns: minmax(0, 1fr); }
-  .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+  .contact-form-wrap  { padding: 28px 24px; }
+  .checkout-form-wrap { padding: 28px 24px; }
+
+  /* ── Checkout ── */
+  .checkout-step-tab { font-size: 0.78rem; padding: 10px 8px; }
+  .order-summary { position: static; top: auto; }
+
+  /* ── Comparison table ── */
   .comparison-table { font-size: 0.8rem; }
   .comparison-table th, .comparison-table td { padding: 10px 12px; }
-  .hiw-step { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .hiw-spine { display: none; }
+
+  /* ── Footer ── */
+  .footer-grid   { grid-template-columns: minmax(0, 1fr); }
+  .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+
+  /* ── Pricing grid — full width on small screens ── */
+  .pricing-grid { max-width: 100%; }
 }
 
 @media (max-width: 480px) {
+  /* ── Spacing ── */
+  .section    { padding: 52px 0; }
+  .section-sm { padding: 36px 0; }
+
+  /* ── Typography ── */
+  h1 { font-size: clamp(1.75rem, 8vw, 2.4rem); }
+  h2 { font-size: clamp(1.45rem, 6vw, 1.8rem); }
+  h3 { font-size: clamp(1.1rem, 4.5vw, 1.3rem); }
+
+  /* ── Buttons ── */
   .hero-actions { flex-direction: column; }
   .btn-lg { width: 100%; justify-content: center; }
-  h1 { font-size: 2rem; }
+
+  /* ── Cards ── */
+  .card { padding: 22px; }
+  .pricing-card { padding: 22px; }
+  .bento-lg, .bento-wide { padding: 24px; }
+
+  /* ── Pricing ── */
   .plan-price { font-size: 2.2rem; }
+
+  /* ── Forms (phones) ── */
+  .contact-form-wrap  { padding: 20px 16px; }
+  .checkout-form-wrap { padding: 20px 16px; }
+  .checkout-step-tab  { font-size: 0.7rem; padding: 9px 4px; }
+
+  /* ── How It Works ── */
+  .hiw-step { padding: 32px 0; }
+  .hiw-modal-preview { padding: 16px; }
+  .hiw-finding-row { flex-direction: column; gap: 4px; }
+
+  /* ── Step 5 approve/deny cards ── */
+  #hiw-approve-card, #hiw-deny-card { max-width: 100%; }
+
+  /* ── toast ── */
+  .toast { right: 12px; bottom: 12px; left: 12px; max-width: none; }
 }
 
 /* ===================================================

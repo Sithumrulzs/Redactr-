@@ -600,6 +600,31 @@
       #rdx-popup { right: -6px; width: 268px; }
       #rdx-hero .rdx-scene { top: 48%; }
     }
+
+    /* ── Phone portrait (≤ 640px) ── */
+    @media (max-width: 640px) {
+      #rdx-hero .rdx-scene { width: min(92vw, 440px); top: 47%; }
+      #rdx-popup { right: -4px; width: min(256px, 82vw); }
+      #rdx-hero h1 { font-size: clamp(28px, 8.5vw, 46px); letter-spacing: -0.02em; }
+      #rdx-hero .rdx-sub { font-size: 15px; max-width: 88%; }
+      #rdx-hero .rdx-eyebrow { font-size: 10.5px; }
+      #rdx-skip, #rdx-replay { font-size: 10px; padding: 7px 13px; bottom: 16px; right: 14px; }
+    }
+
+    /* ── Compact phone (≤ 480px) ── */
+    @media (max-width: 480px) {
+      #rdx-hero .rdx-scene { width: 94vw; top: 48%; }
+      #rdx-hero h1 { font-size: clamp(24px, 7.5vw, 38px); }
+      #rdx-hero .rdx-sub { font-size: 14px; }
+      #rdx-hero .rdx-chat-area { padding: 18px 14px 16px; }
+      #rdx-promptBox { font-size: 12px; padding: 12px 12px 36px; min-height: 90px; }
+      #rdx-hero .rdx-ai-msg { font-size: 12px; }
+      #rdx-hero .rdx-toolbar { font-size: 10px; padding: 10px 12px; }
+      #rdx-popup { width: min(250px, 90vw); right: -2px; }
+      #rdx-hero .rdx-pp-alert { font-size: 11.5px; }
+      #rdx-hero .rdx-pp-btn { font-size: 12px; padding: 9px 0; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       #rdx-hero *, #rdx-hero *::before, #rdx-hero *::after {
         animation: none !important; transition: none !important;
@@ -1073,7 +1098,7 @@
     skipped = true; setTimeout(finale, 50);
   });
   rdxReplayBtn.addEventListener('click', function () {
-    if (heroEl.clientWidth < 640 || reduced) { finaleImmediate(); } else { play(); }
+    if (heroEl.clientWidth < 480 || reduced) { finaleImmediate(); } else { play(); }
   });
 
   /* Scroll past hero while intro is playing → jump to finale */
@@ -1092,8 +1117,8 @@
 
   if (reduced) {
     finaleImmediate();          /* accessibility */
-  } else if (heroW < 640) {
-    finaleImmediate();          /* mobile — static frame */
+  } else if (heroW < 480) {
+    finaleImmediate();          /* very small screens — static frame */
   } else if (introSeen) {
     finaleImmediate();          /* returning visitor */
   } else {
