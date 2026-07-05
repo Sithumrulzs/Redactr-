@@ -11,18 +11,7 @@
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" href="assets/Logo.png" />
   <script>
-    // Decide, before anything paints, whether the 3D intro should play.
-    // Skipped for reduced-motion users and after the first play each
-    // browser session — in both cases html.no-loader hides #site-loader
-    // immediately via CSS and the hero's normal entrance animation runs
-    // unmodified. If this script never runs at all (JS disabled), no
-    // class gets added either way, so content just shows normally.
-    (function () {
-      var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var played = false;
-      try { played = !!sessionStorage.getItem('redactr_intro_played'); } catch (e) {}
-      document.documentElement.classList.add(reduced || played ? 'no-loader' : 'js-loading');
-    })();
+    document.documentElement.classList.add('no-loader');
   </script>
 
   <!-- ── Cinematic Hero Styles (all scoped to #rdx-hero) ── -->
@@ -190,7 +179,7 @@
       border-radius: 12px; padding: 16px 16px 42px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 13.5px; line-height: 1.75; min-height: 108px;
-      position: relative; word-break: break-word;
+      position: relative; word-break: break-word; white-space: pre-wrap;
       transition: border-color 0.3s ease;
     }
     #rdx-browser.rdx-alert #rdx-promptBox { border-color: rgba(255,82,71,0.5); }
@@ -623,16 +612,6 @@
 <!-- ══════════════════════════════════════════════
      3D INTRO LOADER — one-time per session, see js/loader.js
 ══════════════════════════════════════════════ -->
-<div id="site-loader" role="status" aria-live="polite" aria-label="Loading Redactr">
-  <div class="loader-scene"><canvas id="loader-canvas"></canvas></div>
-  <div class="loader-word">Redact<span>r</span></div>
-  <div class="loader-status" id="loader-status">Initializing secure scan…</div>
-  <div class="loader-bar"><div class="loader-bar-fill" id="loader-bar-fill"></div></div>
-</div>
-<noscript><style>#site-loader { display: none !important; }</style></noscript>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="js/loader.js"></script>
 
 <!-- ══════════════════════════════════════════════
      NAVBAR
@@ -727,8 +706,8 @@
               <div class="rdx-pp-detect">
                 <div class="rdx-ic">⚠</div>
                 <div>
-                  <div class="rdx-t1">AWS Access Key</div>
-                  <div class="rdx-t2">AKIA••••••••EXAMPLE</div>
+                  <div class="rdx-t1">DB Connection String</div>
+                  <div class="rdx-t2">postgres://sysadmin:••••</div>
                 </div>
                 <div class="rdx-conf">98%</div>
               </div>
@@ -974,12 +953,12 @@
     leak.className = 'rdx-leak';
     rdxBox.insertBefore(pre,  rdxCaret);
     rdxBox.insertBefore(leak, rdxCaret);
-    await typeInto(pre, 'Debug this script — my AWS key is ', 36); if (skipped) return;
+    await typeInto(pre, '> Why is this connection failing? Can you check my config?\n\nDATABASE_URL=', 26); if (skipped) return;
 
-    /* SHOT 3 — EXTREME CLOSE-UP tracking the secret. */
-    camera(rdxBox, 2.3, 1200, 'cubic-bezier(0.35,0.7,0.25,1)');
-    say('SECRET ENTERING PROMPT');
-    await typeInto(leak, 'AKIAIOSFODNN7EXAMPLE', 55); if (skipped) return;
+    /* SHOT 3 — EXTREME CLOSE-UP tracking the credential. */
+    camera(rdxBox, 1.85, 1200, 'cubic-bezier(0.35,0.7,0.25,1)');
+    say('CREDENTIALS ENTERING PROMPT');
+    await typeInto(leak, 'postgres://sysadmin:ProdDb!8892@cluster-abc123.eu-west-1.rds.amazonaws.com:5432/customer_data', 22); if (skipped) return;
     rdxSendBtn.classList.add('rdx-armed');
     await sleep(350); if (skipped) return;
 
@@ -1031,7 +1010,7 @@
     leak.classList.add('rdx-struck');
     await sleep(420); if (skipped) return;
     leak.className   = 'rdx-chip';
-    leak.textContent = '[SECRET_1]';
+    leak.textContent = '[DB_CRED_1]';
     rdxSweep.classList.remove('rdx-go'); void rdxSweep.offsetWidth; rdxSweep.classList.add('rdx-go');
     rdxBrowser.classList.remove('rdx-alert');
     rdxBrowser.classList.add('rdx-safe');
@@ -1073,10 +1052,10 @@
     rdxBox.appendChild(rdxCaret);
     rdxCaret.style.display = 'none';
     var pre  = document.createElement('span');
-    pre.textContent = 'Debug this script — my AWS key is ';
+    pre.textContent = '> Why is this connection failing? Can you check my config?\n\nDATABASE_URL=';
     var chip = document.createElement('span');
     chip.className   = 'rdx-chip';
-    chip.textContent = '[SECRET_1]';
+    chip.textContent = '[DB_CRED_1]';
     rdxBox.appendChild(pre);
     rdxBox.appendChild(chip);
     rdxBox.appendChild(rdxSendBtn);
