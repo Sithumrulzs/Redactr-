@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get the Redactr App</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" href="../assets/Logo.png" />
+  <style>
+    .app-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .app-card {
+      background: var(--card-bg, #151c2c);
+      border: 1px solid var(--border, rgba(255,255,255,0.08));
+      border-radius: 20px;
+      padding: 44px 36px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+    }
+    .app-logo { width: 64px; margin-bottom: 20px; }
+    .app-card h1 { font-size: 1.6rem; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.03em; }
+    .app-card h1 span { color: #14c8a6; }
+    .app-sub { color: var(--text-dim, #8c9bb5); font-size: 0.9rem; line-height: 1.55; margin: 0 0 32px; }
+    .store-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 16px 20px;
+      text-decoration: none;
+      color: #e8eaf0;
+      margin-bottom: 12px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .store-link:hover { background: rgba(255,255,255,0.09); border-color: rgba(20,200,166,0.3); }
+    .store-icon { font-size: 2rem; flex-shrink: 0; }
+    .store-text { text-align: left; }
+    .store-label { font-size: 0.68rem; color: var(--text-dim, #8c9bb5); display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .store-name { font-size: 1rem; font-weight: 800; display: block; }
+    .app-note { font-size: 0.72rem; color: var(--text-dim, #8c9bb5); margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<div class="app-page">
+  <div class="app-card">
+    <img src="../assets/Logo.png" alt="Redactr" class="app-logo" />
+    <h1>Get <span>Redactr</span></h1>
+    <p class="app-sub">Download the mobile app and sign in with your Google account to access your dashboard.</p>
+
+    <a href="https://apps.apple.com/app/redactr/id6748823076" class="store-link">
+      <span class="store-icon">🍎</span>
+      <div class="store-text">
+        <span class="store-label">Download on the</span>
+        <span class="store-name">App Store</span>
+      </div>
+    </a>
+
+    <a href="https://play.google.com/store/apps/details?id=com.redactr.app" class="store-link">
+      <span class="store-icon">▶</span>
+      <div class="store-text">
+        <span class="store-label">Get it on</span>
+        <span class="store-name">Google Play</span>
+      </div>
+    </a>
+
+    <p class="app-note">Sign in with the same Google account you used to activate your trial.</p>
+  </div>
+</div>
+
+</body>
+</html>

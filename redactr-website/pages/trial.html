@@ -164,8 +164,71 @@
       border-radius: 10px;
       text-decoration: none;
       width: 100%;
+      box-sizing: border-box;
     }
     .btn-download:hover { opacity: 0.92; }
+    .email-sent-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(20,200,166,0.08);
+      border: 1px solid rgba(20,200,166,0.2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      color: var(--text-dim, #8c9bb5);
+      text-align: left;
+    }
+    .email-sent-note span.check { color: #14c8a6; font-size: 1rem; flex-shrink: 0; }
+    .mobile-section {
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-top: 20px;
+      margin-top: 4px;
+      width: 100%;
+    }
+    .mobile-section h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-dim, #8c9bb5);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin: 0 0 14px;
+    }
+    .mobile-inner {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    #qr-canvas {
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #fff;
+      padding: 6px;
+    }
+    .store-badges {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+    .store-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+      text-decoration: none;
+      color: var(--text, #e8eaf0);
+      font-size: 0.78rem;
+      transition: background 0.15s;
+    }
+    .store-badge:hover { background: rgba(255,255,255,0.09); }
+    .store-badge .store-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .store-badge .store-label { font-size: 0.65rem; color: var(--text-dim, #8c9bb5); display: block; }
+    .store-badge .store-name { font-weight: 700; font-size: 0.82rem; display: block; }
   </style>
 </head>
 <body>
@@ -231,23 +294,51 @@
       <div class="trial-success-icon">🎉</div>
       <h2>Trial Activated!</h2>
       <div class="trial-days-badge" id="trial-days-badge">7 days remaining</div>
-      <p>
-        Download the Chrome extension and sign in with the same Google account to start protecting your prompts.
-      </p>
+      <p>Sign in with this same Google account inside the extension to start protecting your prompts.</p>
+
       <a href="#" class="btn-download" id="trial-download-btn">
         ↓ Download Chrome Extension
       </a>
-      <p style="font-size:0.75rem;color:var(--text-dim,#8c9bb5);margin-top:4px;">
-        Mobile app available on the App Store &amp; Google Play — sign in to access the dashboard.
-      </p>
+
+      <div class="email-sent-note" id="email-sent-note" style="display:none;">
+        <span class="check">✓</span>
+        <span>A confirmation email with your download link has been sent to <strong id="email-sent-to"></strong></span>
+      </div>
+
+      <!-- Mobile app section -->
+      <div class="mobile-section">
+        <h3>Mobile App</h3>
+        <div class="mobile-inner">
+          <div id="qr-canvas"></div>
+          <div class="store-badges">
+            <a href="https://apps.apple.com/app/redactr/id6748823076" target="_blank" class="store-badge">
+              <span class="store-icon">🍎</span>
+              <div>
+                <span class="store-label">Download on the</span>
+                <span class="store-name">App Store</span>
+              </div>
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.redactr.app" target="_blank" class="store-badge">
+              <span class="store-icon">▶</span>
+              <div>
+                <span class="store-label">Get it on</span>
+                <span class="store-name">Google Play</span>
+              </div>
+            </a>
+          </div>
+        </div>
+        <p style="font-size:0.72rem;color:var(--text-dim,#8c9bb5);margin:10px 0 0;text-align:center;">Scan QR to open store links on your phone</p>
+      </div>
     </div>
 
   </div>
 </div>
 
-<!-- Firebase JS SDK (compat build for simplicity) -->
+<!-- Firebase JS SDK (compat build) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<!-- QR code generator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBTg49GkhytsgHECw-_SagfU_TIV57ncck",
@@ -256,6 +347,8 @@
     appId: "1:116258256150:web:b407a3c35fabc82c0a4c37",
   };
   const API_BASE_URL = "https://redactr-ln5t.onrender.com";
+  // Deep link that opens App Store on iOS, Play Store on Android
+  const MOBILE_STORE_LINK = "https://redactr-swart.vercel.app/pages/app-download.html";
 
   firebase.initializeApp(FIREBASE_CONFIG);
   const auth = firebase.auth();
@@ -266,46 +359,73 @@
   const errorEl = document.getElementById("trial-error");
   const daysBadge = document.getElementById("trial-days-badge");
   const downloadBtn = document.getElementById("trial-download-btn");
+  const emailNoteEl = document.getElementById("email-sent-note");
+  const emailSentToEl = document.getElementById("email-sent-to");
+
+  const GOOGLE_SVG = `<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>`;
 
   function showError(msg) {
     errorEl.textContent = msg;
     errorEl.style.display = "block";
   }
 
-  function showSuccess(trialEnd) {
+  function buildQR() {
+    new QRCode(document.getElementById("qr-canvas"), {
+      text: MOBILE_STORE_LINK,
+      width: 100,
+      height: 100,
+      colorDark: "#0b1020",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+  }
+
+  function showSuccess(trialEnd, downloadUrl, userEmail) {
     const days = Math.max(0, Math.ceil((new Date(trialEnd) - Date.now()) / 86400000));
     daysBadge.textContent = `${days} day${days !== 1 ? "s" : ""} remaining`;
+
+    // Wire real download URL
+    downloadBtn.href = downloadUrl || `${API_BASE_URL}/download/trial-extension`;
+    downloadBtn.removeAttribute("onclick");
+
+    // Show email confirmation note
+    if (userEmail) {
+      emailSentToEl.textContent = userEmail;
+      emailNoteEl.style.display = "flex";
+    }
+
     signinView.style.display = "none";
     successView.style.display = "flex";
+
+    // Build QR after element is visible
+    setTimeout(buildQR, 100);
   }
 
   signinBtn.addEventListener("click", async () => {
     signinBtn.disabled = true;
-    signinBtn.textContent = "Signing in…";
+    signinBtn.innerHTML = "Signing in…";
     errorEl.style.display = "none";
 
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
       const result = await auth.signInWithPopup(provider);
       const idToken = await result.user.getIdToken();
+      const userEmail = result.user.email;
 
-      signinBtn.textContent = "Activating trial…";
+      signinBtn.innerHTML = "Activating trial…";
 
       const resp = await fetch(`${API_BASE_URL}/createTrial`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${idToken}`, "Content-Type": "application/json" },
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Failed to activate trial.");
 
-      showSuccess(data.trialEnd);
+      showSuccess(data.trialEnd, data.downloadUrl, userEmail);
     } catch (err) {
       showError(err.message || "Something went wrong. Please try again.");
       signinBtn.disabled = false;
-      signinBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/></svg> Sign in with Google to activate trial`;
+      signinBtn.innerHTML = `${GOOGLE_SVG} Sign in with Google to activate trial`;
     }
   });
 </script>

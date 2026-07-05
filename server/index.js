@@ -329,17 +329,101 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
 });
 
 /**
+ * Sends a trial welcome email via Resend (https://resend.com).
+ * Requires RESEND_API_KEY env var — silently skips if absent so the
+ * route still works without email configured.
+ */
+async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, downloadUrl) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log(`[trial] Welcome email skipped (no RESEND_API_KEY) → ${toEmail}`);
+    return;
+  }
+  const days = Math.ceil((new Date(trialEnd) - Date.now()) / 86400000);
+  const from = process.env.EMAIL_FROM || "Redactr <onboarding@resend.dev>";
+  const name = displayName || toEmail.split("@")[0];
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#0b1020;font-family:'Segoe UI',Arial,sans-serif;color:#e8eaf0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0b1020;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#151c2c;border-radius:16px;border:1px solid rgba(255,255,255,0.08);overflow:hidden;max-width:560px;width:100%;">
+        <tr><td style="background:linear-gradient(135deg,#14c8a6,#0fa98c);padding:32px 40px;text-align:center;">
+          <h1 style="margin:0;font-size:24px;font-weight:800;color:#0b1020;letter-spacing:-0.5px;">🎉 Trial Activated!</h1>
+        </td></tr>
+        <tr><td style="padding:36px 40px;">
+          <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Hi ${name},</p>
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#8c9bb5;">Your <strong style="color:#14c8a6;">${days}-day free trial</strong> of Redactr is now active. You have full access to Tier-1 keyword scanning on ChatGPT, Claude, Gemini, and more.</p>
+
+          <div style="background:#0b1020;border-radius:12px;border:1px solid rgba(20,200,166,0.2);padding:20px 24px;margin:0 0 28px;">
+            <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:1px;color:#8c9bb5;">TRIAL ENDS</p>
+            <p style="margin:0;font-size:18px;font-weight:800;color:#14c8a6;">${new Date(trialEnd).toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}</p>
+          </div>
+
+          <p style="margin:0 0 16px;font-size:14px;font-weight:700;color:#e8eaf0;">Get started in 2 steps:</p>
+          <table cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 28px;">
+            <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+              <span style="display:inline-block;width:24px;height:24px;border-radius:50%;background:#14c8a6;color:#0b1020;font-size:12px;font-weight:800;text-align:center;line-height:24px;margin-right:12px;">1</span>
+              <span style="font-size:14px;color:#e8eaf0;">Install the Chrome extension below</span>
+            </td></tr>
+            <tr><td style="padding:10px 0;">
+              <span style="display:inline-block;width:24px;height:24px;border-radius:50%;background:#14c8a6;color:#0b1020;font-size:12px;font-weight:800;text-align:center;line-height:24px;margin-right:12px;">2</span>
+              <span style="font-size:14px;color:#e8eaf0;">Sign in with this Google account in the extension</span>
+            </td></tr>
+          </table>
+
+          <div style="text-align:center;margin:0 0 28px;">
+            <a href="${downloadUrl}" style="display:inline-block;background:linear-gradient(135deg,#14c8a6,#0fa98c);color:#0b1020;font-weight:800;font-size:15px;text-decoration:none;padding:14px 32px;border-radius:10px;">↓ Download Chrome Extension</a>
+          </div>
+
+          <p style="margin:0 0 8px;font-size:13px;color:#8c9bb5;text-align:center;">Want full dashboard access? Upgrade anytime before your trial ends.</p>
+          <p style="text-align:center;margin:0;"><a href="${SERVER_URL.replace("onrender.com","vercel.app").replace("redactr-ln5t","redactr-swart")}/pages/pricing.html" style="color:#14c8a6;font-size:13px;text-decoration:none;font-weight:600;">View pricing →</a></p>
+        </td></tr>
+        <tr><td style="padding:20px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
+          <p style="margin:0;font-size:12px;color:#8c9bb5;">You received this because you signed up for a Redactr trial at redactr-swart.vercel.app</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: [toEmail], subject: `Your Redactr free trial is active — ${days} days to explore`, html }),
+    });
+    if (!resp.ok) console.warn("[trial] Email failed:", await resp.json());
+  } catch (e) {
+    console.warn("[trial] Email error:", e.message);
+  }
+}
+
+/** Public download route for trial users — no token required. */
+app.get("/download/trial-extension", (req, res) => {
+  const zipPath = path.join(__dirname, "public", "redactr-extension.zip");
+  res.download(zipPath, "redactr-extension.zip", (err) => {
+    if (err && !res.headersSent) res.status(404).send("Extension file not found on server.");
+  });
+});
+
+/**
  * Creates a 7-day free trial for a signed-in user who hasn't yet joined a
  * company. Safe to call multiple times — a second call is a no-op when a
  * trial is already active so the user can't refresh their 7 days.
  */
 app.post("/createTrial", requireAuth, async (req, res) => {
+  const downloadUrl = `${SERVER_URL}/download/trial-extension`;
   try {
     const trialRef = db.collection("trials").doc(req.auth.uid);
     const existing = await trialRef.get();
     if (existing.exists && existing.data().trialActive) {
       const trialEnd = existing.data().trialEnd?.toDate?.() ?? new Date(0);
-      res.json({ ok: true, trialEnd: trialEnd.toISOString(), alreadyActive: true });
+      res.json({ ok: true, trialEnd: trialEnd.toISOString(), alreadyActive: true, downloadUrl });
       return;
     }
     const now = new Date();
@@ -354,7 +438,9 @@ app.post("/createTrial", requireAuth, async (req, res) => {
       trialActive: true,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-    res.json({ ok: true, trialEnd: trialEnd.toISOString(), alreadyActive: false });
+    // Fire-and-forget — don't let email failure block the response.
+    sendTrialWelcomeEmail(req.auth.email ?? "", req.auth.name ?? "", trialEnd.toISOString(), downloadUrl);
+    res.json({ ok: true, trialEnd: trialEnd.toISOString(), alreadyActive: false, downloadUrl });
   } catch (error) {
     console.error("createTrial failed", error);
     res.status(500).json({ error: "Internal error." });
