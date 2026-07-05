@@ -45,7 +45,7 @@
       height: 100vh; /* fallback */
       overflow: hidden;
       isolation: isolate; /* contain z-indexes — navbar stays above */
-      background: linear-gradient(135deg, #181D27 0%, #1E2734 100%);
+      background: linear-gradient(135deg, #050912 0%, #080F1D 100%);
       color: var(--rdx-text);
       font-family: 'Manrope', 'Inter', sans-serif;
     }
@@ -86,7 +86,7 @@
     @keyframes rdxFlashHit { 0% { opacity: 0.55; } 100% { opacity: 0; } }
 
     /* Glyph canvas */
-    #rdx-glyphs { position: absolute; inset: 0; z-index: 0; opacity: 0.5; pointer-events: none; }
+    #rdx-glyphs { position: absolute; inset: 0; z-index: 1; opacity: 0.65; pointer-events: none; }
 
     /* The World — camera target */
     #rdx-world {
@@ -476,25 +476,16 @@
       overflow: visible;
       color: var(--rdx-teal);
       background: transparent;
+      box-shadow: none;
       padding: 0 10px;
       text-shadow:
-        0 0 8px rgba(20,200,166,0.38),
-        0 0 18px rgba(20,200,166,0.2);
+        0 0 10px rgba(20,200,166,0.6),
+        0 0 28px rgba(20,200,166,0.30),
+        0 0 55px rgba(20,200,166,0.14);
       animation: rdxSpotlightPulse 2.4s ease-in-out infinite;
     }
     #rdx-hero .rdx-rw.rdx-forever.rdx-spotlight::before {
-      content: "";
-      position: absolute;
-      inset: -2px -6px;
-      border: 1px solid rgba(20,200,166,0.75);
-      border-radius: 10px;
-      box-shadow:
-        0 0 0 1px rgba(20,200,166,0.18),
-        0 0 16px rgba(20,200,166,0.35),
-        inset 0 0 12px rgba(20,200,166,0.16);
-      transform: scale(0.98);
-      opacity: 0.95;
-      pointer-events: none;
+      content: none;
     }
     #rdx-hero .rdx-rw.rdx-forever.rdx-spotlight::after {
       content: "";
@@ -522,7 +513,7 @@
     #rdx-hero .rdx-sub {
       font-size: 17px; line-height: 1.65;
       color: var(--rdx-text-dim); max-width: 480px;
-      margin: 0 auto 34px; opacity: 0; transform: translateY(16px);
+      margin: 0 auto 0; opacity: 0; transform: translateY(16px);
       transition: all 0.6s ease 1.1s;
     }
     #rdx-reveal.rdx-on .rdx-sub { opacity: 1; transform: translateY(0); }
@@ -568,6 +559,53 @@
       opacity: 0; transition: opacity 0.4s ease; pointer-events: none;
     }
     #rdx-caption.rdx-show { opacity: 0.85; }
+
+    /* ── Premium aurora background ── */
+    #rdx-aurora {
+      position: absolute; inset: 0; z-index: 0;
+      pointer-events: none; overflow: hidden;
+    }
+    .rdx-orb {
+      position: absolute; border-radius: 50%; pointer-events: none;
+    }
+    .rdx-orb-1 {
+      width: 900px; height: 720px;
+      top: -320px; left: -280px;
+      background: radial-gradient(ellipse at center, rgba(20,200,166,0.30) 0%, rgba(20,200,166,0.10) 38%, transparent 65%);
+      filter: blur(80px);
+      animation: rdxOrb1 24s ease-in-out infinite;
+    }
+    .rdx-orb-2 {
+      width: 720px; height: 600px;
+      bottom: -220px; right: -180px;
+      background: radial-gradient(ellipse at center, rgba(14,185,155,0.24) 0%, rgba(10,155,128,0.07) 45%, transparent 70%);
+      filter: blur(90px);
+      animation: rdxOrb2 30s ease-in-out infinite 5s;
+    }
+    .rdx-orb-3 {
+      width: 520px; height: 460px;
+      top: 28%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(ellipse at center, rgba(20,200,166,0.18) 0%, transparent 66%);
+      filter: blur(100px);
+      animation: rdxOrb3 19s ease-in-out infinite 10s;
+    }
+    @keyframes rdxOrb1 {
+      0%,100% { transform: translate(0,0)    scale(1);    opacity: 0.9; }
+      25%      { transform: translate(90px,70px)  scale(1.20); opacity: 1;   }
+      55%      { transform: translate(45px,110px) scale(0.90); opacity: 0.75;}
+      80%      { transform: translate(-55px,65px) scale(1.10); opacity: 0.95;}
+    }
+    @keyframes rdxOrb2 {
+      0%,100% { transform: translate(0,0)       scale(1);    opacity: 0.75;}
+      35%     { transform: translate(-75px,-55px) scale(1.16); opacity: 1;   }
+      65%     { transform: translate(55px,-85px)  scale(0.87); opacity: 0.60;}
+    }
+    @keyframes rdxOrb3 {
+      0%,100% { transform: translate(-50%,-50%)                          scale(1);    opacity: 0.60;}
+      45%     { transform: translate(calc(-50% + 55px),calc(-50% - 45px)) scale(1.22); opacity: 0.85;}
+      75%     { transform: translate(calc(-50% - 35px),calc(-50% + 55px)) scale(0.82); opacity: 0.45;}
+    }
 
     @media (max-width: 720px) {
       #rdx-popup { right: -6px; width: 268px; }
@@ -635,6 +673,11 @@
 ══════════════════════════════════════════════ -->
 <section id="rdx-hero" aria-label="Redactr product demo">
 
+  <div id="rdx-aurora" aria-hidden="true">
+    <div class="rdx-orb rdx-orb-1"></div>
+    <div class="rdx-orb rdx-orb-2"></div>
+    <div class="rdx-orb rdx-orb-3"></div>
+  </div>
   <canvas id="rdx-glyphs" aria-hidden="true"></canvas>
   <div class="rdx-letterbox rdx-top"    aria-hidden="true"></div>
   <div class="rdx-letterbox rdx-bottom" aria-hidden="true"></div>
@@ -731,10 +774,6 @@
         Redactr caught that key <strong>before it left the browser</strong>.
         Every keystroke, every prompt, every AI tool — scanned on-device in under a millisecond.
       </p>
-      <div class="rdx-cta-row">
-        <a class="rdx-btn rdx-btn-primary" href="pages/trial.html">Start Free Trial</a>
-        <a class="rdx-btn rdx-btn-ghost"   href="#">Add to Chrome</a>
-      </div>
     </div>
   </div><!-- /#rdx-reveal -->
 
