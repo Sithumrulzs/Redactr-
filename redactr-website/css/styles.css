@@ -9,10 +9,10 @@
 :root {
   --primary:     #14C8A6;
   --accent:      #22DDB8;
-  --bg:          #171C27;
-  --bg-2:        #121824;
-  --surface:     #202938;
-  --surface2:    #273445;
+  --bg:          #070C18;
+  --bg-2:        #050912;
+  --surface:     #0D1526;
+  --surface2:    #142035;
   --border:      rgba(20, 200, 166, 0.18);
   --text:        #F7FAFD;
   --muted:       #9DA8B8;
@@ -31,7 +31,7 @@
   /* Premium-minimal glass + motion tokens — additive, used by new
      components (bento grid, marquee, bar-fill, view-transitions)
      without altering any existing selector's resting values. */
-  --glass-bg:      rgba(32, 41, 56, 0.72);
+  --glass-bg:      rgba(13, 21, 38, 0.75);
   --glass-border:  rgba(255, 255, 255, 0.12);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast:      160ms;
@@ -49,7 +49,11 @@ html {
 }
 
 body {
-  background-color: var(--bg);
+  background-color: var(--bg-2);
+  background-image:
+    radial-gradient(ellipse 85% 45% at 10% 0%,  rgba(20,200,166,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 90% 95%, rgba(20,200,166,0.05) 0%, transparent 60%);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-main);
   line-height: 1.6;
@@ -403,7 +407,7 @@ p  { color: var(--muted); line-height: 1.8; }
   top: 92px;
   left: 12px;
   right: 12px;
-  background: rgba(20, 24, 31, 0.98);
+  background: rgba(5, 9, 18, 0.98);
   backdrop-filter: blur(20px);
   padding: 20px 24px 28px;
   border: 1px solid rgba(255,255,255,0.08);
@@ -411,7 +415,7 @@ p  { color: var(--muted); line-height: 1.8; }
   z-index: 999;
   flex-direction: column;
   gap: 4px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.50);
 }
 .nav-mobile.open { display: flex; }
 /* :not(.btn) — without this, the CTA link's higher-specificity .btn-primary
