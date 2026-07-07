@@ -58,7 +58,7 @@
     .rdx-letterbox {
       position: absolute; left: 0; right: 0;
       height: 9vh; background: #000; z-index: 6;
-      transition: transform 1s cubic-bezier(0.7,0,0.2,1);
+      transition: transform 0.9s cubic-bezier(0.4,0,0.2,1);
     }
     .rdx-letterbox.rdx-top    { top: 0;    transform: translateY(-100%); }
     .rdx-letterbox.rdx-bottom { bottom: 0; transform: translateY(100%); }
@@ -550,50 +550,64 @@
     #rdx-caption.rdx-show { opacity: 0.85; }
 
     /* ── Premium aurora background ── */
+    /* ── Premium aurora background ── */
     #rdx-aurora {
       position: absolute; inset: 0; z-index: 0;
       pointer-events: none; overflow: hidden;
+      /* clip-path properly clips filter:blur() children (overflow:hidden doesn't) */
+      clip-path: inset(0);
+      /* Fade the very edges so blurred orbs don't bleed as hard strips */
+      -webkit-mask-image:
+        linear-gradient(to right,  transparent 0%, black 5%,  black 95%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, black 4%,  black 96%, transparent 100%);
+      mask-image:
+        linear-gradient(to right,  transparent 0%, black 5%,  black 95%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, black 4%,  black 96%, transparent 100%);
+      -webkit-mask-composite: destination-in;
+      mask-composite: intersect;
     }
     .rdx-orb {
       position: absolute; border-radius: 50%; pointer-events: none;
     }
+    /* Orb-1 pushed more off-screen so its blurred centre sits ~120px from left edge
+       (was 170px) — reduces the visible band on the left side */
     .rdx-orb-1 {
-      width: 900px; height: 720px;
-      top: -320px; left: -280px;
-      background: radial-gradient(ellipse at center, rgba(20,200,166,0.30) 0%, rgba(20,200,166,0.10) 38%, transparent 65%);
-      filter: blur(80px);
-      animation: rdxOrb1 24s ease-in-out infinite;
+      width: 860px; height: 700px;
+      top: -300px; left: -340px;
+      background: radial-gradient(ellipse at center, rgba(20,200,166,0.24) 0%, rgba(20,200,166,0.08) 42%, transparent 66%);
+      filter: blur(90px);
+      animation: rdxOrb1 28s ease-in-out infinite;
     }
     .rdx-orb-2 {
       width: 720px; height: 600px;
       bottom: -220px; right: -180px;
-      background: radial-gradient(ellipse at center, rgba(14,185,155,0.24) 0%, rgba(10,155,128,0.07) 45%, transparent 70%);
-      filter: blur(90px);
-      animation: rdxOrb2 30s ease-in-out infinite 5s;
+      background: radial-gradient(ellipse at center, rgba(14,185,155,0.22) 0%, rgba(10,155,128,0.06) 45%, transparent 70%);
+      filter: blur(95px);
+      animation: rdxOrb2 32s ease-in-out infinite 5s;
     }
     .rdx-orb-3 {
       width: 520px; height: 460px;
       top: 28%; left: 50%;
       transform: translate(-50%, -50%);
-      background: radial-gradient(ellipse at center, rgba(20,200,166,0.18) 0%, transparent 66%);
-      filter: blur(100px);
-      animation: rdxOrb3 19s ease-in-out infinite 10s;
+      background: radial-gradient(ellipse at center, rgba(20,200,166,0.16) 0%, transparent 66%);
+      filter: blur(110px);
+      animation: rdxOrb3 22s ease-in-out infinite 10s;
     }
     @keyframes rdxOrb1 {
-      0%,100% { transform: translate(0,0)    scale(1);    opacity: 0.9; }
-      25%      { transform: translate(90px,70px)  scale(1.20); opacity: 1;   }
-      55%      { transform: translate(45px,110px) scale(0.90); opacity: 0.75;}
-      80%      { transform: translate(-55px,65px) scale(1.10); opacity: 0.95;}
+      0%,100% { transform: translate(0,0)       scale(1);    opacity: 0.85; }
+      30%     { transform: translate(80px,60px)  scale(1.18); opacity: 0.95; }
+      58%     { transform: translate(40px,100px) scale(0.88); opacity: 0.70; }
+      82%     { transform: translate(-40px,55px) scale(1.08); opacity: 0.90; }
     }
     @keyframes rdxOrb2 {
-      0%,100% { transform: translate(0,0)       scale(1);    opacity: 0.75;}
-      35%     { transform: translate(-75px,-55px) scale(1.16); opacity: 1;   }
-      65%     { transform: translate(55px,-85px)  scale(0.87); opacity: 0.60;}
+      0%,100% { transform: translate(0,0)        scale(1);    opacity: 0.70; }
+      38%     { transform: translate(-65px,-50px) scale(1.14); opacity: 0.95; }
+      68%     { transform: translate(50px,-78px)  scale(0.85); opacity: 0.55; }
     }
     @keyframes rdxOrb3 {
-      0%,100% { transform: translate(-50%,-50%)                          scale(1);    opacity: 0.60;}
-      45%     { transform: translate(calc(-50% + 55px),calc(-50% - 45px)) scale(1.22); opacity: 0.85;}
-      75%     { transform: translate(calc(-50% - 35px),calc(-50% + 55px)) scale(0.82); opacity: 0.45;}
+      0%,100% { transform: translate(-50%,-50%)                            scale(1);    opacity: 0.55; }
+      48%     { transform: translate(calc(-50% + 50px),calc(-50% - 42px))  scale(1.20); opacity: 0.80; }
+      78%     { transform: translate(calc(-50% - 32px),calc(-50% + 52px))  scale(0.80); opacity: 0.40; }
     }
 
     @media (max-width: 720px) {
@@ -909,7 +923,7 @@
   function camera(el, zoom, dur, ease) {
     var ezoom = el ? ez(zoom) : 1;
     rdxWorld.style.transition =
-      'transform ' + dur + 'ms ' + (ease || 'cubic-bezier(0.25,0.8,0.25,1)') +
+      'transform ' + dur + 'ms ' + (ease || 'cubic-bezier(0.16,1,0.3,1)') +
       ', filter 1.2s ease, opacity 1.2s ease';
     if (!el) { rdxWorld.style.transform = 'translate(0px,0px) scale(1)'; return; }
     var c = worldCenterOf(el);
@@ -969,7 +983,7 @@
     await sleep(1300); if (skipped) return;
 
     /* SHOT 2 — PUSH-IN on the input field; typing starts. */
-    camera(rdxBox, 1.55, 1600, 'cubic-bezier(0.3,0.6,0.2,1)');
+    camera(rdxBox, 1.55, 1800, 'cubic-bezier(0.16,1,0.3,1)');
     say('USER IS TYPING…');
     await sleep(700); if (skipped) return;
 
@@ -981,7 +995,7 @@
     await typeInto(pre, '> Why is this connection failing? Can you check my config?\n\nDATABASE_URL=', 26); if (skipped) return;
 
     /* SHOT 3 — EXTREME CLOSE-UP tracking the credential. */
-    camera(rdxBox, 1.85, 1200, 'cubic-bezier(0.35,0.7,0.25,1)');
+    camera(rdxBox, 1.85, 1400, 'cubic-bezier(0.16,1,0.3,1)');
     say('CREDENTIALS ENTERING PROMPT');
     await typeInto(leak, 'postgres://sysadmin:ProdDb!8892@cluster-abc123.eu-west-1.rds.amazonaws.com:5432/customer_data', 22); if (skipped) return;
     rdxSendBtn.classList.add('rdx-armed');
@@ -992,7 +1006,7 @@
     await sleep(500); if (skipped) return;
     rdxKeycap.classList.add('rdx-press');
     rdxFlash.classList.remove('rdx-hit'); void rdxFlash.offsetWidth; rdxFlash.classList.add('rdx-hit');
-    camera(rdxBrowser, 1.0, 450, 'cubic-bezier(0.2,0.9,0.3,1)');
+    camera(rdxBrowser, 1.0, 420, 'cubic-bezier(0.25,0.46,0.45,0.94)');
     rdxRig.classList.remove('rdx-shake'); void rdxRig.offsetWidth; rdxRig.classList.add('rdx-shake');
     rdxBrowser.classList.add('rdx-alert');
     rdxSendBtn.classList.remove('rdx-armed');
@@ -1008,14 +1022,14 @@
     /* SHOT 5 — PAN to the extension icon; popup drops from toolbar. */
     rdxExtIcon.classList.add('rdx-live');
     await sleep(450); if (skipped) return;
-    camera(rdxExtIcon, 1.35, 900, 'cubic-bezier(0.3,0.7,0.25,1)');
+    camera(rdxExtIcon, 1.35, 1000, 'cubic-bezier(0.16,1,0.3,1)');
     await sleep(550); if (skipped) return;
     rdxPopup.classList.add('rdx-show');
     say('REDACTR · SEND BLOCKED');
     await sleep(350);
     rdxRiskFill.style.width = '94%';
     rdxRiskPct.textContent  = '94%';
-    camera(rdxPopup, 1.5, 900, 'cubic-bezier(0.3,0.7,0.25,1)');
+    camera(rdxPopup, 1.5, 1000, 'cubic-bezier(0.16,1,0.3,1)');
     await sleep(1400); if (skipped) return;
 
     /* SHOT 6 — cursor glides over, clicks "Redact & Send", teal sweep. */
@@ -1030,7 +1044,7 @@
     rdxPopup.classList.remove('rdx-show');
     rdxExtIcon.classList.remove('rdx-live');
 
-    camera(rdxBox, 1.5, 700, 'cubic-bezier(0.2,0.9,0.3,1)');
+    camera(rdxBox, 1.5, 800, 'cubic-bezier(0.16,1,0.3,1)');
     say('REDACTING…');
     leak.classList.add('rdx-struck');
     await sleep(420); if (skipped) return;
@@ -1061,7 +1075,7 @@
     introFinished = true;
     heroEl.classList.remove('rdx-rolling');
     hush();
-    camera(null, 1, 1400, 'cubic-bezier(0.3,0.7,0.2,1)');
+    camera(null, 1, 1400, 'cubic-bezier(0.4,0,0.2,1)');
     rdxWorld.classList.add('rdx-recede');
     rdxReveal.classList.add('rdx-on');
     rdxSkipBtn.style.display   = 'none';

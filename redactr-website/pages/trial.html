@@ -8,326 +8,283 @@
   <link rel="icon" href="../assets/Logo.png" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
     * { box-sizing: border-box; }
-
     body { font-family: 'Inter', 'Segoe UI', sans-serif; }
 
-    /* ── Aurora background ── */
+    /* ── Page shell ── */
     .trial-page {
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       padding: 100px 20px 60px;
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
       background: var(--bg-2, #050912);
     }
     .trial-page::before {
-      content: '';
-      position: fixed;
-      inset: 0;
+      content: ''; position: fixed; inset: 0;
       background:
-        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(20,200,166,0.13) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(99,102,241,0.10) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 60% at 50% 100%, rgba(20,200,166,0.07) 0%, transparent 50%);
-      pointer-events: none;
-      z-index: 0;
+        radial-gradient(ellipse 70% 50% at 15% 10%, rgba(20,200,166,0.11) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 45% at 85% 80%, rgba(20,200,166,0.06) 0%, transparent 58%);
+      pointer-events: none; z-index: 0;
     }
 
-    /* ── Floating glass card ── */
+    /* ── Card ── */
     .trial-card {
-      position: relative;
-      z-index: 1;
-      background: rgba(15, 20, 35, 0.72);
-      backdrop-filter: blur(24px) saturate(1.4);
-      -webkit-backdrop-filter: blur(24px) saturate(1.4);
-      border: 1px solid rgba(255,255,255,0.09);
+      position: relative; z-index: 1;
+      background: rgba(10,17,34,0.88);
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+      border: 1px solid rgba(255,255,255,0.07);
       border-radius: 28px;
-      padding: 52px 44px;
-      max-width: 440px;
-      width: 100%;
-      text-align: center;
+      padding: 48px 40px;
+      max-width: 460px; width: 100%; text-align: center;
       box-shadow:
-        0 0 0 1px rgba(20,200,166,0.08),
-        0 32px 80px rgba(0,0,0,0.55),
-        0 8px 24px rgba(0,0,0,0.3),
-        inset 0 1px 0 rgba(255,255,255,0.07);
+        0 0 0 1px rgba(20,200,166,0.05),
+        0 40px 100px rgba(0,0,0,0.62),
+        0 8px 32px rgba(0,0,0,0.36),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+      animation: cardMount 0.75s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes cardMount {
+      from { opacity: 0; transform: translateY(28px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
     }
 
     /* ── Sign-in view ── */
+    #trial-signin-view { transition: opacity 0.22s ease; }
+
     .trial-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: rgba(20,200,166,0.1);
-      border: 1px solid rgba(20,200,166,0.25);
-      border-radius: 999px;
-      padding: 5px 14px 5px 8px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #14c8a6;
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-      margin-bottom: 24px;
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(20,200,166,0.07); border: 1px solid rgba(20,200,166,0.18);
+      border-radius: 999px; padding: 5px 14px 5px 8px;
+      font-size: 0.69rem; font-weight: 700; color: #14c8a6;
+      letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 22px;
     }
     .trial-pill-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #14c8a6;
-      box-shadow: 0 0 8px #14c8a6;
-      animation: pulse-dot 2s ease-in-out infinite;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #14c8a6; box-shadow: 0 0 8px rgba(20,200,166,0.9);
+      animation: pulseDot 2.2s ease-in-out infinite;
     }
-    @keyframes pulse-dot {
+    @keyframes pulseDot {
       0%,100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.75); }
+      50%      { opacity: 0.35; transform: scale(0.65); }
     }
 
     .trial-card h1 {
-      font-size: 2rem;
-      font-weight: 900;
-      margin: 0 0 12px;
-      letter-spacing: -0.04em;
-      line-height: 1.1;
-      color: #fff;
+      font-size: 2rem; font-weight: 900;
+      margin: 0 0 10px; letter-spacing: -0.045em; line-height: 1.1; color: #fff;
     }
-    .trial-card h1 .h1-teal {
-      background: linear-gradient(135deg, #14c8a6, #5eead4);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .h1-teal {
+      background: linear-gradient(135deg, #14c8a6 0%, #5eead4 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .trial-sub {
-      color: rgba(200,210,230,0.55);
-      font-size: 0.9rem;
-      line-height: 1.6;
-      margin: 0 0 28px;
-      font-weight: 400;
+      color: rgba(175,190,215,0.5); font-size: 0.875rem; line-height: 1.6; margin: 0 0 26px;
     }
-
-    /* Divider */
     .trial-divider {
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-      margin: 0 0 24px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+      margin: 0 0 22px;
     }
-
     .trial-perks {
-      list-style: none;
-      margin: 0 0 28px;
-      padding: 0;
-      text-align: left;
-      display: flex;
-      flex-direction: column;
-      gap: 11px;
+      list-style: none; margin: 0 0 26px; padding: 0;
+      text-align: left; display: flex; flex-direction: column; gap: 10px;
     }
     .trial-perks li {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      font-size: 0.86rem;
-      font-weight: 500;
-      color: rgba(220,230,245,0.82);
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.84rem; font-weight: 500; color: rgba(210,225,245,0.72);
     }
     .perk-check {
-      flex-shrink: 0;
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: rgba(20,200,166,0.15);
-      border: 1px solid rgba(20,200,166,0.3);
+      flex-shrink: 0; width: 17px; height: 17px; border-radius: 50%;
+      background: rgba(20,200,166,0.1); border: 1px solid rgba(20,200,166,0.25);
       display: flex; align-items: center; justify-content: center;
-      color: #14c8a6;
-      font-size: 0.65rem;
-      font-weight: 900;
+      color: #14c8a6; font-size: 0.62rem; font-weight: 900;
     }
 
     .btn-google-trial {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 15px;
-      background: #fff;
-      color: #111;
-      font-size: 0.9rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: box-shadow 0.2s, transform 0.15s;
-      font-family: inherit;
-      letter-spacing: -0.01em;
+      display: flex; align-items: center; justify-content: center; gap: 11px;
+      width: 100%; padding: 14px 20px;
+      background: #fff; color: #111827;
+      font-size: 0.9rem; font-weight: 700;
+      border: none; border-radius: 14px; cursor: pointer;
+      transition: background 0.15s, box-shadow 0.2s, transform 0.15s;
+      font-family: inherit; letter-spacing: -0.01em;
     }
-    .btn-google-trial:hover {
-      box-shadow: 0 8px 28px rgba(0,0,0,0.3);
-      transform: translateY(-1px);
-    }
+    .btn-google-trial:hover { background: #f3f3f3; box-shadow: 0 8px 30px rgba(0,0,0,0.28); transform: translateY(-1px); }
     .btn-google-trial:active { transform: translateY(0); }
-    .btn-google-trial:disabled { opacity: 0.5; cursor: default; transform: none; }
-
-    .trial-note {
-      margin-top: 16px;
-      font-size: 0.72rem;
-      color: rgba(180,190,210,0.45);
-      line-height: 1.5;
-    }
-    .trial-note a { color: rgba(20,200,166,0.8); text-decoration: none; }
-    .trial-note a:hover { color: #14c8a6; }
+    .btn-google-trial:disabled { opacity: 0.4; cursor: default; transform: none; }
 
     .trial-error {
-      margin-top: 14px;
-      padding: 11px 14px;
-      background: rgba(239,84,102,0.1);
-      border: 1px solid rgba(239,84,102,0.25);
-      border-radius: 10px;
-      color: #f87181;
-      font-size: 0.8rem;
-      line-height: 1.4;
-      display: none;
-      text-align: left;
+      margin-top: 14px; padding: 11px 14px;
+      background: rgba(239,68,68,0.09); border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 10px; color: #f87171; font-size: 0.79rem; line-height: 1.4;
+      display: none; text-align: left;
     }
+    .trial-note {
+      margin-top: 16px; font-size: 0.69rem; color: rgba(150,165,195,0.38); line-height: 1.55;
+    }
+    .trial-note a { color: rgba(20,200,166,0.65); text-decoration: none; }
+    .trial-note a:hover { color: #14c8a6; }
 
     /* ── Success view ── */
-    .trial-success {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 18px;
+    .trial-success { display: none; flex-direction: column; align-items: center; }
+    .trial-success.rdx-show { display: flex; }
+
+    .trial-success > * { opacity: 0; }
+    .trial-success.rdx-animate > *:nth-child(1) { animation: fadeUpIn 0.6s cubic-bezier(0.16,1,0.3,1) 0.04s both; }
+    .trial-success.rdx-animate > *:nth-child(2) { animation: fadeUpIn 0.6s cubic-bezier(0.16,1,0.3,1) 0.12s both; }
+    .trial-success.rdx-animate > *:nth-child(3) { animation: fadeUpIn 0.6s cubic-bezier(0.16,1,0.3,1) 0.20s both; }
+    .trial-success.rdx-animate > *:nth-child(4) { animation: fadeUpIn 0.6s cubic-bezier(0.16,1,0.3,1) 0.28s both; }
+    .trial-success.rdx-animate > *:nth-child(5) { animation: fadeUpIn 0.6s cubic-bezier(0.16,1,0.3,1) 0.36s both; }
+    .trial-success.rdx-animate > *:nth-child(6) { animation: fadeUpIn 0.6s cubic-bezier(0.16,1,0.3,1) 0.44s both; }
+    .trial-success.rdx-animate > *:nth-child(7) { animation: fadeUpIn 0.6s cubic-bezier(0.16,1,0.3,1) 0.52s both; }
+    @keyframes fadeUpIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
+
+    /* Animated checkmark circle */
     .success-icon-wrap {
-      width: 70px; height: 70px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(20,200,166,0.2), rgba(20,200,166,0.05));
-      border: 1px solid rgba(20,200,166,0.25);
+      width: 76px; height: 76px; border-radius: 50%;
+      background: radial-gradient(circle at 38% 32%, rgba(20,200,166,0.2), rgba(20,200,166,0.04));
+      border: 1.5px solid rgba(20,200,166,0.28);
       display: flex; align-items: center; justify-content: center;
-      font-size: 2rem;
-      box-shadow: 0 0 32px rgba(20,200,166,0.2);
+      box-shadow: 0 0 0 10px rgba(20,200,166,0.04), 0 0 48px rgba(20,200,166,0.16);
+      margin-bottom: 20px;
     }
-    .trial-success h2 {
-      font-size: 1.6rem;
-      font-weight: 900;
-      margin: 0;
-      letter-spacing: -0.04em;
-      color: #fff;
+    .check-polyline {
+      fill: none; stroke: #14c8a6; stroke-width: 2.8;
+      stroke-linecap: round; stroke-linejoin: round;
+      stroke-dasharray: 32; stroke-dashoffset: 32;
     }
-    .trial-success > p {
-      color: rgba(200,210,230,0.55);
-      font-size: 0.86rem;
-      line-height: 1.6;
-      margin: 0;
-      text-align: center;
+    .trial-success.rdx-animate .check-polyline {
+      animation: drawCheck 0.65s cubic-bezier(0.16,1,0.3,1) 0.3s forwards;
     }
+    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+
+    /* Heading */
+    .success-heading {
+      font-size: 1.8rem; font-weight: 900; letter-spacing: -0.045em;
+      color: #fff; margin-bottom: 18px; line-height: 1.1;
+    }
+    .name-teal {
+      background: linear-gradient(135deg, #14c8a6, #5eead4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* Days badge — animated gradient border */
     .trial-days-badge {
-      background: rgba(20,200,166,0.1);
-      border: 1px solid rgba(20,200,166,0.25);
-      border-radius: 12px;
-      padding: 12px 24px;
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: #14c8a6;
-      letter-spacing: -0.02em;
-      width: 100%;
-      text-align: center;
+      width: 100%; margin-bottom: 16px;
+      padding: 1.5px; border-radius: 14px;
+      background: linear-gradient(110deg,
+        rgba(20,200,166,0.55) 0%,
+        rgba(20,200,166,0.12) 40%,
+        rgba(20,200,166,0.55) 80%,
+        rgba(20,200,166,0.12) 100%);
+      background-size: 300% 100%;
+      animation: borderSlide 3.5s ease infinite;
     }
-    .btn-download {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 15px;
-      background: linear-gradient(135deg, #14c8a6 0%, #0d9e82 100%);
-      color: #051510;
-      font-weight: 800;
-      font-size: 0.92rem;
-      border-radius: 14px;
-      text-decoration: none;
-      width: 100%;
-      transition: box-shadow 0.2s, transform 0.15s;
-      letter-spacing: -0.01em;
+    @keyframes borderSlide {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
-    .btn-download:hover {
-      box-shadow: 0 8px 28px rgba(20,200,166,0.35);
-      transform: translateY(-1px);
+    .trial-days-inner {
+      background: #08101f; border-radius: 13px;
+      padding: 13px 20px;
+      font-size: 0.97rem; font-weight: 800; color: #14c8a6;
+      letter-spacing: -0.025em; text-align: center;
     }
+
+    .success-sub {
+      font-size: 0.83rem; color: rgba(170,188,215,0.5);
+      line-height: 1.65; text-align: center;
+      margin-bottom: 22px; max-width: 340px;
+    }
+
+    /* Add to Chrome CTA */
+    .btn-chrome {
+      display: flex; align-items: center; justify-content: center; gap: 11px;
+      width: 100%; padding: 16px 20px;
+      background: linear-gradient(135deg, #14c8a6 0%, #10aa8c 55%, #0d9278 100%);
+      color: #031410;
+      font-weight: 800; font-size: 0.94rem;
+      border-radius: 14px; text-decoration: none;
+      letter-spacing: -0.015em;
+      position: relative; overflow: hidden;
+      transition: box-shadow 0.25s, transform 0.15s;
+      margin-bottom: 12px;
+    }
+    .btn-chrome::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.2) 50%, transparent 65%);
+      background-size: 250% 100%; background-position: -150% 0;
+      transition: background-position 0.55s ease;
+    }
+    .btn-chrome:hover { box-shadow: 0 10px 36px rgba(20,200,166,0.44), 0 2px 8px rgba(0,0,0,0.2); transform: translateY(-2px); }
+    .btn-chrome:hover::after { background-position: 200% 0; }
+    .btn-chrome:active { transform: translateY(0); }
+
+    /* Email confirmation note */
     .email-sent-note {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      background: rgba(20,200,166,0.06);
-      border: 1px solid rgba(20,200,166,0.15);
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 0.77rem;
-      color: rgba(180,200,220,0.65);
-      text-align: left;
+      display: none; align-items: center; gap: 9px;
       width: 100%;
-      line-height: 1.5;
+      background: rgba(20,200,166,0.05); border: 1px solid rgba(20,200,166,0.13);
+      border-radius: 11px; padding: 10px 14px;
+      font-size: 0.76rem; color: rgba(165,185,215,0.55);
+      text-align: left; line-height: 1.5; margin-bottom: 22px;
     }
-    .email-sent-note .check { color: #14c8a6; flex-shrink: 0; margin-top: 1px; }
-    .email-sent-note strong { color: rgba(220,235,255,0.85); font-weight: 600; }
+    .email-sent-note.rdx-show { display: flex; }
+    .note-check { color: #14c8a6; flex-shrink: 0; }
+    .email-sent-note strong { color: rgba(220,235,255,0.82); font-weight: 600; }
 
-    /* Mobile section */
+    /* Mobile app section */
     .mobile-section {
-      border-top: 1px solid rgba(255,255,255,0.07);
-      padding-top: 22px;
-      width: 100%;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 20px; width: 100%;
     }
-    .mobile-section-label {
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: rgba(160,175,200,0.5);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin: 0 0 14px;
-      text-align: left;
+    .mobile-label {
+      font-size: 0.62rem; font-weight: 700; color: rgba(130,150,185,0.42);
+      text-transform: uppercase; letter-spacing: 1.3px; margin-bottom: 13px; text-align: left;
     }
-    .mobile-inner { display: flex; gap: 14px; align-items: flex-start; }
-    #qr-canvas {
-      border-radius: 10px;
-      overflow: hidden;
-      flex-shrink: 0;
-      background: #fff;
-      padding: 5px;
-    }
+    .mobile-inner { display: flex; gap: 12px; align-items: flex-start; }
+    #qr-canvas { border-radius: 10px; overflow: hidden; flex-shrink: 0; background: #fff; padding: 4px; }
     .store-badges { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-    .store-badge {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 11px;
-      padding: 10px 13px;
-      text-decoration: none;
-      color: #e8eaf0;
-      transition: background 0.15s, border-color 0.15s, transform 0.15s;
-    }
-    .store-badge:hover {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(20,200,166,0.2);
-      transform: translateY(-1px);
-    }
-    .store-badge .store-icon { font-size: 1.3rem; flex-shrink: 0; }
-    .store-badge .store-label { font-size: 0.6rem; color: rgba(160,175,200,0.55); display: block; letter-spacing: 0.3px; }
-    .store-badge .store-name { font-weight: 700; font-size: 0.8rem; display: block; color: #e8eaf0; }
-    .qr-hint { font-size: 0.68rem; color: rgba(160,175,200,0.4); margin: 10px 0 0; text-align: center; }
 
-    /* ── Mobile ── */
+    /* Store badges */
+    .store-badge {
+      display: flex; align-items: center; gap: 12px;
+      border-radius: 12px; padding: 11px 14px;
+      text-decoration: none; color: #e8edf8;
+      transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .store-badge:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+    .store-badge-apple { background: #000; }
+    .store-badge-play  { background: rgba(255,255,255,0.04); }
+    .badge-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
+    .badge-text { text-align: left; line-height: 1.25; }
+    .badge-sup  { font-size: 0.58rem; color: rgba(215,225,245,0.48); display: block; letter-spacing: 0.2px; margin-bottom: 1px; }
+    .badge-name { font-size: 0.8rem; font-weight: 800; display: block; color: #fff; letter-spacing: -0.01em; }
+
+    .qr-hint { font-size: 0.62rem; color: rgba(125,145,180,0.33); margin: 10px 0 0; text-align: center; }
+
+    /* ── Responsive ── */
     @media (max-width: 600px) {
-      .trial-page { padding: 80px 16px 40px; }
-      .trial-card { padding: 36px 22px; border-radius: 22px; }
-      .trial-card h1 { font-size: 1.7rem; }
+      .trial-page  { padding: 80px 16px 40px; }
+      .trial-card  { padding: 36px 22px; border-radius: 22px; }
+      .trial-card h1, .success-heading { font-size: 1.6rem; }
     }
     @media (max-width: 420px) {
-      .trial-card { padding: 28px 16px; border-radius: 18px; }
-      .trial-card h1 { font-size: 1.5rem; }
-      .trial-sub { font-size: 0.85rem; }
-      .mobile-inner { flex-direction: column; align-items: center; gap: 16px; }
-      #qr-canvas { margin: 0 auto; }
+      .trial-card  { padding: 28px 16px; border-radius: 18px; }
+      .trial-sub   { font-size: 0.84rem; }
+      .mobile-inner { flex-direction: column; align-items: center; gap: 14px; }
+      #qr-canvas   { margin: 0 auto; }
       .store-badges { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .trial-card, .trial-days-badge, .trial-success > *, .check-polyline { animation: none !important; }
+      .trial-success > * { opacity: 1; }
     }
   </style>
 </head>
@@ -361,7 +318,7 @@
 <div class="trial-page">
   <div class="trial-card">
 
-    <!-- Sign-in state -->
+    <!-- ── Sign-in view ── -->
     <div id="trial-signin-view">
       <div class="trial-pill">
         <span class="trial-pill-dot"></span>
@@ -369,16 +326,13 @@
       </div>
       <h1>Try Redactr<br><span class="h1-teal">Free for 7 Days</span></h1>
       <p class="trial-sub">Full extension access, zero commitment. Cancel or upgrade anytime.</p>
-
       <div class="trial-divider"></div>
-
       <ul class="trial-perks">
         <li><span class="perk-check">✓</span> Tier-1 scanning on all major AI tools</li>
         <li><span class="perk-check">✓</span> ChatGPT, Claude, Gemini &amp; more</li>
         <li><span class="perk-check">✓</span> View-only mobile dashboard</li>
         <li><span class="perk-check">✓</span> Upgrade anytime, keep your data</li>
       </ul>
-
       <button class="btn-google-trial" id="trial-signin-btn">
         <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -388,64 +342,102 @@
         </svg>
         Continue with Google
       </button>
-
       <div class="trial-error" id="trial-error"></div>
-
       <p class="trial-note">
         By continuing you agree to our <a href="contact.html">Terms of Service</a>. &nbsp;·&nbsp;
         Already have a plan? <a href="pricing.html">View pricing →</a>
       </p>
     </div>
 
-    <!-- Success state -->
+    <!-- ── Success view ── -->
     <div class="trial-success" id="trial-success-view">
-      <div class="success-icon-wrap">🎉</div>
-      <h2>You're in.</h2>
-      <div class="trial-days-badge" id="trial-days-badge">7 days remaining</div>
-      <p>Sign in with this same Google account inside the extension to start protecting your prompts instantly.</p>
 
-      <a href="#" class="btn-download" id="trial-download-btn">
-        ↓ &nbsp;Download Chrome Extension
-      </a>
-
-      <div class="email-sent-note" id="email-sent-note" style="display:none;">
-        <span class="check">✓</span>
-        <span>Confirmation email sent to <strong id="email-sent-to"></strong></span>
+      <!-- 1 — Animated checkmark -->
+      <div class="success-icon-wrap">
+        <svg width="30" height="30" viewBox="0 0 30 30" overflow="visible">
+          <polyline class="check-polyline" points="5,16 12,22 25,8"/>
+        </svg>
       </div>
 
-      <!-- Mobile app section -->
+      <!-- 2 — Heading (personalised via JS) -->
+      <h2 class="success-heading" id="success-heading">You're in.</h2>
+
+      <!-- 3 — Trial days badge -->
+      <div class="trial-days-badge">
+        <div class="trial-days-inner" id="trial-days-badge">7 days remaining</div>
+      </div>
+
+      <!-- 4 — Sub text -->
+      <p class="success-sub">Sign in with this same Google account inside the extension to start protecting your prompts instantly.</p>
+
+      <!-- 5 — Add to Chrome CTA -->
+      <a href="#" class="btn-chrome" id="trial-cws-btn" target="_blank" rel="noopener">
+        <!-- Chrome logo: 3 coloured sectors + blue centre -->
+        <svg width="22" height="22" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0" aria-hidden="true">
+          <path d="M50,50 L50,0 A50,50 0 0,1 93.3,75 Z" fill="#EA4335"/>
+          <path d="M50,50 L93.3,75 A50,50 0 0,1 6.7,75 Z"  fill="#FBBC05"/>
+          <path d="M50,50 L6.7,75 A50,50 0 0,1 50,0 Z"   fill="#34A853"/>
+          <circle cx="50" cy="50" r="32" fill="rgba(3,16,11,0.92)"/>
+          <circle cx="50" cy="50" r="21" fill="#4285F4"/>
+        </svg>
+        Add to Chrome — It's Free
+      </a>
+
+      <!-- 6 — Email confirmation -->
+      <div class="email-sent-note" id="email-sent-note">
+        <svg class="note-check" width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span>Confirmation sent to <strong id="email-sent-to"></strong></span>
+      </div>
+
+      <!-- 7 — Mobile app -->
       <div class="mobile-section">
-        <p class="mobile-section-label">Get the mobile app</p>
+        <p class="mobile-label">Get the mobile app</p>
         <div class="mobile-inner">
           <div id="qr-canvas"></div>
           <div class="store-badges">
-            <a href="https://apps.apple.com/app/redactr/id6748823076" target="_blank" class="store-badge">
-              <span class="store-icon">🍎</span>
-              <div>
-                <span class="store-label">Download on the</span>
-                <span class="store-name">App Store</span>
+
+            <a href="https://apps.apple.com/app/redactr/id6748823076" target="_blank" rel="noopener" class="store-badge store-badge-apple">
+              <div class="badge-icon">
+                <!-- Apple logo -->
+                <svg width="20" height="20" viewBox="0 0 814 1000" fill="white" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 411.6 5 251 5 192.6c0-94.4 65.2-144.5 128-144.5 33.8 0 62 22.9 83.1 22.9 19.7 0 50.3-24.1 83.1-24.1 50.3 0 89.5 33.8 113.4 33.8 45.1 0 83.1-33.2 125.9-33.2 53.7 0 107 33.2 145.7 85.4zM583.4 104.5c-15.7 23.3-41.2 41.2-65.6 41.2-2.6 0-5.1-.3-7.7-.6.3-2.6.6-5.1.6-7.7 0-26 13.8-52.1 28.9-67.8 20.7-22.4 55.7-38.7 85.5-39.3 2.6 0 5.1.3 7.7.6-.6 26.6-15.7 51.4-49.4 73.6z"/>
+                </svg>
+              </div>
+              <div class="badge-text">
+                <span class="badge-sup">Download on the</span>
+                <span class="badge-name">App Store</span>
               </div>
             </a>
-            <a href="https://play.google.com/store/apps/details?id=com.redactr.app" target="_blank" class="store-badge">
-              <span class="store-icon">▶</span>
-              <div>
-                <span class="store-label">Get it on</span>
-                <span class="store-name">Google Play</span>
+
+            <a href="https://play.google.com/store/apps/details?id=com.redactr.app" target="_blank" rel="noopener" class="store-badge store-badge-play">
+              <div class="badge-icon">
+                <!-- Google Play 4-colour triangle -->
+                <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <polygon points="4.5,2.8 12,12 4.5,12"  fill="#00BFA5"/>
+                  <polygon points="4.5,12  12,12 4.5,21.2" fill="#00E676"/>
+                  <polygon points="4.5,2.8 19.5,12 12,12"  fill="#FFD600"/>
+                  <polygon points="12,12  19.5,12 4.5,21.2" fill="#FF3D00"/>
+                </svg>
+              </div>
+              <div class="badge-text">
+                <span class="badge-sup">Get it on</span>
+                <span class="badge-name">Google Play</span>
               </div>
             </a>
+
           </div>
         </div>
         <p class="qr-hint">Scan QR with your phone to open store links</p>
       </div>
-    </div>
 
-  </div>
-</div>
+    </div><!-- /trial-success -->
+  </div><!-- /trial-card -->
+</div><!-- /trial-page -->
 
-<!-- Firebase JS SDK (compat build) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<!-- QR code generator -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
   const FIREBASE_CONFIG = {
@@ -454,21 +446,24 @@
     projectId: "redactr-ea568",
     appId: "1:116258256150:web:b407a3c35fabc82c0a4c37",
   };
-  const API_BASE_URL = "https://redactr-ln5t.onrender.com";
-  // Deep link that opens App Store on iOS, Play Store on Android
-  const MOBILE_STORE_LINK = "https://redactr-swart.vercel.app/pages/app-download.html";
+  const API_BASE_URL       = "https://redactr-ln5t.onrender.com";
+  const MOBILE_STORE_LINK  = "https://redactr-swart.vercel.app/pages/app-download.html";
+  // ← Replace with your real Chrome Web Store URL after publishing:
+  // Format: https://chromewebstore.google.com/detail/redactr/YOUR_EXTENSION_ID
+  const CHROME_STORE_URL   = "https://chromewebstore.google.com/detail/redactr/YOUR_EXTENSION_ID";
 
   firebase.initializeApp(FIREBASE_CONFIG);
   const auth = firebase.auth();
 
-  const signinView = document.getElementById("trial-signin-view");
+  const signinView  = document.getElementById("trial-signin-view");
   const successView = document.getElementById("trial-success-view");
-  const signinBtn = document.getElementById("trial-signin-btn");
-  const errorEl = document.getElementById("trial-error");
-  const daysBadge = document.getElementById("trial-days-badge");
-  const downloadBtn = document.getElementById("trial-download-btn");
+  const signinBtn   = document.getElementById("trial-signin-btn");
+  const errorEl     = document.getElementById("trial-error");
+  const daysBadge   = document.getElementById("trial-days-badge");
+  const cwsBtn      = document.getElementById("trial-cws-btn");
   const emailNoteEl = document.getElementById("email-sent-note");
-  const emailSentToEl = document.getElementById("email-sent-to");
+  const emailSentTo = document.getElementById("email-sent-to");
+  const headingEl   = document.getElementById("success-heading");
 
   const GOOGLE_SVG = `<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>`;
 
@@ -477,36 +472,48 @@
     errorEl.style.display = "block";
   }
 
+  let qrBuilt = false;
   function buildQR() {
+    if (qrBuilt) return;
+    qrBuilt = true;
     new QRCode(document.getElementById("qr-canvas"), {
       text: MOBILE_STORE_LINK,
-      width: 100,
-      height: 100,
-      colorDark: "#0b1020",
-      colorLight: "#ffffff",
+      width: 100, height: 100,
+      colorDark: "#060c1a", colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.M,
     });
   }
 
-  function showSuccess(trialEnd, downloadUrl, userEmail) {
+  function showSuccess(trialEnd, _downloadUrl, userEmail, firstName) {
     const days = Math.max(0, Math.ceil((new Date(trialEnd) - Date.now()) / 86400000));
     daysBadge.textContent = `${days} day${days !== 1 ? "s" : ""} remaining`;
 
-    // Wire real download URL
-    downloadBtn.href = downloadUrl || `${API_BASE_URL}/download/trial-extension`;
-    downloadBtn.removeAttribute("onclick");
-
-    // Show email confirmation note
-    if (userEmail) {
-      emailSentToEl.textContent = userEmail;
-      emailNoteEl.style.display = "flex";
+    // Personalise heading with first name
+    if (firstName) {
+      headingEl.innerHTML = `You're in, <span class="name-teal">${firstName}.</span>`;
     }
 
-    signinView.style.display = "none";
-    successView.style.display = "flex";
+    // Wire Chrome Web Store link
+    cwsBtn.href = CHROME_STORE_URL;
 
-    // Build QR after element is visible
-    setTimeout(buildQR, 100);
+    // Email note
+    if (userEmail) {
+      emailSentTo.textContent = userEmail;
+      emailNoteEl.classList.add("rdx-show");
+    }
+
+    // Crossfade: signin fades out, then success staggers in
+    signinView.style.transition   = "opacity 0.22s ease";
+    signinView.style.opacity      = "0";
+    signinView.style.pointerEvents = "none";
+
+    setTimeout(() => {
+      signinView.style.display = "none";
+      successView.classList.add("rdx-show");
+      void successView.offsetWidth; // force reflow so animations fire
+      successView.classList.add("rdx-animate");
+      setTimeout(buildQR, 80);
+    }, 240);
   }
 
   signinBtn.addEventListener("click", async () => {
@@ -515,10 +522,11 @@
     errorEl.style.display = "none";
 
     try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await auth.signInWithPopup(provider);
-      const idToken = await result.user.getIdToken();
+      const provider  = new firebase.auth.GoogleAuthProvider();
+      const result    = await auth.signInWithPopup(provider);
+      const idToken   = await result.user.getIdToken();
       const userEmail = result.user.email;
+      const firstName = (result.user.displayName || "").split(" ")[0] || null;
 
       signinBtn.innerHTML = "Activating trial…";
 
@@ -529,11 +537,11 @@
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Failed to activate trial.");
 
-      showSuccess(data.trialEnd, data.downloadUrl, userEmail);
+      showSuccess(data.trialEnd, data.downloadUrl, userEmail, firstName);
     } catch (err) {
       showError(err.message || "Something went wrong. Please try again.");
       signinBtn.disabled = false;
-      signinBtn.innerHTML = `${GOOGLE_SVG} Sign in with Google to activate trial`;
+      signinBtn.innerHTML = `${GOOGLE_SVG} Continue with Google`;
     }
   });
 </script>

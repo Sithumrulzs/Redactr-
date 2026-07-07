@@ -6,6 +6,82 @@
   <title>Pricing — Redactr</title>
   <link rel="stylesheet" href="../css/styles.css" />
   <link rel="icon" href="../assets/Logo.png" />
+  <style>
+    /* ── Toggle switch ── */
+    .prc-toggle-wrap {
+      display: flex; align-items: center; gap: 12px;
+      justify-content: center; margin-top: 36px;
+    }
+    .prc-switch {
+      position: relative; width: 48px; height: 27px;
+      border-radius: 999px; border: none; padding: 3px;
+      background: rgba(255,255,255,0.13);
+      cursor: pointer; flex-shrink: 0;
+      transition: background 0.25s ease;
+      outline: none;
+    }
+    .prc-switch:focus-visible { box-shadow: 0 0 0 3px rgba(20,200,166,0.4); }
+    .prc-switch[aria-checked="true"] { background: #14c8a6; }
+    .prc-thumb {
+      display: block; width: 21px; height: 21px; border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+      transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
+    }
+    .prc-switch[aria-checked="true"] .prc-thumb { transform: translateX(21px); }
+    .prc-label { font-size: 0.95rem; font-weight: 600; color: rgba(220,230,248,0.85); }
+    .prc-save  { color: #14c8a6; font-size: 0.8rem; font-weight: 700; margin-left: 6px; }
+
+    /* ── Card grid — allow transforms to overflow ── */
+    .pricing-grid { overflow: visible !important; }
+
+    /* ── Card entrance — initial hidden state set by JS ── */
+    .pricing-card {
+      position: relative;
+      transition: box-shadow 0.25s ease;
+    }
+
+    /* ── Popular badge — top-right corner ── */
+    .popular-badge {
+      position: absolute !important;
+      top: 0 !important; left: auto !important; right: 0 !important;
+      border-radius: 0 18px 0 14px !important;
+      padding: 6px 15px 6px 14px !important;
+      transform: none !important;
+      /* override any existing top-center styles from main CSS */
+      width: auto !important; text-align: left !important;
+      display: flex !important; align-items: center !important;
+      gap: 5px !important;
+    }
+
+    /* ── Price billing sub-label ── */
+    .price-billing {
+      font-size: 0.71rem; color: rgba(140,165,200,0.45);
+      margin: 2px 0 14px; text-align: center;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Divider between features and CTA ── */
+    .plan-divider {
+      border: none; border-top: 1px solid rgba(255,255,255,0.07);
+      margin: 18px 0;
+    }
+
+    /* ── Note under CTA ── */
+    .plan-note {
+      margin-top: 10px; font-size: 0.7rem;
+      color: rgba(130,155,190,0.38); text-align: center;
+      line-height: 1.4;
+    }
+
+    /* ── After entrance, restore hover transition ── */
+    .pricing-card.prc-live {
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease !important;
+    }
+    .pricing-card.prc-live:hover {
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(20,200,166,0.18) !important;
+    }
+  </style>
 </head>
 <body>
 
@@ -43,12 +119,12 @@
       Start free, scale as you grow. All plans include the Chrome extension and mobile app. Cancel anytime.
     </p>
 
-    <!-- Toggle -->
-    <div class="reveal" style="display:flex;justify-content:center;margin-top:32px;">
-      <div class="pricing-toggle" id="pricing-toggle">
-        <span class="toggle-opt active" data-period="monthly">Monthly</span>
-        <span class="toggle-opt" data-period="annual">Annual <span style="color:var(--success);font-size:0.75rem;margin-left:4px;">Save 20%</span></span>
-      </div>
+    <!-- Toggle switch -->
+    <div class="prc-toggle-wrap reveal">
+      <button class="prc-switch" id="prc-switch" role="switch" aria-checked="false" aria-label="Switch to annual billing">
+        <span class="prc-thumb"></span>
+      </button>
+      <span class="prc-label">Annual billing <span class="prc-save">Save 20%</span></span>
     </div>
   </div>
 </section>
@@ -59,12 +135,13 @@
     <div class="pricing-grid">
 
       <!-- Starter -->
-      <div class="pricing-card" data-monthly="9" data-card-index="0">
+      <div class="pricing-card" data-monthly="9" data-annual="7" data-plan-index="0">
         <div class="plan-name">Starter</div>
         <div class="plan-price">
           <sup>$</sup><span class="price-num">9</span>
           <span class="period">/month</span>
         </div>
+        <p class="price-billing">billed monthly</p>
         <div class="plan-desc">Perfect for micro-businesses and freelancers. Up to 5 seats.</div>
 
         <ul class="plan-features">
@@ -75,45 +152,50 @@
           <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Manager Mobile App</li>
           <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Up to 5 employee seats</li>
           <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Email Support</li>
-          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
-          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
         </ul>
 
+        <hr class="plan-divider" />
         <button class="btn btn-outline btn-block" data-plan-id="starter" onclick="selectPlan('starter')">
           Choose Starter →
         </button>
+        <p class="plan-note">No setup fees. Cancel anytime.</p>
       </div>
 
       <!-- Professional (popular) -->
-      <div class="pricing-card popular" data-monthly="29" data-card-index="1">
-        <div class="popular-badge"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="margin-right:4px;vertical-align:-1px;"><path d="M12 2l2.9 6.26L21.5 9l-5 4.87L17.8 21 12 17.27 6.2 21l1.3-7.13-5-4.87 6.6-.74z"/></svg>Most Popular</div>
+      <div class="pricing-card popular" data-monthly="29" data-annual="23" data-plan-index="1">
+        <div class="popular-badge">
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M12 2l2.9 6.26L21.5 9l-5 4.87L17.8 21 12 17.27 6.2 21l1.3-7.13-5-4.87 6.6-.74z"/></svg>
+          Popular
+        </div>
         <div class="plan-name">Professional</div>
         <div class="plan-price">
           <sup>$</sup><span class="price-num">29</span>
           <span class="period">/month</span>
         </div>
+        <p class="price-billing">billed monthly</p>
         <div class="plan-desc">For growing teams that need visibility and control. Up to 25 seats.</div>
 
         <ul class="plan-features">
           <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Everything in Starter</li>
           <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Up to 25 employee seats</li>
           <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Priority Support</li>
-          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">AI Name &amp; Address Detection</span></li>
-          <li class="plan-feature"><span class="feature-x"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span> <span style="color:var(--muted);">Custom Keyword Detection</span></li>
         </ul>
 
+        <hr class="plan-divider" />
         <button class="btn btn-primary btn-block" data-plan-id="professional" onclick="selectPlan('professional')">
           Choose Professional →
         </button>
+        <p class="plan-note">Most popular for growing teams.</p>
       </div>
 
       <!-- Enterprise -->
-      <div class="pricing-card" data-monthly="99" data-card-index="2">
+      <div class="pricing-card" data-monthly="99" data-annual="79" data-plan-index="2">
         <div class="plan-name">Enterprise</div>
         <div class="plan-price">
           <sup>$</sup><span class="price-num">99</span>
           <span class="period">/month</span>
         </div>
+        <p class="price-billing">billed monthly</p>
         <div class="plan-desc">Unlimited seats, on-device AI detection, and dedicated support for large organisations.</div>
 
         <ul class="plan-features">
@@ -125,14 +207,17 @@
           <li class="plan-feature"><span class="feature-check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Custom Contracts</li>
         </ul>
 
+        <hr class="plan-divider" />
         <button class="btn btn-outline btn-block" data-plan-id="enterprise" onclick="selectPlan('enterprise')">
           Choose Enterprise →
         </button>
+        <p class="plan-note">Custom contracts available on request.</p>
       </div>
+
     </div>
 
     <!-- Trust badge row -->
-    <div style="display:flex;justify-content:center;gap:32px;margin-top:48px;flex-wrap:wrap;" class="reveal">
+    <div style="display:flex;justify-content:center;gap:32px;margin-top:56px;flex-wrap:wrap;" class="reveal">
       <div style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
         <span style="color:var(--success);">✓</span> No credit card required
       </div>
