@@ -329,3 +329,33 @@ input:checked + .slider::before {
 .trial-banner.trial-expired .trial-upgrade {
   color: var(--brand-red);
 }
+
+/* ── Enterprise file scanning card ──────────────────────────────────── */
+.file-scan-card {
+  border-color: rgba(20, 200, 166, 0.2);
+}
+
+.file-scan-card .tier2-sub.ready {
+  color: var(--brand-accent);
+}
+
+.files-blocked-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--brand-border);
+}
+
+.files-blocked-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-accent);
+  line-height: 1;
+}
+
+.files-blocked-label {
+  font-size: 0.72rem;
+  color: var(--brand-text-dim);
+}

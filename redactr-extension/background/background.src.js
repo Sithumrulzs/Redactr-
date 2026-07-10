@@ -67,6 +67,10 @@ const DEFAULT_STATE = {
   customKeywords: [], // Enterprise-only, admin-managed (see getEntitlement)
   trialDaysLeft: 0,
   trialExpired: false,
+  // Enterprise file scanning
+  fileInterceptEnabled: false,
+  fileInterceptAllowed: false, // true when plan === "enterprise"
+  filesBlocked: 0,
 };
 
 const OFFSCREEN_PATH = "offscreen/offscreen.html";
@@ -125,6 +129,8 @@ async function fetchEntitlement() {
       customKeywords: data.customKeywords ?? [],
       trialDaysLeft: data.trialDaysLeft ?? 0,
       trialExpired: data.trialExpired ?? false,
+      // File-intercept is exclusive to Enterprise
+      fileInterceptAllowed: data.plan === "enterprise",
     });
     // Clear joinError for trial users — their "no company" state is expected.
     if (data.plan === "trial" || data.plan === "trial_expired") {
@@ -215,6 +221,45 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       if (message.metadata) {
         syncAlert(message.metadata);
+      }
+    })();
+    return true;
+  }
+
+  /* ── Enterprise file scanning — file/email blocked ──────────────────── */
+  if (message?.type === "FILE_BLOCKED") {
+    (async () => {
+      const { filesBlocked } = await chrome.storage.local.get({ filesBlocked: 0 });
+      const next = filesBlocked + 1;
+      await chrome.storage.local.set({ filesBlocked: next });
+      sendResponse({ filesBlocked: next });
+
+      if (message.metadata) {
+        syncAlert(message.metadata);
+      }
+    })();
+    return true;
+  }
+
+  /* ── Enterprise file scanning — image analysis via offscreen canvas ──── */
+  if (message?.type === "FILE_SCAN_IMAGE") {
+    (async () => {
+      const { fileInterceptAllowed } = await chrome.storage.local.get({ fileInterceptAllowed: false });
+      if (!fileInterceptAllowed) {
+        sendResponse({ ok: true, blocked: false });
+        return;
+      }
+      try {
+        await ensureOffscreenDocument();
+        const response = await chrome.runtime.sendMessage({
+          target  : "offscreen",
+          type    : "FILE_SCAN_IMAGE",
+          dataUrl : message.dataUrl,
+        });
+        sendResponse(response);
+      } catch (error) {
+        // Fail open — never block an image because the offscreen had an error
+        sendResponse({ ok: true, blocked: false, error: String(error) });
       }
     })();
     return true;

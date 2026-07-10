@@ -64,6 +64,27 @@
         First use downloads the model once (needs internet); after that it works offline.
       </p>
     </div>
+
+    <div class="tier2-card file-scan-card" id="file-scan-card">
+      <div class="tier2-row">
+        <div>
+          <div class="tier2-title">File &amp; attachment scanning</div>
+          <div class="tier2-sub" id="file-scan-status">Enterprise plan required</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="file-scan-toggle" disabled />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="tier2-hint">
+        Blocks Word docs, spreadsheets, PDFs, and images containing sensitive data
+        before they're uploaded. Also monitors Gmail &amp; Outlook compose windows.
+      </p>
+      <div class="files-blocked-row hidden" id="files-blocked-row">
+        <span class="files-blocked-num" id="files-blocked-value">0</span>
+        <span class="files-blocked-label">files blocked</span>
+      </div>
+    </div>
   </main>
 
   <script src="popup.js"></script>

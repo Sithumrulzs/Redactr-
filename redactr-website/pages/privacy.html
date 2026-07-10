@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Redactr</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="icon" href="../assets/Logo.png" />
+  <style>
+    .policy-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+      color: #C8D6EF;
+      line-height: 1.75;
+    }
+    .policy-wrap h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #F0F6FC;
+      margin: 0 0 8px;
+      letter-spacing: -0.04em;
+    }
+    .policy-updated {
+      font-size: 0.82rem;
+      color: #8C95A6;
+      margin-bottom: 48px;
+    }
+    .policy-wrap h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #F0F6FC;
+      margin: 40px 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .policy-wrap p { margin: 0 0 14px; font-size: 0.95rem; }
+    .policy-wrap ul {
+      margin: 0 0 14px;
+      padding-left: 20px;
+    }
+    .policy-wrap ul li { margin-bottom: 6px; font-size: 0.95rem; }
+    .policy-wrap a { color: #14C8A6; text-decoration: none; }
+    .policy-wrap a:hover { text-decoration: underline; }
+    .highlight-box {
+      background: rgba(20,200,166,0.07);
+      border: 1px solid rgba(20,200,166,0.2);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin: 0 0 14px;
+      font-size: 0.93rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <img src="../assets/Logo.png" alt="Redactr" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <a href="pricing.html" class="btn btn-outline btn-sm">View Plans</a>
+      <a href="pricing.html" class="btn btn-primary btn-sm">Start Free Trial</a>
+    </div>
+    <button class="nav-menu-btn">☰</button>
+  </div>
+</nav>
+
+<div class="policy-wrap">
+  <h1>Privacy Policy</h1>
+  <p class="policy-updated">Last updated: 10 July 2026</p>
+
+  <div class="highlight-box">
+    <strong style="color:#14C8A6;">Core principle:</strong> Redactr scans your text and files
+    <strong>locally on your device</strong>. The sensitive data we detect — API keys, credit cards,
+    personal information — is <strong>never uploaded to our servers</strong>.
+  </div>
+
+  <h2>1. Who we are</h2>
+  <p>
+    Redactr ("we", "us", "our") is a data-loss prevention tool for businesses and individuals.
+    Our registered contact email is
+    <a href="mailto:support@redactr.io">support@redactr.io</a>.
+  </p>
+
+  <h2>2. What the Chrome extension does</h2>
+  <p>
+    The Redactr Chrome extension monitors text you type into AI tools (ChatGPT, Claude, Gemini)
+    and — for Enterprise plan subscribers — file upload fields and email compose areas across all
+    websites. When sensitive data is detected, the extension warns you or blocks the action.
+    <strong>All detection happens on your device.</strong> We do not transmit your prompts, file
+    contents, or compose drafts to any server.
+  </p>
+
+  <h2>3. Data we collect</h2>
+  <p>We collect only what is necessary to operate the service:</p>
+  <ul>
+    <li>
+      <strong>Account email address</strong> — collected via Google Sign-In when you authenticate
+      in the extension. Used to link you to your company account and verify your subscription plan.
+    </li>
+    <li>
+      <strong>Google display name</strong> — used for personalisation inside the extension popup.
+    </li>
+    <li>
+      <strong>Leak-prevention event counts</strong> — a running integer stored locally in your
+      browser (chrome.storage.local) showing how many leaks were prevented. This number is never
+      sent to our servers.
+    </li>
+    <li>
+      <strong>Blocked-file event metadata</strong> — for Enterprise subscribers, when a file is
+      blocked, a lightweight alert record (filename, file type, website domain, timestamp) is
+      written to your company's Firestore alerts collection so the admin can review it. The file
+      contents are never stored.
+    </li>
+    <li>
+      <strong>Billing email and company name</strong> — collected at checkout on the website when
+      a business purchases a plan. Used to provision your company account.
+    </li>
+  </ul>
+
+  <h2>4. Data we do NOT collect</h2>
+  <ul>
+    <li>The text of your prompts or messages to AI tools</li>
+    <li>The contents of files you upload or attempt to upload</li>
+    <li>The contents of emails you compose</li>
+    <li>Browsing history or URLs visited</li>
+    <li>Any sensitive data that triggers a detection (we detect it and block it — we don't store it)</li>
+  </ul>
+
+  <h2>5. How we use your data</h2>
+  <ul>
+    <li>To authenticate you and determine your subscription plan</li>
+    <li>To allow your company admin to invite and manage team members</li>
+    <li>To send transactional emails (trial activation, subscription confirmation)</li>
+    <li>To display blocked-file alerts to your company admin</li>
+  </ul>
+
+  <h2>6. Third-party services</h2>
+  <ul>
+    <li>
+      <strong>Google Firebase / Firestore</strong> — stores user accounts, company records,
+      invite links, and alert metadata. Data stored in the US.
+      <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase Privacy</a>.
+    </li>
+    <li>
+      <strong>Google Sign-In (OAuth 2.0)</strong> — used for authentication. We receive your
+      email and display name only.
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
+    </li>
+    <li>
+      <strong>Resend</strong> — used to send transactional emails. Your email address is passed
+      to Resend only when sending a welcome or confirmation email.
+      <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener">Resend Privacy Policy</a>.
+    </li>
+    <li>
+      <strong>PayPal</strong> — payment processing on the checkout page. Redactr does not store
+      card details; PayPal handles all payment data.
+      <a href="https://www.paypal.com/us/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener">PayPal Privacy Policy</a>.
+    </li>
+  </ul>
+
+  <h2>7. Permissions used by the extension</h2>
+  <ul>
+    <li>
+      <strong>storage</strong> — stores your local settings (enabled/disabled toggle, leak count,
+      authentication token) in your browser only.
+    </li>
+    <li>
+      <strong>identity</strong> — used to initiate Google Sign-In via chrome.identity.launchWebAuthFlow.
+    </li>
+    <li>
+      <strong>offscreen</strong> — runs AI-based text detection (NER model) and image analysis in
+      a background document without blocking your browser tab.
+    </li>
+    <li>
+      <strong>Host permissions — all URLs</strong> — required for Enterprise plan subscribers to
+      detect sensitive data in file upload inputs and email compose fields across any website.
+      The extension reads file content locally; nothing is sent to our servers.
+    </li>
+  </ul>
+
+  <h2>8. Data retention</h2>
+  <p>
+    Your account data in Firestore is retained for as long as your subscription is active. You may
+    request deletion at any time by emailing <a href="mailto:support@redactr.io">support@redactr.io</a>.
+    Local browser storage (chrome.storage.local) is cleared when you uninstall the extension.
+  </p>
+
+  <h2>9. Children's privacy</h2>
+  <p>
+    Redactr is a business tool not directed at children under 13. We do not knowingly collect data
+    from anyone under 13.
+  </p>
+
+  <h2>10. Changes to this policy</h2>
+  <p>
+    We may update this policy. The "Last updated" date at the top reflects the most recent revision.
+    Continued use of the extension after an update constitutes acceptance.
+  </p>
+
+  <h2>11. Contact</h2>
+  <p>
+    Questions or data requests: <a href="mailto:support@redactr.io">support@redactr.io</a>
+  </p>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/Logo.png" alt="Redactr" />
+      <span class="logo-text">Redact<span>r</span></span>
+    </div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="contact.html">Contact</a>
+      <a href="pricing.html">Pricing</a>
+    </div>
+    <p class="footer-copy">&copy; 2026 Redactr. All rights reserved.</p>
+  </div>
+</footer>
+
+</body>
+</html>

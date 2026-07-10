@@ -241,18 +241,19 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- Download cards: Extension + Mobile App -->
       <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
 
-        <!-- Extension -->
+        <!-- Extension — CWS install -->
         <div style="padding:20px;background:rgba(20,200,166,0.06);border:1px solid rgba(20,200,166,0.22);border-radius:14px;text-align:center;">
           <div style="display:flex;justify-content:center;margin-bottom:10px;">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#14C8A6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#14C8A6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
           </div>
           <div style="font-weight:700;font-size:0.95rem;color:#F0F6FC;margin-bottom:4px;">Chrome Extension</div>
           <div style="font-size:0.78rem;color:#8C95A6;margin-bottom:14px;">For your employees' browsers</div>
-          <button type="button" class="btn btn-primary btn-sm" style="width:100%;" onclick="window.downloadBusinessExtension()">
-            <svg class="icon-inline" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            &nbsp;Download .zip
-          </button>
-          <div style="font-size:0.72rem;color:#8C95A6;margin-top:8px;">Load unpacked in Chrome ↗</div>
+          <a href="https://chromewebstore.google.com/detail/redactr/jplbboglhhopcopdgbephgoelaflfelh"
+            target="_blank" rel="noopener"
+            class="btn btn-primary btn-sm" style="width:100%;display:inline-block;box-sizing:border-box;">
+            Install from Chrome Store
+          </a>
+          <div style="font-size:0.72rem;color:#8C95A6;margin-top:8px;">Share this link with your team ↗</div>
         </div>
 
         <!-- Manager App -->

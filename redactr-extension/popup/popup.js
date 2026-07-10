@@ -15,6 +15,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const joinErrorEl = document.getElementById("join-error");
   const trialBannerEl = document.getElementById("trial-banner");
   const trialTextEl = document.getElementById("trial-text");
+  // File scanning
+  const fileScanToggleEl   = document.getElementById("file-scan-toggle");
+  const fileScanStatusEl   = document.getElementById("file-scan-status");
+  const filesBlockedRowEl  = document.getElementById("files-blocked-row");
+  const filesBlockedValEl  = document.getElementById("files-blocked-value");
 
   function renderAuth(authUser, joinError) {
     signedOutEl.classList.toggle("hidden", !!authUser);
@@ -91,6 +96,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     tier2StatusEl.className = `tier2-sub ${status}`;
   }
 
+  function renderFileScanStatus(enabled, allowed, filesBlocked) {
+    if (!allowed) {
+      fileScanStatusEl.textContent = "Enterprise plan required";
+      fileScanStatusEl.className = "tier2-sub";
+      fileScanToggleEl.disabled = true;
+      filesBlockedRowEl.classList.add("hidden");
+      return;
+    }
+    fileScanToggleEl.disabled = false;
+    if (!enabled) {
+      fileScanStatusEl.textContent = "Off";
+      fileScanStatusEl.className = "tier2-sub";
+      filesBlockedRowEl.classList.add("hidden");
+    } else {
+      fileScanStatusEl.textContent = "Active — scanning uploads & email";
+      fileScanStatusEl.className = "tier2-sub ready";
+      filesBlockedRowEl.classList.remove("hidden");
+      if (filesBlockedValEl) filesBlockedValEl.textContent = filesBlocked || 0;
+    }
+  }
+
   const state = await chrome.storage.local.get({
     enabled: true,
     leaksPrevented: 0,
@@ -102,6 +128,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     plan: null,
     trialDaysLeft: 0,
     trialExpired: false,
+    fileInterceptEnabled: false,
+    fileInterceptAllowed: false,
+    filesBlocked: 0,
   });
 
   renderAuth(state.authUser, state.joinError);
@@ -116,6 +145,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   tier2ToggleEl.checked = state.tier2Enabled;
   tier2ToggleEl.disabled = !tier2Allowed;
   renderTier2Status(state.tier2Status, state.tier2Enabled, tier2Allowed);
+
+  let fileInterceptAllowed = state.fileInterceptAllowed;
+  fileScanToggleEl.checked = state.fileInterceptEnabled;
+  renderFileScanStatus(state.fileInterceptEnabled, fileInterceptAllowed, state.filesBlocked);
 
   toggleEl.addEventListener("change", async () => {
     await chrome.storage.local.set({ enabled: toggleEl.checked });
@@ -132,6 +165,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       renderTier2Status("idle", false, tier2Allowed);
     }
+  });
+
+  fileScanToggleEl.addEventListener("change", async () => {
+    const enabled = fileScanToggleEl.checked;
+    await chrome.storage.local.set({ fileInterceptEnabled: enabled });
+    const { filesBlocked } = await chrome.storage.local.get({ filesBlocked: 0 });
+    renderFileScanStatus(enabled, fileInterceptAllowed, filesBlocked);
   });
 
   chrome.storage.onChanged.addListener((changes) => {
@@ -165,6 +205,19 @@ document.addEventListener("DOMContentLoaded", async () => {
           currentState.trialDaysLeft ?? s.trialDaysLeft,
           currentState.trialExpired ?? s.trialExpired
         );
+      });
+    }
+    if (changes.fileInterceptAllowed) {
+      fileInterceptAllowed = changes.fileInterceptAllowed.newValue;
+    }
+    if (changes.fileInterceptAllowed || changes.fileInterceptEnabled || changes.filesBlocked) {
+      chrome.storage.local.get({ fileInterceptEnabled: false, filesBlocked: 0 }, (s) => {
+        renderFileScanStatus(
+          changes.fileInterceptEnabled ? changes.fileInterceptEnabled.newValue : s.fileInterceptEnabled,
+          fileInterceptAllowed,
+          changes.filesBlocked ? changes.filesBlocked.newValue : s.filesBlocked
+        );
+        if (changes.fileInterceptEnabled) fileScanToggleEl.checked = changes.fileInterceptEnabled.newValue;
       });
     }
   });

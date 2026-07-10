@@ -265,6 +265,10 @@ app.post("/createSubscription", async (req, res) => {
     });
 
     const dlToken = await createDownloadToken(companyRef.id);
+
+    // Fire-and-forget confirmation email — don't block the checkout response.
+    sendTrialWelcomeEmail(email, companyName, null, null, plan);
+
     res.json({
       ok: true,
       subscription: { companyId: companyRef.id, downloadUrl: `/download?token=${dlToken}` },
@@ -329,109 +333,288 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
 });
 
 /**
- * Sends a trial welcome email via Resend (https://resend.com).
+ * Sends a welcome / confirmation email via Resend (https://resend.com).
  * Requires RESEND_API_KEY env var — silently skips if absent so the
  * route still works without email configured.
+ *
+ * plan: "trial" | "starter" | "professional" | "enterprise"
  */
-async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, downloadUrl) {
+async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUrl, plan = "trial") {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.log(`[trial] Welcome email skipped (no RESEND_API_KEY) → ${toEmail}`);
+    console.log(`[email] Welcome email skipped (no RESEND_API_KEY) → ${toEmail}`);
     return;
   }
-  const days = Math.ceil((new Date(trialEnd) - Date.now()) / 86400000);
-  const from = process.env.EMAIL_FROM || "Redactr <onboarding@resend.dev>";
-  const name = displayName || toEmail.split("@")[0];
 
-  const trialEndFormatted = new Date(trialEnd).toLocaleDateString("en-US", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+  const from    = process.env.EMAIL_FROM || "Redactr <onboarding@resend.dev>";
+  const name    = (displayName || toEmail.split("@")[0]).split(" ")[0]; // first name only
   const siteUrl = "https://redactr-swart.vercel.app";
+
+  /* ── Plan metadata ─────────────────────────────────────────────────── */
+  const isTrial = plan === "trial";
+  const days    = isTrial ? Math.ceil((new Date(trialEnd) - Date.now()) / 86400000) : null;
+  const endDate = trialEnd
+    ? new Date(trialEnd).toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" })
+    : null;
+
+  const PLAN_META = {
+    trial:        { label:"Free Trial",    badge:"#14c8a6", badgeText:"TRIAL",        period: days ? `${days} days remaining` : "7-day access" },
+    starter:      { label:"Starter",       badge:"#6366f1", badgeText:"STARTER",       period: "Monthly subscription" },
+    professional: { label:"Professional",  badge:"#8b5cf6", badgeText:"PROFESSIONAL",  period: "Monthly subscription" },
+    enterprise:   { label:"Enterprise",    badge:"#f59e0b", badgeText:"ENTERPRISE",    period: "Annual subscription" },
+  };
+  const meta = PLAN_META[plan] || PLAN_META.trial;
+
+  const PLAN_FEATURES = {
+    trial: [
+      "Tier-1 regex scanning — API keys, credit cards, PII",
+      "Works on ChatGPT, Claude &amp; Gemini",
+      "Prompt redaction &amp; safe-copy",
+      "Local processing — nothing leaves your device",
+    ],
+    starter: [
+      "Everything in Free Trial",
+      "Unlimited scans across all AI tools",
+      "Priority email support",
+      "Usage dashboard",
+    ],
+    professional: [
+      "Everything in Starter",
+      "Tier-2 on-device AI — names &amp; addresses",
+      "Team dashboard &amp; admin controls",
+      "Custom keyword blocking",
+      "Slack &amp; email alert digests",
+    ],
+    enterprise: [
+      "Everything in Professional",
+      "Enterprise file &amp; attachment scanning",
+      "Gmail &amp; Outlook compose monitoring",
+      "SSO / SAML ready",
+      "Dedicated account manager",
+      "SLA &amp; compliance reporting",
+    ],
+  };
+  const features = PLAN_FEATURES[plan] || PLAN_FEATURES.trial;
+
+  /* ── Subject line ───────────────────────────────────────────────────── */
+  const subject = isTrial
+    ? `Your ${days}-day Redactr trial is live, ${name}`
+    : `Welcome to Redactr ${meta.label}, ${name}`;
+
+  /* ── Email HTML ─────────────────────────────────────────────────────── */
+  const featureRows = features.map((f) => `
+    <tr>
+      <td width="20" valign="top" style="padding:0 10px 10px 0;">
+        <div style="width:18px;height:18px;border-radius:50%;background:rgba(20,200,166,0.12);
+          text-align:center;line-height:18px;font-size:10px;font-weight:900;color:#14c8a6;">✓</div>
+      </td>
+      <td style="padding:0 0 10px;font-size:13.5px;color:rgba(200,215,235,0.75);line-height:1.5;">${f}</td>
+    </tr>`).join("");
+
+  const CWS_URL = "https://chromewebstore.google.com/detail/redactr/jplbboglhhopcopdgbephgoelaflfelh";
+
+  const subscriptionBlock = isTrial ? `
+    <!-- Renews / expires note -->
+    <tr><td style="padding:16px 44px 0;">
+      <p style="margin:0;font-size:12.5px;color:rgba(160,175,200,0.45);line-height:1.65;text-align:center;">
+        After your trial, choose a plan at
+        <a href="${siteUrl}/pages/pricing.html" style="color:#14c8a6;text-decoration:none;font-weight:600;">redactr.com/pricing</a>
+        — no card required to start.
+      </p>
+    </td></tr>` : `
+    <!-- Install CTA for paid plans -->
+    <tr><td style="padding:28px 44px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0"
+        style="background:rgba(20,200,166,0.06);border:1px solid rgba(20,200,166,0.18);
+        border-radius:16px;overflow:hidden;">
+        <tr><td style="padding:22px 24px;">
+          <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#14c8a6;
+            letter-spacing:1.2px;text-transform:uppercase;">Get started</p>
+          <p style="margin:0 0 16px;font-size:14px;color:rgba(200,215,235,0.65);line-height:1.55;">
+            Install the extension in one click, then sign in with this email to activate your ${meta.label} plan.
+            Share the same link with your team.
+          </p>
+          <a href="${CWS_URL}" style="display:inline-block;background:#14c8a6;color:#060a11;
+            font-size:13px;font-weight:800;text-decoration:none;
+            padding:12px 26px;border-radius:10px;letter-spacing:0.01em;">
+            Install from Chrome Web Store →
+          </a>
+        </td></tr>
+      </table>
+    </td></tr>
+    <!-- Dashboard link -->
+    <tr><td style="padding:16px 44px 0;text-align:center;">
+      <a href="${siteUrl}" style="font-size:12.5px;color:rgba(20,200,166,0.6);
+        text-decoration:none;font-weight:600;">
+        Open Redactr Dashboard →
+      </a>
+    </td></tr>`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Your Redactr Trial is Active</title>
+<title>${subject}</title>
 </head>
-<body style="margin:0;padding:0;background:#07090f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#060a11;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
 
-<!-- Outer wrapper -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#07090f;min-height:100vh;">
-<tr><td align="center" style="padding:48px 16px;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#060a11;">
+<tr><td align="center" style="padding:52px 16px 64px;">
 
-  <!-- Card -->
-  <table width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;background:#0f1420;border-radius:20px;border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
+  <!-- Shell -->
+  <table width="560" cellpadding="0" cellspacing="0" border="0"
+    style="max-width:560px;width:100%;background:#0c1018;border-radius:24px;
+    border:1px solid rgba(255,255,255,0.06);overflow:hidden;">
 
-    <!-- Top accent bar -->
-    <tr><td style="background:linear-gradient(90deg,#0d9e82,#14c8a6,#5eead4);height:3px;font-size:0;line-height:0;">&nbsp;</td></tr>
+    <!-- Top gradient bar -->
+    <tr><td style="background:linear-gradient(90deg,#0a7a62,#14c8a6 48%,#5eead4);
+      height:2px;font-size:0;line-height:0;">&nbsp;</td></tr>
 
-    <!-- Header -->
-    <tr><td style="padding:40px 44px 0;text-align:left;">
-      <p style="margin:0 0 28px;font-size:13px;font-weight:700;color:#14c8a6;letter-spacing:1.2px;text-transform:uppercase;">Redactr</p>
-      <h1 style="margin:0 0 12px;font-size:28px;font-weight:800;color:#ffffff;letter-spacing:-0.04em;line-height:1.15;">Your free trial<br>is now active.</h1>
-      <p style="margin:0;font-size:15px;color:rgba(180,195,220,0.6);line-height:1.65;font-weight:400;">Hi ${name} — you have <strong style="color:#ffffff;font-weight:700;">${days} days</strong> of full Redactr access starting today.</p>
-    </td></tr>
-
-    <!-- Divider -->
-    <tr><td style="padding:28px 44px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));font-size:0;">&nbsp;</td></tr></table></td></tr>
-
-    <!-- Trial end date block -->
-    <tr><td style="padding:24px 44px 0;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0a0e1a;border-radius:14px;border:1px solid rgba(20,200,166,0.15);">
-        <tr><td style="padding:20px 24px;">
-          <p style="margin:0 0 6px;font-size:10px;font-weight:700;color:rgba(160,175,200,0.5);letter-spacing:1.4px;text-transform:uppercase;">Trial ends</p>
-          <p style="margin:0;font-size:20px;font-weight:800;color:#14c8a6;letter-spacing:-0.03em;">${trialEndFormatted}</p>
-        </td></tr>
+    <!-- Logo row -->
+    <tr><td style="padding:32px 44px 0;">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="width:8px;height:22px;background:linear-gradient(180deg,#14c8a6,#0a7a62);
+            border-radius:3px;display:inline-block;vertical-align:middle;"></td>
+          <td style="padding-left:10px;font-size:15px;font-weight:800;color:#ffffff;
+            letter-spacing:-0.02em;vertical-align:middle;">Redactr</td>
+        </tr>
       </table>
     </td></tr>
 
-    <!-- Steps -->
+    <!-- Hero text -->
     <tr><td style="padding:28px 44px 0;">
-      <p style="margin:0 0 16px;font-size:12px;font-weight:700;color:rgba(160,175,200,0.5);letter-spacing:1.2px;text-transform:uppercase;">Get started</p>
+      <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:rgba(20,200,166,0.7);
+        letter-spacing:1.8px;text-transform:uppercase;">Subscription confirmed</p>
+      <h1 style="margin:0 0 14px;font-size:30px;font-weight:800;color:#ffffff;
+        letter-spacing:-0.045em;line-height:1.12;">
+        ${isTrial ? `You're in, ${name}.` : `Welcome aboard, ${name}.`}
+      </h1>
+      <p style="margin:0;font-size:15px;color:rgba(180,200,230,0.55);line-height:1.7;">
+        ${isTrial
+          ? `Your <strong style="color:rgba(255,255,255,0.85);">free trial</strong> is now active. Here's what you have access to for the next ${days} days.`
+          : `Your <strong style="color:rgba(255,255,255,0.85);">${meta.label}</strong> plan is now active. Here's a summary of your subscription.`}
+      </p>
+    </td></tr>
 
-      <!-- Step 1 -->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
+    <!-- Plan card -->
+    <tr><td style="padding:24px 44px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0"
+        style="background:#080d14;border-radius:16px;border:1px solid rgba(255,255,255,0.07);overflow:hidden;">
+
+        <!-- Card header -->
         <tr>
-          <td width="32" valign="top" style="padding-top:1px;">
-            <div style="width:26px;height:26px;border-radius:50%;background:rgba(20,200,166,0.12);border:1px solid rgba(20,200,166,0.25);text-align:center;line-height:26px;font-size:12px;font-weight:800;color:#14c8a6;">1</div>
-          </td>
-          <td style="padding-left:12px;vertical-align:top;">
-            <p style="margin:0;font-size:14px;font-weight:600;color:#e8eaf0;line-height:1.5;">Install the Chrome extension</p>
-            <p style="margin:4px 0 0;font-size:13px;color:rgba(180,195,220,0.5);">Download and load it into your browser</p>
+          <td style="padding:20px 24px 16px;border-bottom:1px solid rgba(255,255,255,0.05);">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td valign="middle">
+                  <p style="margin:0;font-size:10px;font-weight:700;
+                    color:rgba(140,160,190,0.5);letter-spacing:1.6px;text-transform:uppercase;">Your plan</p>
+                  <p style="margin:4px 0 0;font-size:18px;font-weight:800;color:#ffffff;
+                    letter-spacing:-0.03em;">${meta.label}</p>
+                </td>
+                <td valign="middle" align="right">
+                  <span style="display:inline-block;background:rgba(20,200,166,0.12);
+                    color:#14c8a6;border:1px solid rgba(20,200,166,0.25);
+                    border-radius:20px;font-size:10px;font-weight:800;
+                    padding:4px 12px;letter-spacing:1px;">${meta.badgeText}</span>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
-      </table>
 
-      <!-- Step 2 -->
+        <!-- Card rows -->
+        <tr>
+          <td style="padding:0 24px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+
+              <!-- Status -->
+              <tr>
+                <td style="padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+                    <td style="font-size:12px;color:rgba(140,160,190,0.5);font-weight:600;
+                      text-transform:uppercase;letter-spacing:0.08em;">Status</td>
+                    <td align="right">
+                      <span style="display:inline-flex;align-items:center;gap:5px;
+                        font-size:12px;font-weight:700;color:#14c8a6;">
+                        <span style="display:inline-block;width:6px;height:6px;
+                          border-radius:50%;background:#14c8a6;"></span>
+                        Active
+                      </span>
+                    </td>
+                  </tr></table>
+                </td>
+              </tr>
+
+              <!-- Billing period / days -->
+              <tr>
+                <td style="padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+                    <td style="font-size:12px;color:rgba(140,160,190,0.5);font-weight:600;
+                      text-transform:uppercase;letter-spacing:0.08em;">
+                      ${isTrial ? "Remaining" : "Billing"}
+                    </td>
+                    <td align="right" style="font-size:13px;font-weight:700;color:rgba(220,235,255,0.85);">
+                      ${meta.period}
+                    </td>
+                  </tr></table>
+                </td>
+              </tr>
+
+              ${endDate ? `
+              <!-- End / renewal date -->
+              <tr>
+                <td style="padding:14px 0;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+                    <td style="font-size:12px;color:rgba(140,160,190,0.5);font-weight:600;
+                      text-transform:uppercase;letter-spacing:0.08em;">
+                      ${isTrial ? "Trial ends" : "Next renewal"}
+                    </td>
+                    <td align="right" style="font-size:13px;font-weight:700;color:rgba(220,235,255,0.85);">
+                      ${endDate}
+                    </td>
+                  </tr></table>
+                </td>
+              </tr>` : ""}
+
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+
+    <!-- What's included -->
+    <tr><td style="padding:28px 44px 0;">
+      <p style="margin:0 0 14px;font-size:11px;font-weight:700;
+        color:rgba(140,160,190,0.45);letter-spacing:1.6px;text-transform:uppercase;">
+        What's included
+      </p>
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td width="32" valign="top" style="padding-top:1px;">
-            <div style="width:26px;height:26px;border-radius:50%;background:rgba(20,200,166,0.12);border:1px solid rgba(20,200,166,0.25);text-align:center;line-height:26px;font-size:12px;font-weight:800;color:#14c8a6;">2</div>
-          </td>
-          <td style="padding-left:12px;vertical-align:top;">
-            <p style="margin:0;font-size:14px;font-weight:600;color:#e8eaf0;line-height:1.5;">Sign in with this Google account</p>
-            <p style="margin:4px 0 0;font-size:13px;color:rgba(180,195,220,0.5);">Use <span style="color:rgba(220,235,255,0.75);font-weight:500;">${toEmail}</span> inside the extension</p>
-          </td>
-        </tr>
+        ${featureRows}
       </table>
     </td></tr>
 
-    <!-- CTA button -->
-    <tr><td style="padding:28px 44px 0;text-align:center;">
-      <a href="${downloadUrl}" style="display:inline-block;background:linear-gradient(135deg,#14c8a6,#0d9e82);color:#041510;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;letter-spacing:-0.02em;">↓ &nbsp;Download Chrome Extension</a>
-    </td></tr>
+    ${subscriptionBlock}
 
-    <!-- Upgrade nudge -->
-    <tr><td style="padding:20px 44px 0;text-align:center;">
-      <p style="margin:0;font-size:13px;color:rgba(160,175,200,0.4);line-height:1.6;">Want the full dashboard &amp; team features? <a href="${siteUrl}/pages/pricing.html" style="color:#14c8a6;text-decoration:none;font-weight:600;">View plans →</a></p>
+    <!-- Thin divider -->
+    <tr><td style="padding:28px 44px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="height:1px;background:rgba(255,255,255,0.05);font-size:0;">&nbsp;</td></tr>
+      </table>
     </td></tr>
-
-    <!-- Divider -->
-    <tr><td style="padding:32px 44px 0;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:1px;background:rgba(255,255,255,0.06);font-size:0;">&nbsp;</td></tr></table></td></tr>
 
     <!-- Footer -->
-    <tr><td style="padding:20px 44px 32px;">
-      <p style="margin:0;font-size:11px;color:rgba(140,155,180,0.35);line-height:1.6;">You're receiving this because you signed up for a Redactr free trial at <a href="${siteUrl}" style="color:rgba(140,155,180,0.5);text-decoration:none;">redactr-swart.vercel.app</a>.</p>
+    <tr><td style="padding:20px 44px 36px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td style="font-size:11px;color:rgba(120,140,170,0.35);line-height:1.7;">
+          You're receiving this because you activated a Redactr ${meta.label} at
+          <a href="${siteUrl}" style="color:rgba(120,140,170,0.5);text-decoration:none;">${siteUrl.replace("https://","")}</a>.
+          Signed in as <span style="color:rgba(180,200,230,0.4);">${toEmail}</span>.
+        </td>
+      </tr></table>
     </td></tr>
 
   </table>
@@ -446,7 +629,7 @@ async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, downloadUrl
     const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [toEmail], subject: `Your Redactr free trial is active — ${days} days to explore`, html }),
+      body: JSON.stringify({ from, to: [toEmail], subject, html }),
     });
     if (!resp.ok) console.warn("[trial] Email failed:", await resp.json());
   } catch (e) {

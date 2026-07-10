@@ -550,31 +550,27 @@
     #rdx-caption.rdx-show { opacity: 0.85; }
 
     /* ── Premium aurora background ── */
-    /* ── Premium aurora background ── */
     #rdx-aurora {
       position: absolute; inset: 0; z-index: 0;
       pointer-events: none; overflow: hidden;
-      /* clip-path properly clips filter:blur() children (overflow:hidden doesn't) */
+      /* clip-path properly clips filter:blur() children */
       clip-path: inset(0);
-      /* Fade the very edges so blurred orbs don't bleed as hard strips */
-      -webkit-mask-image:
-        linear-gradient(to right,  transparent 0%, black 5%,  black 95%, transparent 100%),
-        linear-gradient(to bottom, transparent 0%, black 4%,  black 96%, transparent 100%);
-      mask-image:
-        linear-gradient(to right,  transparent 0%, black 5%,  black 95%, transparent 100%),
-        linear-gradient(to bottom, transparent 0%, black 4%,  black 96%, transparent 100%);
-      -webkit-mask-composite: destination-in;
-      mask-composite: intersect;
+      /* Single-layer mask — avoids mask-composite cross-browser issues.
+         Fades the left 18% and right 18% of the aurora to transparent so
+         the orb-1 blur can never produce a hard glowing strip at the edges. */
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%);
+      mask-image:         linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%);
     }
     .rdx-orb {
       position: absolute; border-radius: 50%; pointer-events: none;
     }
-    /* Orb-1 pushed more off-screen so its blurred centre sits ~120px from left edge
-       (was 170px) — reduces the visible band on the left side */
+    /* Orb-1 centre is at x = -520 + 430 = –90px (off-screen left).
+       Animation x-translation capped at +40px → centre never crosses x=0.
+       Mask then fades any residual glow from x=0 to x=18% of container. */
     .rdx-orb-1 {
       width: 860px; height: 700px;
-      top: -300px; left: -340px;
-      background: radial-gradient(ellipse at center, rgba(20,200,166,0.24) 0%, rgba(20,200,166,0.08) 42%, transparent 66%);
+      top: -300px; left: -520px;
+      background: radial-gradient(ellipse at center, rgba(20,200,166,0.20) 0%, rgba(20,200,166,0.06) 42%, transparent 66%);
       filter: blur(90px);
       animation: rdxOrb1 28s ease-in-out infinite;
     }
@@ -594,10 +590,10 @@
       animation: rdxOrb3 22s ease-in-out infinite 10s;
     }
     @keyframes rdxOrb1 {
-      0%,100% { transform: translate(0,0)       scale(1);    opacity: 0.85; }
-      30%     { transform: translate(80px,60px)  scale(1.18); opacity: 0.95; }
-      58%     { transform: translate(40px,100px) scale(0.88); opacity: 0.70; }
-      82%     { transform: translate(-40px,55px) scale(1.08); opacity: 0.90; }
+      0%,100% { transform: translate(0,0)       scale(1);    opacity: 0.80; }
+      30%     { transform: translate(40px,60px)  scale(1.15); opacity: 0.88; }
+      58%     { transform: translate(18px,95px)  scale(0.88); opacity: 0.62; }
+      82%     { transform: translate(-22px,50px) scale(1.06); opacity: 0.82; }
     }
     @keyframes rdxOrb2 {
       0%,100% { transform: translate(0,0)        scale(1);    opacity: 0.70; }
