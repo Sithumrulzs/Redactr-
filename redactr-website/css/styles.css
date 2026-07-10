@@ -870,7 +870,10 @@ p  { color: var(--muted); line-height: 1.8; }
   }
   .flow-step:last-child { border-bottom: none; }
   .flow-step-num { margin: 0; }
-  .flow-step h4 { margin-top: 14px; }
+  /* h4 auto-places to col 2 (connector is absolute, out of flow).
+     p would auto-place to col 1 (52px) — fix it to col 2 explicitly. */
+  .flow-step p { grid-column: 2; margin-top: 6px; }
+  .flow-step h4 { margin-top: 12px; margin-bottom: 4px; }
   .flow-connector {
     position: absolute;
     top: auto;
@@ -2143,9 +2146,8 @@ p  { color: var(--muted); line-height: 1.8; }
   .nav-logo { font-size: 1.1rem; gap: 8px; }
   .nav-logo img { width: 36px; height: 36px; }
   .nav-links { display: none; }
-  .nav-actions { display: flex; gap: 8px; margin-left: auto; }
-  .nav-actions .btn-outline { display: none; }
-  .nav-actions .btn-primary { padding: 10px 14px; font-size: 0.85rem; }
+  /* Hide all nav CTAs on mobile — "Start Free Trial" lives in the hamburger menu */
+  .nav-actions { display: none; }
   .nav-menu-btn {
     display: inline-flex;
     align-items: center;

@@ -48,11 +48,16 @@ class _SignInScreenState extends State<SignInScreen>
   void initState() {
     super.initState();
 
-    _glowCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2800))
-      ..repeat(reverse: true);
+    _glowCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2800),
+    )..repeat(reverse: true);
     _glowAnim = CurvedAnimation(parent: _glowCtrl, curve: Curves.easeInOut);
 
-    _shakeCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 480));
+    _shakeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 480),
+    );
     _shakeAnim = TweenSequence([
       TweenSequenceItem(tween: Tween(begin: 0.0, end: -10.0), weight: 1),
       TweenSequenceItem(tween: Tween(begin: -10.0, end: 10.0), weight: 2),
@@ -61,11 +66,21 @@ class _SignInScreenState extends State<SignInScreen>
       TweenSequenceItem(tween: Tween(begin: 6.0, end: 0.0), weight: 1),
     ]).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.easeInOut));
 
-    _successCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
-    _successScale = CurvedAnimation(parent: _successCtrl, curve: Curves.easeOutBack);
+    _successCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _successScale = CurvedAnimation(
+      parent: _successCtrl,
+      curve: Curves.easeOutBack,
+    );
 
-    _emailFocus.addListener(() => setState(() => _emailFocused = _emailFocus.hasFocus));
-    _passwordFocus.addListener(() => setState(() => _passwordFocused = _passwordFocus.hasFocus));
+    _emailFocus.addListener(
+      () => setState(() => _emailFocused = _emailFocus.hasFocus),
+    );
+    _passwordFocus.addListener(
+      () => setState(() => _passwordFocused = _passwordFocus.hasFocus),
+    );
   }
 
   @override
@@ -81,20 +96,26 @@ class _SignInScreenState extends State<SignInScreen>
   }
 
   String? _friendlyError(Object error) {
-    if (error is! FirebaseAuthException) return 'Something went wrong. Please try again.';
+    if (error is! FirebaseAuthException)
+      return 'Something went wrong. Please try again.';
     switch (error.code) {
-      case 'email-already-in-use': return 'An account already exists for that email.';
-      case 'weak-password':         return 'Password must be at least 6 characters.';
-      case 'invalid-email':         return 'That doesn\'t look like a valid email.';
+      case 'email-already-in-use':
+        return 'An account already exists for that email.';
+      case 'weak-password':
+        return 'Password must be at least 6 characters.';
+      case 'invalid-email':
+        return 'That doesn\'t look like a valid email.';
       case 'user-not-found':
       case 'invalid-credential':
-      case 'wrong-password':        return 'Email or password is incorrect.';
-      default:                      return 'Something went wrong. Please try again.';
+      case 'wrong-password':
+        return 'Email or password is incorrect.';
+      default:
+        return 'Something went wrong. Please try again.';
     }
   }
 
   Future<void> _submitEmailForm() async {
-    final email    = _emailCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
     if (!email.contains('@') || !email.contains('.')) {
       _setError('Enter a valid email address.');
@@ -104,7 +125,10 @@ class _SignInScreenState extends State<SignInScreen>
       _setError('Password must be at least 6 characters.');
       return;
     }
-    setState(() { _isSubmitting = true; _error = null; });
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
     try {
       if (_isSignUpMode) {
         await _authService.signUpWithEmail(email, password);
@@ -114,13 +138,18 @@ class _SignInScreenState extends State<SignInScreen>
       _showSuccessAnimation();
     } catch (e) {
       if (!mounted) return;
-      setState(() { _isSubmitting = false; });
+      setState(() {
+        _isSubmitting = false;
+      });
       _setError(_friendlyError(e));
     }
   }
 
   Future<void> _signInWithGoogle() async {
-    setState(() { _isSubmitting = true; _error = null; });
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
     try {
       final result = await _authService.signInWithGoogle();
       if (result == null && mounted) {
@@ -130,7 +159,9 @@ class _SignInScreenState extends State<SignInScreen>
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() { _isSubmitting = false; });
+      setState(() {
+        _isSubmitting = false;
+      });
       _setError('Sign-in failed. Please try again.');
     }
   }
@@ -158,7 +189,7 @@ class _SignInScreenState extends State<SignInScreen>
           // ── Animated radial glow background ──────────────────────────────
           AnimatedBuilder(
             animation: _glowAnim,
-            builder: (_, __) => Positioned(
+            builder: (context, _) => Positioned(
               top: -size.height * 0.15,
               left: size.width * 0.1,
               right: size.width * 0.1,
@@ -168,7 +199,9 @@ class _SignInScreenState extends State<SignInScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.primary.withValues(alpha: 0.10 + 0.06 * _glowAnim.value),
+                      AppColors.primary.withValues(
+                        alpha: 0.10 + 0.06 * _glowAnim.value,
+                      ),
                       Colors.transparent,
                     ],
                   ),
@@ -178,11 +211,11 @@ class _SignInScreenState extends State<SignInScreen>
           ),
 
           // ── Floating particles ────────────────────────────────────────────
-          ...List.generate(12, (i) => _FloatingParticle(
-            seed: i,
-            random: _random,
-            screenSize: size,
-          )),
+          ...List.generate(
+            12,
+            (i) =>
+                _FloatingParticle(seed: i, random: _random, screenSize: size),
+          ),
 
           // ── Form content ──────────────────────────────────────────────────
           SafeArea(
@@ -212,7 +245,10 @@ class _SignInScreenState extends State<SignInScreen>
                           const Text(
                             'On-device leak protection for your team',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -267,8 +303,9 @@ class _SignInScreenState extends State<SignInScreen>
                             color: AppColors.textDim,
                             size: 20,
                           ),
-                          onPressed: () =>
-                              setState(() => _obscurePassword = !_obscurePassword),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                         onSubmitted: (_) => _submitEmailForm(),
                       ),
@@ -293,15 +330,21 @@ class _SignInScreenState extends State<SignInScreen>
                       delay: const Duration(milliseconds: 480),
                       child: Row(
                         children: [
-                          const Expanded(child: Divider(color: AppColors.border)),
+                          const Expanded(
+                            child: Divider(color: AppColors.border),
+                          ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                            ),
                             child: Text(
                               'or continue with',
                               style: Theme.of(context).textTheme.labelSmall,
                             ),
                           ),
-                          const Expanded(child: Divider(color: AppColors.border)),
+                          const Expanded(
+                            child: Divider(color: AppColors.border),
+                          ),
                         ],
                       ),
                     ),
@@ -323,23 +366,31 @@ class _SignInScreenState extends State<SignInScreen>
                       AnimatedEntrance(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                            horizontal: AppSpacing.lg,
+                            vertical: AppSpacing.md,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.danger.withValues(alpha: 0.10),
                             borderRadius: BorderRadius.circular(AppRadius.md),
                             border: Border.all(
-                                color: AppColors.danger.withValues(alpha: 0.35)),
+                              color: AppColors.danger.withValues(alpha: 0.35),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline_rounded,
-                                  color: AppColors.danger, size: 16),
+                              const Icon(
+                                Icons.error_outline_rounded,
+                                color: AppColors.danger,
+                                size: 16,
+                              ),
                               const SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: Text(
                                   _error!,
                                   style: const TextStyle(
-                                      color: AppColors.danger, fontSize: 13),
+                                    color: AppColors.danger,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                             ],
@@ -372,11 +423,15 @@ class _SignInScreenState extends State<SignInScreen>
                         shape: BoxShape.circle,
                         color: AppColors.success.withValues(alpha: 0.15),
                         border: Border.all(
-                            color: AppColors.success.withValues(alpha: 0.4),
-                            width: 2),
+                          color: AppColors.success.withValues(alpha: 0.4),
+                          width: 2,
+                        ),
                       ),
-                      child: const Icon(Icons.check_rounded,
-                          color: AppColors.success, size: 40),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        color: AppColors.success,
+                        size: 40,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
@@ -411,8 +466,12 @@ class _ModePill extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _pill('Sign in', !isSignUp, () { if (isSignUp) onToggle(); }),
-          _pill('Create account', isSignUp, () { if (!isSignUp) onToggle(); }),
+          _pill('Sign in', !isSignUp, () {
+            if (isSignUp) onToggle();
+          }),
+          _pill('Create account', isSignUp, () {
+            if (!isSignUp) onToggle();
+          }),
         ],
       ),
     );
@@ -551,7 +610,10 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) { setState(() => _pressed = false); if (!widget.isLoading) widget.onTap(); },
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        if (!widget.isLoading) widget.onTap();
+      },
       onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedScale(
         scale: _pressed ? 0.96 : 1.0,
@@ -569,7 +631,9 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
             borderRadius: BorderRadius.circular(AppRadius.md),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: _pressed ? 0.2 : 0.35),
+                color: AppColors.primary.withValues(
+                  alpha: _pressed ? 0.2 : 0.35,
+                ),
                 blurRadius: _pressed ? 8 : 16,
                 offset: const Offset(0, 4),
               ),
@@ -618,7 +682,10 @@ class _GoogleButtonState extends State<_GoogleButton> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) { setState(() => _pressed = false); if (!widget.isLoading) widget.onTap(); },
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        if (!widget.isLoading) widget.onTap();
+      },
       onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedScale(
         scale: _pressed ? 0.96 : 1.0,
@@ -640,7 +707,16 @@ class _GoogleButtonState extends State<_GoogleButton> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.login_rounded, color: Color(0xFF1F1F1F), size: 20),
+              SvgPicture.string(
+                '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>''',
+                width: 20,
+                height: 20,
+              ),
               const SizedBox(width: 10),
               const Text(
                 'Continue with Google',
@@ -705,7 +781,7 @@ class _FloatingParticleState extends State<_FloatingParticle>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, __) {
+      builder: (context, _) {
         final t = _ctrl.value;
         final y = widget.screenSize.height * (1 - t);
         final opacity = (math.sin(t * math.pi) * 0.5).clamp(0.0, 0.5);
