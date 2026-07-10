@@ -30,6 +30,8 @@
       --rdx-border:   rgba(255,255,255,0.12);
 
       position: relative;
+      z-index: 2; /* sits above cursor-glow (z-index:1) so the green glow
+                     doesn't bleed through the hero during the intro animation */
       height: 100dvh;
       height: 100vh; /* fallback */
       overflow: hidden;
