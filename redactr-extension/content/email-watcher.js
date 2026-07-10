@@ -56,8 +56,8 @@
   const SUBJECT_SELECTORS = isGmail
     ? ['input[name="subjectbox"]']
     : [
-        'input[aria-label]',
-        'div[aria-label][contenteditable="true"]',
+        'input[aria-label*="ubject" i]',
+        'div[aria-label*="ubject" i][contenteditable="true"]',
       ];
 
   /* ── Warning banner ───────────────────────────────────────────────────── */
@@ -122,14 +122,15 @@
     root.appendChild(banner);
     root[BANNER_KEY] = banner;
 
-    // Report (metadata only, no content)
+    // Report to background as an email compose alert (tier 4, source "email").
     chrome.runtime.sendMessage({
       type: "FILE_BLOCKED",
       metadata: {
         findingTypes: types,
         riskScore: score,
         site: location.hostname,
-        tier: 3,
+        tier: 4,
+        source: "email",
         context: "email_compose",
       },
     });
@@ -193,17 +194,23 @@
   function scanForComposeAreas() {
     for (const sel of BODY_SELECTORS) {
       document.querySelectorAll(sel).forEach((el) => {
-        // Skip elements that are probably not inside a compose dialog
+        // Only attach to elements actually inside a compose container —
+        // avoids attaching to Gmail search/read-view textboxes.
         const inCompose =
           el.closest('[role="dialog"]') ||
-          el.closest(".nH") || el.closest(".aSs") || el.closest(".AD") ||
-          el.closest("[aria-label]");
-        if (inCompose || isGmail) attachToCompose(el);
+          el.closest(".nH") || el.closest(".aSs") || el.closest(".AD");
+        if (inCompose) attachToCompose(el);
       });
     }
   }
 
-  const observer = new MutationObserver(scanForComposeAreas);
+  // Debounce the MutationObserver callback — Gmail fires hundreds of
+  // mutations per keystroke; running querySelectorAll on every one is wasteful.
+  let _scanTimer = null;
+  const observer = new MutationObserver(() => {
+    if (_scanTimer) clearTimeout(_scanTimer);
+    _scanTimer = setTimeout(scanForComposeAreas, 300);
+  });
   observer.observe(document.body, { childList: true, subtree: true });
   scanForComposeAreas();
 })();

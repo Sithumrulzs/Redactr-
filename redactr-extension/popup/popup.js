@@ -59,6 +59,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   signOutButton.addEventListener("click", async () => {
     await chrome.runtime.sendMessage({ type: "SIGN_OUT" });
     renderAuth(null, null);
+    renderTrialBanner(null, 0, false);
+    tier2Allowed = false;
+    tier2ToggleEl.checked = false;
+    tier2ToggleEl.disabled = true;
+    renderTier2Status("idle", false, false);
+    fileInterceptAllowed = false;
+    fileScanToggleEl.checked = false;
+    renderFileScanStatus(false, false, 0);
   });
 
   const STATUS_LABEL = {
@@ -183,11 +191,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       tier2ToggleEl.disabled = !tier2Allowed;
     }
     if (changes.tier2Status || changes.tier2Allowed) {
-      renderTier2Status(
-        changes.tier2Status ? changes.tier2Status.newValue : "idle",
-        tier2ToggleEl.checked,
-        tier2Allowed
-      );
+      chrome.storage.local.get({ tier2Status: "idle" }, (s) => {
+        renderTier2Status(
+          changes.tier2Status ? changes.tier2Status.newValue : s.tier2Status,
+          tier2ToggleEl.checked,
+          tier2Allowed
+        );
+      });
     }
     if (changes.authUser) {
       renderAuth(changes.authUser.newValue, changes.joinError ? changes.joinError.newValue : null);

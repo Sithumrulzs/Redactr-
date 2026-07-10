@@ -14,7 +14,13 @@ const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+let serviceAccount;
+try {
+  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+} catch (e) {
+  console.error("FATAL: FIREBASE_SERVICE_ACCOUNT_JSON is missing or invalid JSON. Server cannot start.", e.message);
+  process.exit(1);
+}
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
@@ -22,10 +28,46 @@ const TIER2_PLANS = new Set(["enterprise"]);
 const SEAT_LIMITS = { starter: 5, professional: 25, enterprise: 999999 };
 
 const app = express();
-app.use(cors());
+
+const ALLOWED_ORIGINS = [
+  "https://redactr-swart.vercel.app",
+  "https://redactr-ln5t.onrender.com",
+  // local dev
+  "http://localhost:3000",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+];
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow same-origin requests (no Origin header) and extension background calls.
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 const { randomUUID } = require("crypto");
 const SERVER_URL = process.env.SERVER_URL || "https://redactr-ln5t.onrender.com";
+
+// Simple in-memory rate limiter — resets on each server restart (fine for Render free tier).
+const _rateCounts = new Map();
+function rateLimit(key, maxPerMinute) {
+  const now = Date.now();
+  const entry = _rateCounts.get(key) || { count: 0, reset: now + 60000 };
+  if (now > entry.reset) { entry.count = 0; entry.reset = now + 60000; }
+  entry.count++;
+  _rateCounts.set(key, entry);
+  return entry.count > maxPerMinute;
+}
+function rateLimitMiddleware(maxPerMinute) {
+  return (req, res, next) => {
+    const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress || "unknown";
+    if (rateLimit(ip + req.path, maxPerMinute)) {
+      return res.status(429).json({ error: "Too many requests. Please wait a moment." });
+    }
+    next();
+  };
+}
 
 /**
  * Creates a 7-day download token in Firestore and returns the full download
@@ -110,7 +152,7 @@ app.get("/", (req, res) => res.send("Redactr API is running."));
  * company if an invite is waiting for this email, otherwise creates a new
  * company with the caller as admin.
  */
-app.post("/claimOrJoinCompany", requireAuth, async (req, res) => {
+app.post("/claimOrJoinCompany", requireAuth, rateLimitMiddleware(10), async (req, res) => {
   try {
     const uid = req.auth.uid;
     const email = req.auth.email;
@@ -156,6 +198,7 @@ app.post("/claimOrJoinCompany", requireAuth, async (req, res) => {
       name: companyName,
       plan: "starter",
       seatLimit: SEAT_LIMITS.starter,
+      status: "active",
       ownerUid: uid,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -179,7 +222,7 @@ app.post("/claimOrJoinCompany", requireAuth, async (req, res) => {
  * Admin-only. Writes an invites/{email} doc so the next matching sign-in
  * joins this admin's company instead of creating a new one.
  */
-app.post("/inviteEmployee", requireAuth, async (req, res) => {
+app.post("/inviteEmployee", requireAuth, rateLimitMiddleware(20), async (req, res) => {
   try {
     const callerDoc = await db.collection("users").doc(req.auth.uid).get();
     if (!callerDoc.exists || callerDoc.data().role !== "admin") {
@@ -233,7 +276,7 @@ app.post("/inviteEmployee", requireAuth, async (req, res) => {
  * independently re-verifying it server-side — fine for this assignment,
  * not something to ship as-is for real payments.
  */
-app.post("/createSubscription", async (req, res) => {
+app.post("/createSubscription", rateLimitMiddleware(5), async (req, res) => {
   try {
     const email = (req.body?.email ?? "").trim().toLowerCase();
     const companyName = (req.body?.companyName ?? "").trim();
@@ -650,7 +693,7 @@ app.get("/download/trial-extension", (req, res) => {
  * company. Safe to call multiple times — a second call is a no-op when a
  * trial is already active so the user can't refresh their 7 days.
  */
-app.post("/createTrial", requireAuth, async (req, res) => {
+app.post("/createTrial", requireAuth, rateLimitMiddleware(5), async (req, res) => {
   const downloadUrl = `${SERVER_URL}/download/trial-extension`;
   try {
     const trialRef = db.collection("trials").doc(req.auth.uid);
@@ -793,7 +836,7 @@ app.post("/removeCustomKeyword", requireAuth, async (req, res) => {
  * user is signed in. Only ever receives METADATA — finding types/score,
  * never the matched secret text.
  */
-app.post("/createAlert", requireAuth, async (req, res) => {
+app.post("/createAlert", requireAuth, rateLimitMiddleware(60), async (req, res) => {
   try {
     const callerDoc = await db.collection("users").doc(req.auth.uid).get();
     if (!callerDoc.exists) {
@@ -805,7 +848,11 @@ app.post("/createAlert", requireAuth, async (req, res) => {
     const findingTypes = Array.isArray(req.body?.findingTypes) ? req.body.findingTypes : [];
     const riskScore = Number(req.body?.riskScore) || 0;
     const site = typeof req.body?.site === "string" ? req.body.site : "unknown";
-    const tier = req.body?.tier === 2 ? 2 : 1;
+    // tier: 1=regex, 2=AI/NER, 3=file scan, 4=email compose
+    const rawTier = Number(req.body?.tier);
+    const tier = [1, 2, 3, 4].includes(rawTier) ? rawTier : 1;
+    const alertSource = req.body?.source ?? (tier === 4 ? "email" : tier === 3 ? "file" : "prompt");
+    const overridden = req.body?.overridden === true;
 
     if (findingTypes.length === 0) {
       res.status(400).json({ error: "findingTypes is required." });
@@ -814,16 +861,20 @@ app.post("/createAlert", requireAuth, async (req, res) => {
 
     const alertRef = db.collection("companies").doc(companyId).collection("alerts").doc();
     const employeeName = displayName ?? req.auth.email ?? "Unknown";
-    const whatWasBlocked = `Blocked a prompt containing ${findingTypes.join(", ")} on ${site}`;
+    const actionVerb = tier === 4 ? "Flagged an email draft containing" : tier === 3 ? "Blocked a file upload containing" : "Blocked a prompt containing";
+    const whatWasBlocked = `${actionVerb} ${findingTypes.join(", ")} on ${site}`;
 
     await alertRef.set({
       employeeUid: req.auth.uid,
       employeeName,
       whatWasBlocked,
       findingType: findingTypes[0],
+      findingTypes,
       riskScore,
       tier,
-      status: "pending",
+      source: alertSource,
+      overridden,
+      status: overridden ? "overridden" : "pending",
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -883,7 +934,9 @@ app.post("/deleteAccount", requireAuth, async (req, res) => {
 // PAYPAL_WEBHOOK_ID set as Render environment variables, and the webhook
 // actually registered in the PayPal Developer Dashboard against this
 // server's /paypalWebhook URL, before it does anything.
-const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";
+const PAYPAL_API_BASE = process.env.PAYPAL_LIVE_MODE === "true"
+  ? "https://api-m.paypal.com"
+  : "https://api-m.sandbox.paypal.com";
 
 async function getPayPalAccessToken() {
   const credentials = Buffer.from(
@@ -939,10 +992,11 @@ app.post("/paypalWebhook", async (req, res) => {
 
     const purchaseUnit = event.resource?.supplementary_data?.related_ids ?? {};
     const companyId = event.resource?.custom_id ?? purchaseUnit.custom_id;
-    const planName = (event.resource?.description ?? "").toLowerCase().includes("enterprise")
+    const desc = (event.resource?.description ?? "").toLowerCase();
+    const planName = desc.includes("enterprise")
       ? "enterprise"
-      : (event.resource?.description ?? "").toLowerCase().includes("team")
-        ? "team"
+      : desc.includes("professional") || desc.includes("team")
+        ? "professional"
         : "starter";
 
     if (!companyId) {
@@ -951,7 +1005,11 @@ app.post("/paypalWebhook", async (req, res) => {
       return;
     }
 
-    await db.collection("companies").doc(companyId).set({ plan: planName }, { merge: true });
+    await db.collection("companies").doc(companyId).set({
+      plan: planName,
+      seatLimit: SEAT_LIMITS[planName] ?? SEAT_LIMITS.starter,
+      status: "active",
+    }, { merge: true });
     await db
       .collection("companies")
       .doc(companyId)

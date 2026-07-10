@@ -85,10 +85,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
       onApprove: (data, actions) => {
         return actions.order.capture().then(async details => {
+          if (details.status !== 'COMPLETED') {
+            showToast(`Payment status: ${details.status}. Please contact support if this persists.`, 'warning');
+            return;
+          }
           const txId = details.id || 'RDCTR-' + Date.now();
-          await submitSubscription(txId);
-          generateInvoice(cart, details, txId, total, tax);
-          clearCart();
+          try {
+            await submitSubscription(txId);
+            generateInvoice(cart, details, txId, total, tax);
+            clearCart();
+          } catch (err) {
+            console.error('Post-payment setup failed:', err);
+            showToast('Payment received but account setup failed. Email support@redactr.io with transaction ID: ' + txId, 'error');
+          }
         });
       },
 

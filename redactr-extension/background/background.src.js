@@ -39,6 +39,7 @@ const auth = getAuth(app);
 
 /** Calls a route on the Express API with a Firebase ID token attached. */
 async function callApi(method, path, body) {
+  if (!auth.currentUser) throw new Error("Not signed in.");
   const idToken = await auth.currentUser.getIdToken();
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
@@ -89,7 +90,16 @@ auth.onAuthStateChanged((user) => {
   if (user) {
     joinCompany();
   } else {
-    chrome.storage.local.set({ tier2Allowed: false, plan: null, joinError: null });
+    chrome.storage.local.set({
+      tier2Allowed: false,
+      plan: null,
+      joinError: null,
+      leaksPrevented: 0,
+      filesBlocked: 0,
+      fileInterceptAllowed: false,
+      trialDaysLeft: 0,
+      trialExpired: false,
+    });
   }
 });
 
@@ -180,10 +190,14 @@ async function signOutOfGoogle() {
  * secret text. No-ops silently if not signed in (local counter already
  * covers the offline/signed-out case).
  */
-async function syncAlert({ findingTypes, riskScore, site, tier }) {
+async function syncAlert({ findingTypes, riskScore, site, tier, source, overridden }) {
   if (!auth.currentUser) return;
   try {
-    await callApi("POST", "/createAlert", { findingTypes, riskScore, site, tier });
+    await callApi("POST", "/createAlert", {
+      findingTypes, riskScore, site, tier,
+      source: source ?? "prompt",
+      overridden: overridden ?? false,
+    });
   } catch (error) {
     console.warn("Redactr: failed to sync alert to backend", error);
   }
@@ -237,6 +251,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.metadata) {
         syncAlert(message.metadata);
       }
+    })();
+    return true;
+  }
+
+  /* ── Employee overrode a file block — log separately for admin audit ── */
+  if (message?.type === "FILE_OVERRIDE") {
+    (async () => {
+      if (message.metadata) {
+        syncAlert({ ...message.metadata, overridden: true });
+      }
+      sendResponse({ ok: true });
     })();
     return true;
   }

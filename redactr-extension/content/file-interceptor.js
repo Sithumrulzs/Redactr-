@@ -388,6 +388,23 @@
         filename,
         site: location.hostname,
         tier: 3,
+        source: "file",
+        overridden: false,
+      },
+    });
+  }
+
+  function notifyOverridden(filename, findings, riskScore) {
+    chrome.runtime.sendMessage({
+      type: "FILE_OVERRIDE",
+      metadata: {
+        findingTypes: [...new Set(findings.map((f) => f.type))],
+        riskScore,
+        filename,
+        site: location.hostname,
+        tier: 3,
+        source: "file",
+        overridden: true,
       },
     });
   }
@@ -427,6 +444,7 @@
               onSendAnyway() {
                 filesBlocked.delete(input);
                 submitBtns.forEach((b) => (b.disabled = false));
+                notifyOverridden(filename, findings, riskScore);
               },
             });
             notifyBlocked(filename, findings, riskScore);
@@ -486,7 +504,10 @@
               findings,
               riskScore,
               onRemove() { formBlockedUntilClear = false; },
-              onSendAnyway() { formBlockedUntilClear = false; },
+              onSendAnyway() {
+                formBlockedUntilClear = false;
+                notifyOverridden(filename, findings, riskScore);
+              },
             });
             notifyBlocked(filename, findings, riskScore);
           },

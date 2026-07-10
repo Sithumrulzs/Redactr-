@@ -33,9 +33,14 @@ class CompanyService {
       'Content-Type': 'application/json',
     };
 
+    // 30s timeout — Render free tier can cold-start for ~20s.
+    const timeout = Duration(seconds: 30);
+
     final response = method == 'GET'
-        ? await http.get(uri, headers: headers)
-        : await http.post(uri, headers: headers, body: jsonEncode(body ?? {}));
+        ? await http.get(uri, headers: headers).timeout(timeout)
+        : await http
+            .post(uri, headers: headers, body: jsonEncode(body ?? {}))
+            .timeout(timeout);
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (response.statusCode >= 400) {
@@ -90,7 +95,7 @@ class CompanyService {
       customKeywords:
           (data['customKeywords'] as List<dynamic>?)?.cast<String>() ??
           const [],
-      trialDaysLeft: data['trialDaysLeft'] as int? ?? 0,
+      trialDaysLeft: (data['trialDaysLeft'] as num?)?.toInt() ?? 0,
       trialExpired: data['trialExpired'] as bool? ?? false,
     );
   }
@@ -99,7 +104,9 @@ class CompanyService {
   /// repeatedly — returns immediately if a trial is already active.
   Future<DateTime> createTrial() async {
     final data = await _callApi('POST', '/createTrial');
-    return DateTime.parse(data['trialEnd'] as String);
+    final trialEnd = data['trialEnd'] as String?;
+    if (trialEnd == null) throw Exception('Server did not return a trial end date.');
+    return DateTime.parse(trialEnd);
   }
 
   /// Admin-only — writes an invites/{email} doc server-side so the next
@@ -157,7 +164,9 @@ class CompanyService {
   /// Returns the full download URL ready to share.
   Future<String> generateDownloadLink() async {
     final data = await _callApi('POST', '/generateDownloadToken');
-    return data['downloadUrl'] as String;
+    final url = data['downloadUrl'] as String?;
+    if (url == null) throw Exception('Server did not return a download URL.');
+    return url;
   }
 
   /// Deletes the caller's users/{uid} Firestore doc. Must be followed by
@@ -169,6 +178,10 @@ class CompanyService {
   /// Saves this device's FCM token onto the signed-in user's own doc — the
   /// only field firestore.rules lets a client write directly on users/{uid}.
   Future<void> saveFcmToken(String uid, String token) {
-    return _firestore.collection('users').doc(uid).update({'fcmToken': token});
+    // set+merge instead of update() so this works even before the users doc exists.
+    return _firestore
+        .collection('users')
+        .doc(uid)
+        .set({'fcmToken': token}, SetOptions(merge: true));
   }
 }
