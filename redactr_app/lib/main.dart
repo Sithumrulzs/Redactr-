@@ -39,9 +39,10 @@ Widget _premiumTransition(Widget child, Animation<double> animation) {
   return FadeTransition(
     opacity: animation,
     child: ScaleTransition(
-      scale: Tween(begin: 0.97, end: 1.0).animate(
-        CurvedAnimation(parent: animation, curve: Curves.easeOut),
-      ),
+      scale: Tween(
+        begin: 0.97,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
       child: child,
     ),
   );
@@ -67,14 +68,16 @@ class _AuthGateState extends State<AuthGate> {
   @override
   void initState() {
     super.initState();
-    Firebase.initializeApp().then((_) {
-      if (mounted) setState(() => _firebaseReady = true);
-      _authService.authStateChanges.first.then((user) {
-        if (mounted) setState(() => _requiresBiometric = user != null);
-      });
-    }).catchError((error) {
-      if (mounted) setState(() => _firebaseError = error);
-    });
+    Firebase.initializeApp()
+        .then((_) {
+          if (mounted) setState(() => _firebaseReady = true);
+          _authService.authStateChanges.first.then((user) {
+            if (mounted) setState(() => _requiresBiometric = user != null);
+          });
+        })
+        .catchError((error) {
+          if (mounted) setState(() => _firebaseError = error);
+        });
   }
 
   static const _loadingScreen = Scaffold(
@@ -87,7 +90,9 @@ class _AuthGateState extends State<AuthGate> {
     Widget content;
 
     if (_showSplash) {
-      content = SplashScreen(onFinished: () => setState(() => _showSplash = false));
+      content = SplashScreen(
+        onFinished: () => setState(() => _showSplash = false),
+      );
     } else if (_firebaseError != null) {
       content = const Scaffold(
         backgroundColor: AppColors.background,
@@ -118,7 +123,9 @@ class _AuthGateState extends State<AuthGate> {
             } else if (_requiresBiometric == null) {
               inner = _loadingScreen;
             } else if (_requiresBiometric! && !_biometricPassed) {
-              inner = BiometricGateScreen(onSuccess: () => setState(() => _biometricPassed = true));
+              inner = BiometricGateScreen(
+                onSuccess: () => setState(() => _biometricPassed = true),
+              );
             } else {
               inner = _ProfileGate(uid: user.uid);
             }
@@ -166,6 +173,14 @@ class _ProfileGateState extends State<_ProfileGate> {
   /// Checks company profile first; if none, falls back to trial entitlement
   /// so trial users don't land on CompanySetupScreen.
   Future<Map<String, dynamic>?> _resolveProfile() async {
+    // Attempt invite-based join before reading the profile. Covers the case
+    // where the user just paid on the website: /createSubscription creates
+    // invites/{email} but not users/{uid} — claimOrJoinCompany creates it.
+    // Silently ignored when no invite exists (trial / brand-new users).
+    try {
+      await _companyService.claimOrJoinCompany();
+    } catch (_) {}
+
     final profile = await _companyService.getUserProfile(widget.uid);
     if (profile != null) return profile;
     try {
@@ -208,7 +223,9 @@ class _ProfileGateState extends State<_ProfileGate> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           inner = const Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
           );
         } else if (snapshot.data == null) {
           inner = CompanySetupScreen(onCompanyReady: _refresh);
@@ -298,7 +315,9 @@ class TrialShell extends StatelessWidget {
                       trialExpired
                           ? Icons.timer_off_outlined
                           : Icons.timer_outlined,
-                      color: trialExpired ? AppColors.danger : AppColors.primary,
+                      color: trialExpired
+                          ? AppColors.danger
+                          : AppColors.primary,
                       size: 36,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -307,7 +326,9 @@ class TrialShell extends StatelessWidget {
                           ? 'Your free trial has ended'
                           : '$trialDaysLeft day${trialDaysLeft != 1 ? 's' : ''} left in your trial',
                       style: TextStyle(
-                        color: trialExpired ? AppColors.danger : AppColors.primary,
+                        color: trialExpired
+                            ? AppColors.danger
+                            : AppColors.primary,
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                       ),
@@ -496,11 +517,31 @@ class _RootShellState extends State<RootShell> {
 typedef _TabDef = ({IconData icon, IconData activeIcon, String label});
 
 const List<_TabDef> _tabs = [
-  (icon: Icons.dashboard_outlined,      activeIcon: Icons.dashboard_rounded,       label: 'Dashboard'),
-  (icon: Icons.shield_outlined,         activeIcon: Icons.shield_rounded,           label: 'Alerts'),
-  (icon: Icons.insights_outlined,       activeIcon: Icons.insights_rounded,         label: 'Insights'),
-  (icon: Icons.people_outline_rounded,  activeIcon: Icons.people_rounded,           label: 'Team'),
-  (icon: Icons.settings_outlined,       activeIcon: Icons.settings_rounded,         label: 'Settings'),
+  (
+    icon: Icons.dashboard_outlined,
+    activeIcon: Icons.dashboard_rounded,
+    label: 'Dashboard',
+  ),
+  (
+    icon: Icons.shield_outlined,
+    activeIcon: Icons.shield_rounded,
+    label: 'Alerts',
+  ),
+  (
+    icon: Icons.insights_outlined,
+    activeIcon: Icons.insights_rounded,
+    label: 'Insights',
+  ),
+  (
+    icon: Icons.people_outline_rounded,
+    activeIcon: Icons.people_rounded,
+    label: 'Team',
+  ),
+  (
+    icon: Icons.settings_outlined,
+    activeIcon: Icons.settings_rounded,
+    label: 'Settings',
+  ),
 ];
 
 class _AppNavBar extends StatefulWidget {
@@ -614,7 +655,10 @@ class _NavItem extends StatelessWidget {
                       color: AppColors.danger,
                       shape: BoxShape.circle,
                     ),
-                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
                     child: Text(
                       badge > 99 ? '99+' : '$badge',
                       style: const TextStyle(
@@ -647,17 +691,20 @@ class _NavItem extends StatelessWidget {
 
 /// Shared slide+fade page route used for all Navigator.push calls.
 Route<T> slideRoute<T>(Widget page) => PageRouteBuilder<T>(
-      pageBuilder: (_, __, ___) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final slide = Tween(begin: const Offset(1.0, 0), end: Offset.zero)
-            .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
-        final fade = Tween(begin: 0.0, end: 1.0)
-            .animate(CurvedAnimation(parent: animation, curve: const Interval(0, 0.6)));
-        return FadeTransition(
-          opacity: fade,
-          child: SlideTransition(position: slide, child: child),
-        );
-      },
-      transitionDuration: AppDurations.base,
-      reverseTransitionDuration: AppDurations.fast,
+  pageBuilder: (context, animation, secondaryAnimation) => page,
+  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    final slide = Tween(
+      begin: const Offset(1.0, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+    final fade = Tween(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: animation, curve: const Interval(0, 0.6)),
     );
+    return FadeTransition(
+      opacity: fade,
+      child: SlideTransition(position: slide, child: child),
+    );
+  },
+  transitionDuration: AppDurations.base,
+  reverseTransitionDuration: AppDurations.fast,
+);
