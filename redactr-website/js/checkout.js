@@ -47,15 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
         label:  'pay'
       },
 
-      // Validates before PayPal's popup even opens — without this, someone
-      // could pay with no business email/company name, /createSubscription
-      // would fail server-side, and they'd see a "Payment successful"
-      // invoice with a download button that silently never works.
+      // Validate before PayPal popup opens — prevents paying with no account setup
       onClick: (data, actions) => {
-        const email = document.getElementById('billingEmail')?.value.trim();
+        const email   = document.getElementById('billingEmail')?.value.trim();
         const company = document.getElementById('billingCompany')?.value.trim();
         if (!email || !company) {
           showToast('Enter your business email and company name before paying.', 'warning');
+          return actions.reject();
+        }
+        if (!email.includes('@')) {
+          showToast('Enter a valid email address.', 'warning');
           return actions.reject();
         }
         return actions.resolve();
@@ -113,9 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }).render('#paypal-button-container');
 
   } else if (ppContainer) {
-    // PayPal's SDK script didn't load (ad blocker, network issue, etc.) —
-    // still provisions a real company/admin invite via /createSubscription,
-    // it just can't take a card payment without the SDK present.
     ppContainer.innerHTML = `
       <button class="btn btn-primary btn-block btn-lg" onclick="continueWithoutPayPal()">
         Continue — Set Up My Account
@@ -126,19 +124,18 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
-  // ── Submits the subscription to the backend; shared by the real
-  //    PayPal approval handler and the no-SDK fallback below. ──
+  // ── Shared by real PayPal flow and no-SDK fallback ──
   async function submitSubscription(txId) {
-    const billingEmail = document.getElementById('billingEmail')?.value || '';
+    const billingEmail   = document.getElementById('billingEmail')?.value || '';
     const billingCompany = document.getElementById('billingCompany')?.value || '';
     try {
       const response = await fetch(`${API_BASE_URL}/createSubscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          companyId: billingCompany || `company-${txId}`,
-          plan: cart.id,
-          email: billingEmail,
+          companyId:   billingCompany || `company-${txId}`,
+          plan:        cart.id,
+          email:       billingEmail,
           companyName: billingCompany,
           txId,
         }),
@@ -152,12 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ── No-PayPal fallback: still creates the real company/invite ────
+  // ── No-PayPal fallback ────────────────────────────
   window.continueWithoutPayPal = async function() {
     const firstName = document.getElementById('billingFirst')?.value.trim() || '';
-    const lastName = document.getElementById('billingLast')?.value.trim() || '';
-    const email = document.getElementById('billingEmail')?.value.trim() || '';
-    const company = document.getElementById('billingCompany')?.value.trim() || '';
+    const lastName  = document.getElementById('billingLast')?.value.trim() || '';
+    const email     = document.getElementById('billingEmail')?.value.trim() || '';
+    const company   = document.getElementById('billingCompany')?.value.trim() || '';
     if (!email || !company) {
       showToast('Enter your business email and company name first.', 'warning');
       return;
@@ -176,12 +173,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Invoice generator ─────────────────────────────
   function generateInvoice(plan, details, txId, total, tax) {
-    const now      = new Date();
+    const now        = new Date();
     const invoiceNum = 'INV-' + now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + Math.floor(Math.random()*9000+1000);
-    const dateStr  = now.toLocaleDateString('en-AU', { day:'2-digit', month:'long', year:'numeric' });
-    const nextDate = new Date(now); nextDate.setMonth(nextDate.getMonth()+1);
-    const nextStr  = nextDate.toLocaleDateString('en-AU', { day:'2-digit', month:'long', year:'numeric' });
-    const buyerName= (details?.payer?.name?.given_name || '') + ' ' + (details?.payer?.name?.surname || 'Customer');
+    const dateStr    = now.toLocaleDateString('en-AU', { day:'2-digit', month:'long', year:'numeric' });
+    const nextDate   = new Date(now); nextDate.setMonth(nextDate.getMonth()+1);
+    const nextStr    = nextDate.toLocaleDateString('en-AU', { day:'2-digit', month:'long', year:'numeric' });
+    const buyerName  = ((details?.payer?.name?.given_name || '') + ' ' + (details?.payer?.name?.surname || 'Customer')).trim();
     const buyerEmail = details?.payer?.email_address || 'customer@example.com';
 
     const invoiceEl = document.getElementById('invoiceContainer');
@@ -203,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:28px;">
         <div>
           <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:.08em;color:#8C95A6;margin-bottom:8px;">Bill To</div>
-          <div style="font-weight:600;">${buyerName.trim()}</div>
+          <div style="font-weight:600;">${buyerName}</div>
           <div style="font-size:0.88rem;color:#8C95A6;">${buyerEmail}</div>
         </div>
         <div>
@@ -247,10 +244,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="font-size:0.85rem;color:#8C95A6;">Your team is now protected. Download both components below to get started with your ${plan.name} plan.</div>
       </div>
 
-      <!-- Download cards: Extension + Mobile App -->
       <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
 
-        <!-- Extension — CWS install -->
         <div style="padding:20px;background:rgba(20,200,166,0.06);border:1px solid rgba(20,200,166,0.22);border-radius:14px;text-align:center;">
           <div style="display:flex;justify-content:center;margin-bottom:10px;">
             <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#14C8A6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
@@ -265,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-size:0.72rem;color:#8C95A6;margin-top:8px;">Share this link with your team ↗</div>
         </div>
 
-        <!-- Manager App -->
         <div style="padding:20px;background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);border-radius:14px;text-align:center;">
           <div style="display:flex;justify-content:center;margin-bottom:10px;">
             <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#58A6FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
@@ -292,34 +286,13 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     invoiceEl.classList.add('show');
-
-    // Hide checkout form, show invoice
     const checkoutForm = document.getElementById('checkoutFormSection');
     if (checkoutForm) checkoutForm.style.display = 'none';
-
     invoiceEl.scrollIntoView({ behavior: 'smooth' });
     showToast('Payment successful! Invoice generated.', 'success');
   }
 
-  window.downloadBusinessExtension = function() {
-    if (!businessDownloadUrl) {
-      showToast('Business extension download is not ready yet. Please wait a moment and try again.', 'warning');
-      return;
-    }
-
-    const link = document.createElement('a');
-    link.href = businessDownloadUrl;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.download = 'redactr-business-extension.zip';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  };
-
-  window.printInvoice = function() {
-    window.print();
-  };
+  window.printInvoice = function() { window.print(); };
 
   window.showMobileComingSoon = function(e) {
     e.preventDefault();
