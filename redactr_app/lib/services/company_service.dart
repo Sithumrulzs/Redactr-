@@ -52,14 +52,13 @@ class CompanyService {
   }
 
   /// Null means this user has no company yet (needs CompanySetupScreen).
-  /// Always reads from the Firestore server (not cache) so a write by
-  /// claimOrJoinCompany is immediately visible to the next read.
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
-    final doc = await _firestore
-        .collection('users')
-        .doc(uid)
-        .get(const GetOptions(source: Source.server));
-    return doc.data();
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      return doc.data();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<String?> getCompanyName(String companyId) async {
@@ -79,11 +78,13 @@ class CompanyService {
     return (role: profile['role'] as String? ?? '', companyName: companyName);
   }
 
-  Future<void> claimOrJoinCompany({String? companyName}) async {
-    await _callApi(
+  /// Returns { companyId, role } on success so callers can use the result
+  /// directly without a Firestore round-trip (avoids client-cache staleness).
+  Future<Map<String, dynamic>> claimOrJoinCompany({String? companyName}) async {
+    return await _callApi(
       'POST',
       '/claimOrJoinCompany',
-      body: {'companyName': ?companyName},
+      body: companyName != null ? {'companyName': companyName} : {},
     );
   }
 

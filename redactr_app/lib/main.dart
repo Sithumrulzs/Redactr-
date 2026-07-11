@@ -170,11 +170,28 @@ class _ProfileGateState extends State<_ProfileGate> {
     _registerFcmToken();
   }
 
-  /// Checks company profile first; if none, falls back to trial entitlement
-  /// so trial users don't land on CompanySetupScreen.
+  /// Resolves the signed-in user's profile. Uses claimOrJoinCompany as the
+  /// primary path because it returns {companyId, role} directly from the
+  /// server, bypassing any Firestore client-side cache that could return a
+  /// stale "doc doesn't exist" result after a recent server write.
+  /// Falls back to a direct Firestore read and trial check if the server
+  /// call fails (cold start timeout, rate limit, etc.).
   Future<Map<String, dynamic>?> _resolveProfile() async {
-    final profile = await _companyService.getUserProfile(widget.uid);
-    if (profile != null) return profile;
+    // Primary: ask the server. Already-joined users get a fast short-circuit
+    // (server reads users/{uid}, sees it exists, returns immediately).
+    // Post-payment users get auto-joined via invites/{email}.
+    try {
+      final data = await _companyService.claimOrJoinCompany();
+      if (data.containsKey('companyId')) return data;
+    } catch (_) {}
+
+    // Fallback: direct Firestore read (covers cold-start timeout / rate limit).
+    try {
+      final profile = await _companyService.getUserProfile(widget.uid);
+      if (profile != null) return profile;
+    } catch (_) {}
+
+    // Trial check.
     try {
       final e = await _companyService.getEntitlement();
       if (e.plan == 'trial' || e.plan == 'trial_expired') {
