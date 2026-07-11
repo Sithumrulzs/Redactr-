@@ -24,6 +24,23 @@ class _CompanySetupScreenState extends State<CompanySetupScreen> {
   bool _isSubmitting = false;
   String? _error;
 
+  @override
+  void initState() {
+    super.initState();
+    // If the user paid on the website, an invites/{email} doc already exists.
+    // Try to claim it silently — if it works, skip the form entirely.
+    _tryInviteJoin();
+  }
+
+  Future<void> _tryInviteJoin() async {
+    try {
+      await _companyService.claimOrJoinCompany();
+      if (mounted) widget.onCompanyReady();
+    } catch (_) {
+      // No invite found — show the form as normal.
+    }
+  }
+
   Future<void> _submit() async {
     final name = _controller.text.trim();
     if (name.isEmpty) {
@@ -42,7 +59,7 @@ class _CompanySetupScreenState extends State<CompanySetupScreen> {
     } catch (e) {
       setState(() {
         _isSubmitting = false;
-        _error = 'Could not create your company. Please try again.';
+        _error = e.toString().replaceFirst('Exception: ', '');
       });
     }
   }

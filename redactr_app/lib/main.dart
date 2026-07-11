@@ -173,14 +173,6 @@ class _ProfileGateState extends State<_ProfileGate> {
   /// Checks company profile first; if none, falls back to trial entitlement
   /// so trial users don't land on CompanySetupScreen.
   Future<Map<String, dynamic>?> _resolveProfile() async {
-    // Attempt invite-based join before reading the profile. Covers the case
-    // where the user just paid on the website: /createSubscription creates
-    // invites/{email} but not users/{uid} — claimOrJoinCompany creates it.
-    // Silently ignored when no invite exists (trial / brand-new users).
-    try {
-      await _companyService.claimOrJoinCompany();
-    } catch (_) {}
-
     final profile = await _companyService.getUserProfile(widget.uid);
     if (profile != null) return profile;
     try {
