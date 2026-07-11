@@ -1030,5 +1030,32 @@ app.post("/paypalWebhook", async (req, res) => {
   }
 });
 
+/**
+ * Polled by the extension every 5 s while an employee awaits manager
+ * approval. Returns the current alert status so the extension can auto-send
+ * (approved) or surface the denied state — without the employee doing anything
+ * further. Only the employee who triggered the alert (same companyId) can poll.
+ */
+app.get("/alertStatus/:alertId", requireAuth, rateLimitMiddleware(120), async (req, res) => {
+  try {
+    const callerDoc = await db.collection("users").doc(req.auth.uid).get();
+    if (!callerDoc.exists) return res.status(400).json({ error: "Not a member." });
+    const { companyId } = callerDoc.data();
+
+    const alertDoc = await db
+      .collection("companies")
+      .doc(companyId)
+      .collection("alerts")
+      .doc(req.params.alertId)
+      .get();
+
+    if (!alertDoc.exists) return res.status(404).json({ error: "Alert not found." });
+    res.json({ status: alertDoc.data().status ?? "pending" });
+  } catch (error) {
+    console.error("alertStatus failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Redactr API listening on port ${port}`));

@@ -190,16 +190,23 @@ async function signOutOfGoogle() {
  * secret text. No-ops silently if not signed in (local counter already
  * covers the offline/signed-out case).
  */
+/**
+ * Creates an alert on the server and returns the alertId so the content
+ * script can poll /alertStatus/:alertId for the manager's decision.
+ * Returns null when not signed in or the call fails (fail-open).
+ */
 async function syncAlert({ findingTypes, riskScore, site, tier, source, overridden }) {
-  if (!auth.currentUser) return;
+  if (!auth.currentUser) return null;
   try {
-    await callApi("POST", "/createAlert", {
+    const data = await callApi("POST", "/createAlert", {
       findingTypes, riskScore, site, tier,
       source: source ?? "prompt",
       overridden: overridden ?? false,
     });
+    return data?.alertId ?? null;
   } catch (error) {
     console.warn("Redactr: failed to sync alert to backend", error);
+    return null;
   }
 }
 
@@ -231,10 +238,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const { leaksPrevented } = await chrome.storage.local.get({ leaksPrevented: 0 });
       const next = leaksPrevented + 1;
       await chrome.storage.local.set({ leaksPrevented: next });
-      sendResponse({ leaksPrevented: next });
+      // Await alert creation so the alertId is available for approval polling.
+      const alertId = message.metadata ? await syncAlert(message.metadata) : null;
+      sendResponse({ leaksPrevented: next, alertId });
+    })();
+    return true;
+  }
 
-      if (message.metadata) {
-        syncAlert(message.metadata);
+  /* ── Employee requested approval: poll its status ────────────────────── */
+  if (message?.type === "POLL_ALERT_STATUS") {
+    (async () => {
+      if (!auth.currentUser) {
+        sendResponse({ ok: false, error: "not_signed_in" });
+        return;
+      }
+      try {
+        const data = await callApi("GET", `/alertStatus/${message.alertId}`);
+        sendResponse({ ok: true, status: data.status });
+      } catch (error) {
+        sendResponse({ ok: false, error: String(error) });
       }
     })();
     return true;
