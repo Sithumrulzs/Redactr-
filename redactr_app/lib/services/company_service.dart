@@ -52,8 +52,13 @@ class CompanyService {
   }
 
   /// Null means this user has no company yet (needs CompanySetupScreen).
+  /// Always reads from the Firestore server (not cache) so a write by
+  /// claimOrJoinCompany is immediately visible to the next read.
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
+    final doc = await _firestore
+        .collection('users')
+        .doc(uid)
+        .get(const GetOptions(source: Source.server));
     return doc.data();
   }
 
