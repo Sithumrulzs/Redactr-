@@ -363,6 +363,7 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
         plan: trialActive ? "trial" : "trial_expired",
         tier2Allowed: false,
         customKeywords: [],
+        customEntities: [],
         trialDaysLeft,
         trialExpired: !trialActive,
       });
@@ -373,10 +374,12 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
     const plan = companyDoc.data()?.plan ?? "starter";
     const tier2Allowed = TIER2_PLANS.has(plan);
 
+    const companyData = companyDoc.data() ?? {};
     res.json({
       plan,
       tier2Allowed,
-      customKeywords: tier2Allowed ? companyDoc.data()?.customKeywords ?? [] : [],
+      customKeywords: tier2Allowed ? companyData.customKeywords ?? [] : [],
+      customEntities: tier2Allowed ? companyData.customEntities ?? [] : [],
       trialDaysLeft: 0,
       trialExpired: false,
     });
@@ -848,6 +851,93 @@ app.post("/removeCustomKeyword", requireAuth, async (req, res) => {
     res.json({ ok: true });
   } catch (error) {
     console.error("removeCustomKeyword failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
+
+/**
+ * Enterprise-only, admin-only. Stores a plain-English concept label (e.g.
+ * "internal project codename") that GLiNER will recognise on-device in every
+ * employee's extension. Labels are stored lowercase-trimmed; duplicates are
+ * silently ignored; max 15 per company (GLiNER latency scales with label count).
+ *
+ * Validation: non-empty, ≤40 chars, letters/digits/spaces/hyphens only.
+ * All writes go through the Admin SDK — no Firestore rules change needed.
+ */
+const MAX_CUSTOM_ENTITIES = 15;
+const ENTITY_LABEL_RE = /^[a-z0-9 -]+$/;
+
+app.post("/addCustomEntity", requireAuth, rateLimitMiddleware(20), async (req, res) => {
+  try {
+    const callerDoc = await db.collection("users").doc(req.auth.uid).get();
+    if (!callerDoc.exists || callerDoc.data().role !== "admin") {
+      res.status(403).json({ error: "Only admins can manage custom entity types." });
+      return;
+    }
+
+    const companyId  = callerDoc.data().companyId;
+    const companyRef = db.collection("companies").doc(companyId);
+    const companyDoc = await companyRef.get();
+    if (companyDoc.data()?.plan !== "enterprise") {
+      res.status(403).json({ error: "Custom AI entity types require the Enterprise plan." });
+      return;
+    }
+
+    const label = (req.body?.label ?? "").trim().toLowerCase();
+    if (!label) {
+      res.status(400).json({ error: "label is required." });
+      return;
+    }
+    if (label.length > 40) {
+      res.status(400).json({ error: "label must be 40 characters or fewer." });
+      return;
+    }
+    if (!ENTITY_LABEL_RE.test(label)) {
+      res.status(400).json({ error: "label may only contain letters, digits, spaces, and hyphens." });
+      return;
+    }
+
+    const existing = companyDoc.data()?.customEntities ?? [];
+    if (existing.includes(label)) {
+      res.json({ ok: true, customEntities: existing });
+      return;
+    }
+    if (existing.length >= MAX_CUSTOM_ENTITIES) {
+      res.status(400).json({ error: `Limit of ${MAX_CUSTOM_ENTITIES} custom entity types reached.` });
+      return;
+    }
+
+    await companyRef.update({
+      customEntities: admin.firestore.FieldValue.arrayUnion(label),
+    });
+    res.json({ ok: true, customEntities: [...existing, label] });
+  } catch (error) {
+    console.error("addCustomEntity failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
+
+app.post("/removeCustomEntity", requireAuth, rateLimitMiddleware(20), async (req, res) => {
+  try {
+    const callerDoc = await db.collection("users").doc(req.auth.uid).get();
+    if (!callerDoc.exists || callerDoc.data().role !== "admin") {
+      res.status(403).json({ error: "Only admins can manage custom entity types." });
+      return;
+    }
+
+    const companyId = callerDoc.data().companyId;
+    const label = (req.body?.label ?? "").trim().toLowerCase();
+    if (!label) {
+      res.status(400).json({ error: "label is required." });
+      return;
+    }
+
+    await db.collection("companies").doc(companyId).update({
+      customEntities: admin.firestore.FieldValue.arrayRemove(label),
+    });
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("removeCustomEntity failed", error);
     res.status(500).json({ error: "Internal error." });
   }
 });

@@ -35,6 +35,8 @@
 
   // Weight per finding type, used for both Tier-1 regex findings and Tier-2
   // NER findings merged in by scanTier2() — see mergeTier2Findings().
+  // GLiNER Tier-2 types and their weights are documented in
+  // shared/detection-rules.md § "Tier 2 (GLiNER)".
   const WEIGHTS = {
     AWS_KEY: 40,
     API_KEY: 40,
@@ -42,10 +44,20 @@
     EMAIL: 5,
     PHONE: 15,
     IP_ADDRESS: 10,
-    PERSON: 20,
-    LOCATION: 20,
+    PERSON: 20,       // BERT fallback — preserved for backward compat
+    LOCATION: 20,     // BERT fallback — preserved for backward compat
     CUSTOM_KEYWORD: 30,
+    PERSON_NAME: 15,  // GLiNER "person name" label
+    ADDRESS: 15,      // GLiNER "street address" label
   };
+
+  // Manager-defined GLiNER entities (CUSTOM_<LABEL>) are not in the static
+  // table because their type strings are dynamic. getWeight() handles them.
+  function getWeight(type) {
+    if (WEIGHTS[type] !== undefined) return WEIGHTS[type];
+    if (type.startsWith("CUSTOM_")) return 25; // manager-defined GLiNER entity
+    return 0;
+  }
 
   /** Escapes regex metacharacters so a literal keyword can't be misread as a pattern. */
   function escapeRegExp(string) {
@@ -147,7 +159,7 @@
 
   /** Sums finding weights into a 0-100 score and a green/amber/red level. */
   function scoreFindings(findings) {
-    const rawScore = findings.reduce((sum, f) => sum + (WEIGHTS[f.type] || 0), 0);
+    const rawScore = findings.reduce((sum, f) => sum + getWeight(f.type), 0);
     const score = Math.min(100, rawScore);
     const level = score >= 70 ? "red" : score >= 30 ? "amber" : "green";
     return { findings, score, level };

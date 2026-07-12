@@ -3,6 +3,7 @@ import '../services/auth_service.dart';
 import '../services/company_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/animated_entrance.dart';
+import 'custom_entities_screen.dart';
 import 'custom_keywords_screen.dart';
 import 'invite_employee_screen.dart';
 import 'policy_screen.dart';
@@ -415,16 +416,33 @@ class _SettingsScreenState extends State<SettingsScreen>
                           if (snapshot.data?.plan != 'enterprise') {
                             return const SizedBox.shrink();
                           }
-                          return _SettingsTile(
-                            icon: Icons.key_rounded,
-                            label: 'Custom keywords',
-                            sub:
-                                '${snapshot.data!.customKeywords.length} active',
-                            color: AppColors.info,
-                            onTap: () => Navigator.of(context).push(slideRoute(
-                                CustomKeywordsScreen(
-                                    initialKeywords:
-                                        snapshot.data!.customKeywords))),
+                          return Column(
+                            children: [
+                              _SettingsTile(
+                                icon: Icons.key_rounded,
+                                label: 'Custom keywords',
+                                sub:
+                                    '${snapshot.data!.customKeywords.length} active',
+                                color: AppColors.info,
+                                onTap: () => Navigator.of(context).push(
+                                    slideRoute(CustomKeywordsScreen(
+                                        initialKeywords:
+                                            snapshot.data!.customKeywords))),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              _SettingsTile(
+                                icon: Icons.psychology_rounded,
+                                label: 'AI entity types',
+                                sub: snapshot.data!.customEntities.isEmpty
+                                    ? 'Describe sensitive concepts in plain English'
+                                    : '${snapshot.data!.customEntities.length} active',
+                                color: AppColors.info,
+                                onTap: () => Navigator.of(context).push(
+                                    slideRoute(CustomEntitiesScreen(
+                                        initialEntities:
+                                            snapshot.data!.customEntities))),
+                              ),
+                            ],
                           );
                         },
                       ),

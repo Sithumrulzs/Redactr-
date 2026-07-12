@@ -45,8 +45,45 @@ incrementing typed token: `[AWS_KEY_1]`, `[API_KEY_1]`, `[CREDIT_CARD_1]`, `[EMA
 `[IP_ADDRESS_1]` (counter increments per type, not globally). The original→token mapping is
 returned alongside the redacted string so the caller can hold it in memory.
 
-## Tier 2 (stretch, not implemented)
+## Tier 2 (GLiNER)
 
-Optional unstructured PII (names/addresses) via compromise.js/wink-nlp or Transformers.js ONNX
-NER, exposed behind the same `{type, match, start, end, severity}` finding shape so it can be
-merged into the Tier-1 findings array without changing scoring/redaction code.
+Zero-shot NER running entirely on-device in the offscreen document via the `gliner` npm package
+on top of ONNX Runtime Web.
+
+**Model**: `onnx-community/gliner_multi-v2.1` (quantized ONNX, Apache-2.0)
+**Confidence threshold**: 0.5 (named constant `GLINER_CONFIDENCE_THRESHOLD` in `offscreen.src.js`)
+**Context window**: ~384 tokens — longer inputs are chunked at ~300 words with 30-word overlap;
+span offsets are mapped back into the original string and overlapping findings are deduplicated
+by keeping the higher-confidence span.
+**Fallback**: if GLiNER fails to load, the existing `Xenova/bert-base-NER` Transformers.js
+pipeline is used; if both fail, `{entities: []}` is returned and Tier-1 blocking is unaffected.
+
+### Label → finding-type mapping
+
+| GLiNER label | `type` field | Severity | Weight |
+|---|---|---|---|
+| `person name` | `PERSON_NAME` | medium | 15 |
+| `street address` | `ADDRESS` | medium | 15 |
+| any manager-defined label | `CUSTOM_<LABEL_UPPERCASED>` | high | 25 |
+
+Manager-defined labels are stored lowercase-trimmed on the company Firestore document
+(`customEntities[]`) and delivered to the extension via `getEntitlement`. The extension prepends
+the two default labels (`person name`, `street address`) and caps the total at 15 (GLiNER
+latency scales with label count). Any `CUSTOM_*` type that is not `CUSTOM_KEYWORD` is treated as
+a Tier-2 finding for alert-metadata purposes.
+
+### Tier-2 finding shape
+
+```
+{
+  type: "PERSON_NAME" | "ADDRESS" | "CUSTOM_<LABEL>",
+  match: string,   // matched substring from the original text
+  start: number,   // index into the original (pre-chunking) string
+  end: number,     // exclusive
+  severity: "medium" | "high"
+}
+```
+
+Findings are merged into the Tier-1 array via `mergeTier2Findings()` in `detector.js`, which
+drops any Tier-2 span that overlaps a Tier-1 span and recomputes the aggregate score. Scoring,
+redaction, and the approve/deny pipeline require no changes.

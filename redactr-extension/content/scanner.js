@@ -399,7 +399,10 @@
    */
   function buildAlertMetadata(result) {
     const findingTypes = [...new Set(result.findings.map((f) => f.type))];
-    const tier = findingTypes.some((t) => t === "PERSON" || t === "LOCATION") ? 2 : 1;
+    const TIER2_TYPES = new Set(["PERSON", "LOCATION", "PERSON_NAME", "ADDRESS"]);
+    const tier = findingTypes.some(
+      t => TIER2_TYPES.has(t) || (t.startsWith("CUSTOM_") && t !== "CUSTOM_KEYWORD")
+    ) ? 2 : 1;
     return { findingTypes, riskScore: result.score, site: location.hostname, tier };
   }
 

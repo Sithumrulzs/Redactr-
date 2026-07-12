@@ -92,7 +92,7 @@ class CompanyService {
   /// already on the website — called once after sign-in, never cached
   /// indefinitely client-side. Trial users return plan="trial" with
   /// trialDaysLeft and trialExpired populated.
-  Future<({String plan, bool tier2Allowed, List<String> customKeywords, int trialDaysLeft, bool trialExpired})>
+  Future<({String plan, bool tier2Allowed, List<String> customKeywords, List<String> customEntities, int trialDaysLeft, bool trialExpired})>
   getEntitlement() async {
     final data = await _callApi('GET', '/getEntitlement');
     return (
@@ -100,6 +100,9 @@ class CompanyService {
       tier2Allowed: data['tier2Allowed'] as bool? ?? false,
       customKeywords:
           (data['customKeywords'] as List<dynamic>?)?.cast<String>() ??
+          const [],
+      customEntities:
+          (data['customEntities'] as List<dynamic>?)?.cast<String>() ??
           const [],
       trialDaysLeft: (data['trialDaysLeft'] as num?)?.toInt() ?? 0,
       trialExpired: data['trialExpired'] as bool? ?? false,
@@ -137,6 +140,23 @@ class CompanyService {
 
   Future<void> removeCustomKeyword(String keyword) async {
     await _callApi('POST', '/removeCustomKeyword', body: {'keyword': keyword});
+  }
+
+  /// Enterprise + admin-only. Plain-English concept labels (e.g. "internal
+  /// project codename") that the GLiNER Tier-2 engine matches on-device.
+  /// Server validates: non-empty, ≤40 chars, letters/digits/spaces/hyphens.
+  Future<List<String>> addCustomEntity(String label) async {
+    final data = await _callApi(
+      'POST',
+      '/addCustomEntity',
+      body: {'label': label},
+    );
+    return (data['customEntities'] as List<dynamic>?)?.cast<String>() ??
+        const [];
+  }
+
+  Future<void> removeCustomEntity(String label) async {
+    await _callApi('POST', '/removeCustomEntity', body: {'label': label});
   }
 
   /// Pending invites for an admin's own company — allowed by
