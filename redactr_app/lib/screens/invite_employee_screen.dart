@@ -5,8 +5,9 @@ import '../widgets/section_header.dart';
 
 class InviteEmployeeScreen extends StatefulWidget {
   final String companyId;
+  final String? companyName;
 
-  const InviteEmployeeScreen({super.key, required this.companyId});
+  const InviteEmployeeScreen({super.key, required this.companyId, this.companyName});
 
   @override
   State<InviteEmployeeScreen> createState() => _InviteEmployeeScreenState();
@@ -51,13 +52,20 @@ class _InviteEmployeeScreenState extends State<InviteEmployeeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Invite employee')),
+      appBar: AppBar(
+        title: Text(widget.companyName != null
+            ? 'Invite to ${widget.companyName}'
+            : 'Invite employee'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
           Text(
-            'The next time this email signs in (via the browser extension), they join your '
-            'company automatically instead of creating a new one.',
+            widget.companyName != null
+                ? 'The next time this email signs in via the Chrome extension, '
+                    'they\'ll automatically join ${widget.companyName}.'
+                : 'The next time this email signs in (via the browser extension), they join your '
+                    'company automatically instead of creating a new one.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: AppSpacing.lg),

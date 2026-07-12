@@ -237,6 +237,11 @@ class _ProfileGateState extends State<_ProfileGate> {
             ),
           );
         } else if (snapshot.data == null) {
+          // No invite, no trial, no profile — block access.
+          inner = const _NoAccessScreen();
+        } else if (snapshot.data!.containsKey('__trial') &&
+            !snapshot.data!.containsKey('companyId')) {
+          // Active trial but no company yet — collect company name first.
           inner = CompanySetupScreen(onCompanyReady: _refresh);
         } else if (snapshot.data!.containsKey('__trial')) {
           inner = TrialShell(
@@ -256,6 +261,153 @@ class _ProfileGateState extends State<_ProfileGate> {
           child: inner,
         );
       },
+    );
+  }
+}
+
+// ── No-access screen — shown when email has no trial and no paid plan ─────────
+
+class _NoAccessScreen extends StatelessWidget {
+  const _NoAccessScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: AppSpacing.xxl),
+              Center(
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.danger.withValues(alpha: 0.10),
+                    border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+                  ),
+                  child: const Icon(Icons.lock_outline_rounded, color: AppColors.danger, size: 36),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Center(
+                child: Text(
+                  'Access Restricted',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Center(
+                child: Text(
+                  'This email address hasn\'t been used to purchase a plan or start a free trial.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxl),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TO GET ACCESS',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    _AccessRow(
+                      icon: Icons.rocket_launch_outlined,
+                      title: 'Start a free trial',
+                      subtitle: '7 days — no card required',
+                    ),
+                    SizedBox(height: AppSpacing.sm),
+                    _AccessRow(
+                      icon: Icons.workspace_premium_rounded,
+                      title: 'Purchase a plan',
+                      subtitle: 'Starter, Professional or Enterprise',
+                    ),
+                    SizedBox(height: AppSpacing.sm),
+                    _AccessRow(
+                      icon: Icons.mail_outline_rounded,
+                      title: 'Accept an invite',
+                      subtitle: 'Ask your admin to invite this email',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.background,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text(
+                  'Visit redactr-swart.vercel.app',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextButton(
+                onPressed: () async {
+                  await AuthService().signOut();
+                },
+                child: const Text(
+                  'Sign out',
+                  style: TextStyle(color: AppColors.textDim, fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AccessRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _AccessRow({required this.icon, required this.title, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.primary, size: 20),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.text)),
+              Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

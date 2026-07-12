@@ -16,6 +16,8 @@ class TeamScreen extends StatefulWidget {
 
 class _TeamScreenState extends State<TeamScreen> {
   final _companyService = CompanyService();
+  late final Future<String?> _nameFuture =
+      _companyService.getCompanyName(widget.companyId);
 
   @override
   Widget build(BuildContext context) {
@@ -40,16 +42,30 @@ class _TeamScreenState extends State<TeamScreen> {
                           Text('Team',
                               style: Theme.of(context).textTheme.headlineSmall),
                           const SizedBox(height: 2),
-                          const Text('Members & access control',
-                              style: TextStyle(
-                                  color: AppColors.textMuted, fontSize: 13)),
+                          FutureBuilder<String?>(
+                            future: _nameFuture,
+                            builder: (_, snap) => Text(
+                              snap.data != null
+                                  ? 'Members of ${snap.data}'
+                                  : 'Members & access control',
+                              style: const TextStyle(
+                                  color: AppColors.textMuted, fontSize: 13),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     PressScale(
-                      onTap: () => Navigator.of(context).push(slideRoute(
-                          InviteEmployeeScreen(
-                              companyId: widget.companyId))),
+                      onTap: () {
+                        _nameFuture.then((name) {
+                          if (context.mounted) {
+                            Navigator.of(context).push(slideRoute(
+                                InviteEmployeeScreen(
+                                    companyId: widget.companyId,
+                                    companyName: name)));
+                          }
+                        });
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 10),
@@ -111,9 +127,15 @@ class _TeamScreenState extends State<TeamScreen> {
                   final members = snapshot.data ?? [];
 
                   if (members.isEmpty) {
-                    return _EmptyTeam(
-                      onInvite: () => Navigator.of(context).push(slideRoute(
-                          InviteEmployeeScreen(companyId: widget.companyId))),
+                    return FutureBuilder<String?>(
+                      future: _nameFuture,
+                      builder: (_, nameSnap) => _EmptyTeam(
+                        companyName: nameSnap.data,
+                        onInvite: () => Navigator.of(context).push(slideRoute(
+                            InviteEmployeeScreen(
+                                companyId: widget.companyId,
+                                companyName: nameSnap.data))),
+                      ),
                     );
                   }
 
@@ -386,7 +408,8 @@ class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
 
 class _EmptyTeam extends StatelessWidget {
   final VoidCallback onInvite;
-  const _EmptyTeam({required this.onInvite});
+  final String? companyName;
+  const _EmptyTeam({required this.onInvite, this.companyName});
 
   @override
   Widget build(BuildContext context) {
@@ -413,7 +436,9 @@ class _EmptyTeam extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Invite your first employee so they can join your company automatically.',
+              companyName != null
+                  ? 'Invite your first employee so they can join $companyName automatically.'
+                  : 'Invite your first employee so they can join your company automatically.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall,
             ),

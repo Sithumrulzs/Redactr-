@@ -193,6 +193,17 @@ app.post("/claimOrJoinCompany", requireAuth, rateLimitMiddleware(10), async (req
       return;
     }
 
+    // Require an active trial to create a company without a paid invite.
+    const trialDoc = await db.collection("trials").doc(uid).get();
+    const trialData = trialDoc.exists ? trialDoc.data() : null;
+    const trialValid = trialData?.trialActive && trialData?.trialEnd?.toDate?.() > new Date();
+    if (!trialValid) {
+      res.status(403).json({
+        error: "A paid plan or free trial is required. Visit redactr-swart.vercel.app to get started.",
+      });
+      return;
+    }
+
     const companyRef = db.collection("companies").doc();
     await companyRef.set({
       name: companyName,

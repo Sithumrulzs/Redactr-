@@ -27,6 +27,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _signingOut = false;
   bool _deletingAccount = false;
   late final _entitlementFuture = _companyService.getEntitlement();
+  String? _companyName;
 
   // Avatar glow pulse
   late final AnimationController _glowCtrl;
@@ -39,6 +40,9 @@ class _SettingsScreenState extends State<SettingsScreen>
         vsync: this, duration: const Duration(milliseconds: 2400))
       ..repeat(reverse: true);
     _glowAnim = CurvedAnimation(parent: _glowCtrl, curve: Curves.easeInOut);
+    _companyService.getCompanyName(widget.companyId).then((name) {
+      if (mounted) setState(() => _companyName = name);
+    });
   }
 
   @override
@@ -395,10 +399,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                       _SettingsTile(
                         icon: Icons.person_add_rounded,
                         label: 'Invite employee',
-                        sub: 'Send an invite by email',
+                        sub: _companyName != null
+                            ? 'Invite someone to join $_companyName'
+                            : 'Send an invite by email',
                         color: AppColors.success,
                         onTap: () => Navigator.of(context).push(slideRoute(
-                            InviteEmployeeScreen(companyId: widget.companyId))),
+                            InviteEmployeeScreen(
+                                companyId: widget.companyId,
+                                companyName: _companyName))),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       FutureBuilder(
