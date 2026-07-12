@@ -421,16 +421,23 @@ async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUr
 
   const PLAN_FEATURES = {
     trial: [
-      "Tier-1 regex scanning — API keys, credit cards, PII",
-      "Works on ChatGPT, Claude &amp; Gemini",
-      "Prompt redaction &amp; safe-copy",
-      "Local processing — nothing leaves your device",
+      "API key detection (AWS, OpenAI, GitHub)",
+      "Credit card protection (Luhn-validated)",
+      "Email, phone &amp; IP address detection",
+      "SSN, passport &amp; driver's licence detection",
+      "Chrome extension on ChatGPT, Claude &amp; Gemini",
+      "Manager mobile app &amp; alert dashboard",
+      "7-day free access — no card required",
     ],
     starter: [
-      "Everything in Free Trial",
-      "Unlimited scans across all AI tools",
-      "Priority email support",
-      "Usage dashboard",
+      "API key detection (AWS, OpenAI, GitHub)",
+      "Credit card protection (Luhn-validated)",
+      "Email, phone &amp; IP address detection",
+      "SSN, passport &amp; driver's licence detection",
+      "Chrome extension (1-click install)",
+      "Manager mobile app &amp; alert dashboard",
+      "Up to 5 employee seats",
+      "Email support",
     ],
     professional: [
       "Everything in Starter",

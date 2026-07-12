@@ -14,11 +14,12 @@ const PLANS = {
     period:   'month',
     seats:    'Up to 5 seats',
     features: [
-      'AWS & OpenAI API Key Detection',
-      'Email & Phone Redaction',
+      'API Key Detection (AWS, OpenAI, GitHub)',
       'Credit Card Protection (Luhn-validated)',
-      'Chrome & Edge Extension',
-      'Manager Mobile App (Dashboard, Alerts, Insights)',
+      'Email, Phone & IP Address Detection',
+      'SSN, Passport & Driver\'s Licence Detection',
+      'Chrome Extension (1-click install)',
+      'Manager Mobile App & Alert Dashboard',
       'Up to 5 employee seats',
       'Email Support'
     ]
