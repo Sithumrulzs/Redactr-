@@ -35,6 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (planBadge)    planBadge.textContent    = cart.name;
   if (planPriceBig) planPriceBig.textContent = `$${cart.price}/mo`;
 
+  // Populate the "What's included" list from the plan's feature array
+  const featuresList = document.getElementById('planFeaturesList');
+  if (featuresList && Array.isArray(cart.features) && cart.features.length) {
+    featuresList.innerHTML = cart.features
+      .map(f => `<div>✓ ${f}</div>`)
+      .join('');
+  }
+
   // ── PayPal Sandbox Button ─────────────────────────
   const ppContainer = document.getElementById('paypal-button-container');
 

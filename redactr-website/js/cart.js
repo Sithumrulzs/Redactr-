@@ -33,7 +33,10 @@ const PLANS = {
     features: [
       'Everything in Starter',
       'Up to 25 employee seats',
-      'Priority Support'
+      'Full team alert history & audit log',
+      'Employee invite management',
+      'Admin approval & deny controls',
+      'Priority email support'
     ]
   },
   enterprise: {
@@ -46,10 +49,12 @@ const PLANS = {
     features: [
       'Everything in Professional',
       'Up to 100 employee seats',
-      'AI Name & Address Detection (on-device)',
-      'Custom Keyword Detection',
-      'Dedicated Account Manager',
-      'Custom Contracts'
+      'On-device AI: Name & Address Detection',
+      'Custom keyword blocking',
+      'File & attachment scanning (Word, PDF, images)',
+      'Gmail & Outlook compose monitoring',
+      'Dedicated account manager',
+      'Custom contracts & SLA'
     ]
   }
 };

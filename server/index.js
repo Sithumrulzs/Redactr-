@@ -434,18 +434,21 @@ async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUr
     ],
     professional: [
       "Everything in Starter",
-      "Tier-2 on-device AI — names &amp; addresses",
-      "Team dashboard &amp; admin controls",
-      "Custom keyword blocking",
-      "Slack &amp; email alert digests",
+      "Up to 25 employee seats",
+      "Full team alert history &amp; audit log",
+      "Employee invite management",
+      "Admin approval &amp; deny controls",
+      "Priority email support",
     ],
     enterprise: [
       "Everything in Professional",
-      "Enterprise file &amp; attachment scanning",
+      "Up to 100 employee seats",
+      "On-device AI — name &amp; address detection",
+      "Custom keyword blocking",
+      "File &amp; attachment scanning (Word, PDF, images)",
       "Gmail &amp; Outlook compose monitoring",
-      "SSO / SAML ready",
       "Dedicated account manager",
-      "SLA &amp; compliance reporting",
+      "Custom contracts &amp; SLA",
     ],
   };
   const features = PLAN_FEATURES[plan] || PLAN_FEATURES.trial;
