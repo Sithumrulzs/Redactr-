@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'models/alert.dart';
 import 'screens/alerts_screen.dart';
 import 'screens/biometric_gate_screen.dart';
@@ -270,113 +271,108 @@ class _ProfileGateState extends State<_ProfileGate> {
 class _NoAccessScreen extends StatelessWidget {
   const _NoAccessScreen();
 
+  Future<void> _open(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: AppSpacing.xxl),
+              const Spacer(),
+
+              // ── Lock icon ──────────────────────────────────────────────────
               Center(
                 child: Container(
-                  width: 80,
-                  height: 80,
+                  width: 72,
+                  height: 72,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.danger.withValues(alpha: 0.10),
-                    border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: AppColors.danger.withValues(alpha: 0.28)),
                   ),
-                  child: const Icon(Icons.lock_outline_rounded, color: AppColors.danger, size: 36),
+                  child: const Icon(Icons.lock_outline_rounded,
+                      color: AppColors.danger, size: 32),
                 ),
               ),
+
               const SizedBox(height: AppSpacing.xl),
-              Center(
-                child: Text(
-                  'Access Restricted',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+
+              // ── Heading ────────────────────────────────────────────────────
+              Text(
+                'Access Restricted',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.3,
+                    ),
               ),
               const SizedBox(height: AppSpacing.sm),
-              Center(
-                child: Text(
-                  'This email address hasn\'t been used to purchase a plan or start a free trial.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+              Text(
+                'This Google account hasn\'t purchased a Redactr plan\nor started a free trial yet.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 13.5,
+                    height: 1.55),
               ),
+
               const SizedBox(height: AppSpacing.xxl),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'TO GET ACCESS',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    SizedBox(height: AppSpacing.md),
-                    _AccessRow(
-                      icon: Icons.rocket_launch_outlined,
-                      title: 'Start a free trial',
-                      subtitle: '7 days — no card required',
-                    ),
-                    SizedBox(height: AppSpacing.sm),
-                    _AccessRow(
-                      icon: Icons.workspace_premium_rounded,
-                      title: 'Purchase a plan',
-                      subtitle: 'Starter, Professional or Enterprise',
-                    ),
-                    SizedBox(height: AppSpacing.sm),
-                    _AccessRow(
-                      icon: Icons.mail_outline_rounded,
-                      title: 'Accept an invite',
-                      subtitle: 'Ask your admin to invite this email',
-                    ),
-                  ],
-                ),
+
+              // ── Free trial card ────────────────────────────────────────────
+              _AccessCard(
+                icon: Icons.rocket_launch_rounded,
+                iconBg: AppColors.primary.withValues(alpha: 0.12),
+                iconColor: AppColors.primary,
+                badge: '7 DAYS FREE',
+                title: 'Start a free trial',
+                subtitle: 'Full extension access · No card required',
+                onTap: () => _open(
+                    'https://redactr-swart.vercel.app/pages/trial.html'),
               ),
-              const SizedBox(height: AppSpacing.xl),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.background,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+
+              const SizedBox(height: AppSpacing.md),
+
+              // ── Pricing card ───────────────────────────────────────────────
+              _AccessCard(
+                icon: Icons.workspace_premium_rounded,
+                iconBg: AppColors.warning.withValues(alpha: 0.12),
+                iconColor: AppColors.warning,
+                title: 'View pricing plans',
+                subtitle: 'Starter · Professional · Enterprise',
+                onTap: () => _open(
+                    'https://redactr-swart.vercel.app/pages/pricing.html'),
+              ),
+
+              const Spacer(),
+
+              // ── Sign out ───────────────────────────────────────────────────
+              GestureDetector(
+                onTap: () => AuthService().signOut(),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                  child: Text(
+                    'Sign out',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.textDim,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-                child: const Text(
-                  'Visit redactr-swart.vercel.app',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
-                ),
               ),
-              const SizedBox(height: AppSpacing.md),
-              TextButton(
-                onPressed: () async {
-                  await AuthService().signOut();
-                },
-                child: const Text(
-                  'Sign out',
-                  style: TextStyle(color: AppColors.textDim, fontSize: 14),
-                ),
-              ),
+              const SizedBox(height: AppSpacing.lg),
             ],
           ),
         ),
@@ -385,29 +381,134 @@ class _NoAccessScreen extends StatelessWidget {
   }
 }
 
-class _AccessRow extends StatelessWidget {
+class _AccessCard extends StatefulWidget {
   final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
+  final String? badge;
   final String title;
   final String subtitle;
+  final VoidCallback onTap;
 
-  const _AccessRow({required this.icon, required this.title, required this.subtitle});
+  const _AccessCard({
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    this.badge,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  State<_AccessCard> createState() => _AccessCardState();
+}
+
+class _AccessCardState extends State<_AccessCard> {
+  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.primary, size: 20),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.97 : 1.0,
+        duration: AppDurations.fast,
+        child: AnimatedContainer(
+          duration: AppDurations.fast,
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: _pressed
+                ? AppColors.surfaceAlt
+                : AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(
+              color: _pressed
+                  ? widget.iconColor.withValues(alpha: 0.35)
+                  : AppColors.border,
+            ),
+            boxShadow: _pressed
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.10),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    )
+                  ],
+          ),
+          child: Row(
             children: [
-              Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.text)),
-              Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+              // Icon box
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: widget.iconBg,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                alignment: Alignment.center,
+                child: Icon(widget.icon, color: widget.iconColor, size: 24),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              // Text
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(widget.title,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.text,
+                            )),
+                        if (widget.badge != null) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary
+                                  .withValues(alpha: 0.15),
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.sm),
+                            ),
+                            child: Text(
+                              widget.badge!,
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(widget.subtitle,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        )),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Icon(Icons.arrow_forward_ios_rounded,
+                  color: AppColors.textDim, size: 14),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

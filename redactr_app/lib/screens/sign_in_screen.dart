@@ -228,6 +228,7 @@ class _SignInScreenState extends State<SignInScreen>
                   child: child,
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(height: size.height * 0.10),
 
@@ -236,10 +237,14 @@ class _SignInScreenState extends State<SignInScreen>
                       delay: const Duration(milliseconds: 100),
                       beginOffset: const Offset(0, -0.06),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          SvgPicture.asset(
-                            'assets/branding/redactr-logo-reverse.svg',
-                            height: 36,
+                          Center(
+                            child: SvgPicture.asset(
+                              'assets/branding/redactr-logo-reverse.svg',
+                              height: 36,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.sm),
                           const Text(
