@@ -25,7 +25,7 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
 const TIER2_PLANS = new Set(["enterprise"]);
-const SEAT_LIMITS = { starter: 5, professional: 25, enterprise: 999999 };
+const SEAT_LIMITS = { starter: 5, professional: 25, enterprise: 100 };
 
 const app = express();
 

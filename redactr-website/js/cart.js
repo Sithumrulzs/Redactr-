@@ -42,10 +42,10 @@ const PLANS = {
     price:    99,
     currency: 'USD',
     period:   'month',
-    seats:    'Unlimited seats',
+    seats:    'Up to 100 seats',
     features: [
       'Everything in Professional',
-      'Unlimited employee seats',
+      'Up to 100 employee seats',
       'AI Name & Address Detection (on-device)',
       'Custom Keyword Detection',
       'Dedicated Account Manager',
