@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:local_auth_android/local_auth_android.dart';
 import '../theme/app_theme.dart';
 import '../widgets/centered_form_page.dart';
 
@@ -46,6 +47,11 @@ class _BiometricGateScreenState extends State<BiometricGateScreen> {
 
       final didAuthenticate = await _localAuth.authenticate(
         localizedReason: 'Unlock Redactr',
+        authMessages: const [
+          // ' ' satisfies Android's non-empty title requirement while
+          // hiding the default "Verify identity" heading in the prompt.
+          AndroidAuthMessages(signInTitle: ' '),
+        ],
         options: const AuthenticationOptions(biometricOnly: false, stickyAuth: true),
       );
 
@@ -75,12 +81,6 @@ class _BiometricGateScreenState extends State<BiometricGateScreen> {
             'Unlock Redactr',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Verify it\'s you to continue',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall,
           ),
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.sm),
