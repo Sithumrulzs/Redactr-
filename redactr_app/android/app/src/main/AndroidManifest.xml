@@ -2,6 +2,7 @@
     <!-- Required on Android 13+ for firebase_messaging to show push
          notifications about new alerts (see createAlert in
          firebase/functions/index.js). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Required for local_auth's fingerprint/face unlock gate (see
          lib/screens/biometric_gate_screen.dart). -->
@@ -47,6 +48,10 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

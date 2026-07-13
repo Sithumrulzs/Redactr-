@@ -297,10 +297,7 @@ class _NoAccessScreenState extends State<_NoAccessScreen>
   }
 
   Future<void> _open(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
   @override
