@@ -12,6 +12,11 @@ import '../widgets/section_header.dart';
 import 'alert_detail_screen.dart';
 import '../main.dart' show slideRoute;
 
+// Motion constants for the dashboard hero badge
+const int    _kBreatheDurationMs = 5500;
+const int    _kPingDurationMs    = 450;
+const double _kPingScale         = 1.5;
+
 class DashboardScreen extends StatefulWidget {
   final String companyId;
   const DashboardScreen({super.key, required this.companyId});
@@ -31,13 +36,10 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   final _heroIconKey = GlobalKey();
   Rect? _logoFilterRect;
-  bool _needsLogoRectUpdate = true;
 
   late final AnimationController _glowCtrl;
-  late final AnimationController _floatCtrl;
   late final AnimationController _filterPulseCtrl;
   late final Animation<double> _glowAnim;
-  late final Animation<double> _floatAnim;
   late final Animation<double> _filterPulseAnim;
 
   @override
@@ -50,35 +52,23 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     _glowCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200),
+      duration: const Duration(milliseconds: _kBreatheDurationMs),
     )..repeat(reverse: true);
     _glowAnim = CurvedAnimation(parent: _glowCtrl, curve: Curves.easeInOut);
 
-    _floatCtrl = AnimationController(
+    _filterPulseCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2800),
-    )..repeat(reverse: true);
-    _floatAnim = CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut);
-
-    _filterPulseCtrl =
-        AnimationController(
-          vsync: this,
-          duration: const Duration(milliseconds: 360),
-        )..addStatusListener((status) {
-          if (status == AnimationStatus.completed) {
-            _filterPulseCtrl.reverse();
-          }
-        });
+      duration: const Duration(milliseconds: _kPingDurationMs),
+    );
     _filterPulseAnim = CurvedAnimation(
       parent: _filterPulseCtrl,
-      curve: Curves.easeOutQuart,
+      curve: Curves.easeOutCubic,
     );
   }
 
   @override
   void dispose() {
     _glowCtrl.dispose();
-    _floatCtrl.dispose();
     _filterPulseCtrl.dispose();
     super.dispose();
   }
@@ -104,44 +94,71 @@ class _DashboardScreenState extends State<DashboardScreen>
         .round();
   }
 
-  // ── Floating brand icon ───────────────────────────────────────────────────
+  // ── Brand icon: stationary badge + breathing ring + sonar ping ───────────
   Widget _buildHeroIcon() {
     return AnimatedBuilder(
-      animation: Listenable.merge([_glowCtrl, _floatCtrl, _filterPulseCtrl]),
-      builder: (context2, child) {
-        final glow = _glowAnim.value;
-        final float = _floatAnim.value;
-        final filterPulse = _filterPulseAnim.value;
-        return Transform.translate(
-          offset: Offset(0, float * 9 - 4.5),
-          child: Container(
-            key: _heroIconKey,
-            width: 76,
-            height: 76,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.08),
-              border: Border.all(
-                color: AppColors.primary.withValues(
-                  alpha: 0.22 + 0.18 * glow + 0.25 * filterPulse,
-                ),
-                width: 1.5 + 1.2 * filterPulse,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(
-                    alpha: 0.14 + 0.14 * glow + 0.22 * filterPulse,
+      animation: Listenable.merge([_glowCtrl, _filterPulseCtrl]),
+      builder: (context, _) {
+        final breathe = _glowAnim.value;       // 0→1 eased, 5 500 ms
+        final pingT   = _filterPulseAnim.value; // 0→1 eased, 450 ms
+
+        // 120×120 gives the ping ring room to expand to 1.5× badge radius
+        return SizedBox(
+          width: 120,
+          height: 120,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // ① Badge — perfectly stationary; key used by _updateLogoFilterRect
+              Container(
+                key: _heroIconKey,
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.22),
+                    width: 1.5,
                   ),
-                  blurRadius: 28 + 18 * glow + 14 * filterPulse,
-                  spreadRadius: 2 + 1.5 * filterPulse,
                 ),
-              ],
-            ),
-            padding: const EdgeInsets.all(14),
-            child: Image.asset(
-              'assets/branding/icon512.png',
-              fit: BoxFit.contain,
-            ),
+                padding: const EdgeInsets.all(14),
+                child: Image.asset(
+                  'assets/branding/icon512.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+
+              // ② Breathing hairline ring: 1 px stroke, opacity 0.25→0.50,
+              //    scale 1.0→1.03 — idle life without any glow or shadow
+              IgnorePointer(
+                child: Transform.scale(
+                  scale: 1.0 + 0.03 * breathe,
+                  child: Opacity(
+                    opacity: (0.25 + 0.25 * breathe).clamp(0.0, 1.0),
+                    child: Container(
+                      width: 84,
+                      height: 84,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.primary,
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // ③ Sonar ping: stroke circle, no fill, no blur — emits on intercept
+              IgnorePointer(
+                child: CustomPaint(
+                  size: const Size(120, 120),
+                  painter: _SonarPingPainter(pingT),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -720,4 +737,35 @@ class _EmptyAlerts extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Sonar ping painter ────────────────────────────────────────────────────────
+// Stroke-only expanding circle emitted on each node absorption. No fill, no
+// blur, no shadow — a crisp ring that grows from the badge edge and fades out.
+
+class _SonarPingPainter extends CustomPainter {
+  final double pingT; // 0→1, already eased by _filterPulseAnim (easeOutCubic)
+
+  const _SonarPingPainter(this.pingT);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (pingT <= 0) return;
+    final center      = size.center(Offset.zero);
+    final badgeRadius = 76.0 / 2;
+    // Scale badge radius from 1.0× to _kPingScale× as pingT goes 0→1
+    final radius  = badgeRadius * (1.0 + (_kPingScale - 1.0) * pingT);
+    final opacity = (0.9 * (1.0 - pingT)).clamp(0.0, 1.0);
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..style       = PaintingStyle.stroke
+        ..strokeWidth = 1.5
+        ..color       = AppColors.primary.withValues(alpha: opacity),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SonarPingPainter old) => old.pingT != pingT;
 }
