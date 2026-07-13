@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -268,8 +270,31 @@ class _ProfileGateState extends State<_ProfileGate> {
 
 // ── No-access screen — shown when email has no trial and no paid plan ─────────
 
-class _NoAccessScreen extends StatelessWidget {
+class _NoAccessScreen extends StatefulWidget {
   const _NoAccessScreen();
+
+  @override
+  State<_NoAccessScreen> createState() => _NoAccessScreenState();
+}
+
+class _NoAccessScreenState extends State<_NoAccessScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ambientCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ambientCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 14),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ambientCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _open(String url) async {
     final uri = Uri.parse(url);
@@ -282,121 +307,131 @@ class _NoAccessScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(),
-
-              // ── Lock icon ──────────────────────────────────────────────────
-              Center(
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.danger.withValues(alpha: 0.10),
-                    border: Border.all(
-                        color: AppColors.danger.withValues(alpha: 0.28)),
-                  ),
-                  child: const Icon(Icons.lock_outline_rounded,
-                      color: AppColors.danger, size: 32),
-                ),
+      body: Stack(
+        children: [
+          // ── Ambient drifting orbs background ────────────────────────────
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _ambientCtrl,
+              builder: (_, _) => CustomPaint(
+                painter: _AmbientOrbs(_ambientCtrl.value),
               ),
+            ),
+          ),
 
-              const SizedBox(height: AppSpacing.xl),
+          // ── Foreground content ───────────────────────────────────────────
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Spacer(flex: 2),
 
-              // ── Heading ────────────────────────────────────────────────────
-              Text(
-                'Access Restricted',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.3,
+                  // Lock icon — red, kept exactly
+                  Center(
+                    child: Container(
+                      width: 76,
+                      height: 76,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.danger.withValues(alpha: 0.10),
+                        border: Border.all(
+                          color: AppColors.danger.withValues(alpha: 0.32),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.lock_outline_rounded,
+                        color: AppColors.danger,
+                        size: 34,
+                      ),
                     ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'This Google account hasn\'t purchased a Redactr plan\nor started a free trial yet.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 13.5,
-                    height: 1.55),
-              ),
+                  ),
 
-              const SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: AppSpacing.xl),
 
-              // ── Free trial card ────────────────────────────────────────────
-              _AccessCard(
-                icon: Icons.rocket_launch_rounded,
-                iconBg: AppColors.primary.withValues(alpha: 0.12),
-                iconColor: AppColors.primary,
-                badge: '7 DAYS FREE',
-                title: 'Start a free trial',
-                subtitle: 'Full extension access · No card required',
-                onTap: () => _open(
-                    'https://redactr-swart.vercel.app/pages/trial.html'),
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              // ── Pricing card ───────────────────────────────────────────────
-              _AccessCard(
-                icon: Icons.workspace_premium_rounded,
-                iconBg: AppColors.warning.withValues(alpha: 0.12),
-                iconColor: AppColors.warning,
-                title: 'View pricing plans',
-                subtitle: 'Starter · Professional · Enterprise',
-                onTap: () => _open(
-                    'https://redactr-swart.vercel.app/pages/pricing.html'),
-              ),
-
-              const Spacer(),
-
-              // ── Sign out ───────────────────────────────────────────────────
-              GestureDetector(
-                onTap: () => AuthService().signOut(),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  child: Text(
-                    'Sign out',
+                  Text(
+                    'Access Restricted',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                        ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  const Text(
+                    'This Google account hasn\'t purchased a Redactr plan\nor started a free trial yet.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AppColors.textDim,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      color: AppColors.textMuted,
+                      fontSize: 13.5,
+                      height: 1.55,
                     ),
                   ),
-                ),
+
+                  const SizedBox(height: AppSpacing.xxl),
+
+                  // Free trial card
+                  _AccessCard(
+                    icon: Icons.rocket_launch_rounded,
+                    accentColor: AppColors.primary,
+                    title: 'Start a free trial',
+                    onTap: () => _open(
+                        'https://redactr-swart.vercel.app/pages/trial.html'),
+                  ),
+
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Pricing card
+                  _AccessCard(
+                    icon: Icons.diamond_rounded,
+                    accentColor: AppColors.warning,
+                    title: 'View pricing plans',
+                    onTap: () => _open(
+                        'https://redactr-swart.vercel.app/pages/pricing.html'),
+                  ),
+
+                  const Spacer(flex: 2),
+
+                  GestureDetector(
+                    onTap: () => AuthService().signOut(),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                      child: Text(
+                        'Sign out',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textDim,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
               ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
+// ── Premium access card — title + icon only, idle glow breathing ───────────────
+
 class _AccessCard extends StatefulWidget {
   final IconData icon;
-  final Color iconBg;
-  final Color iconColor;
-  final String? badge;
+  final Color accentColor;
   final String title;
-  final String subtitle;
   final VoidCallback onTap;
 
   const _AccessCard({
     required this.icon,
-    required this.iconBg,
-    required this.iconColor,
-    this.badge,
+    required this.accentColor,
     required this.title,
-    required this.subtitle,
     required this.onTap,
   });
 
@@ -404,8 +439,25 @@ class _AccessCard extends StatefulWidget {
   State<_AccessCard> createState() => _AccessCardState();
 }
 
-class _AccessCardState extends State<_AccessCard> {
+class _AccessCardState extends State<_AccessCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _idleCtrl;
   bool _pressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _idleCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _idleCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -416,101 +468,129 @@ class _AccessCardState extends State<_AccessCard> {
         widget.onTap();
       },
       onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedScale(
-        scale: _pressed ? 0.97 : 1.0,
-        duration: AppDurations.fast,
-        child: AnimatedContainer(
-          duration: AppDurations.fast,
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            color: _pressed
-                ? AppColors.surfaceAlt
-                : AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(
-              color: _pressed
-                  ? widget.iconColor.withValues(alpha: 0.35)
-                  : AppColors.border,
-            ),
-            boxShadow: _pressed
-                ? []
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.10),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    )
-                  ],
-          ),
-          child: Row(
-            children: [
-              // Icon box
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: widget.iconBg,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                alignment: Alignment.center,
-                child: Icon(widget.icon, color: widget.iconColor, size: 24),
+      child: AnimatedBuilder(
+        animation: _idleCtrl,
+        builder: (_, _) {
+          final breathe = _idleCtrl.value; // 0→1 eased
+          return AnimatedScale(
+            scale: _pressed ? 0.97 : 1.0,
+            duration: AppDurations.fast,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.lg,
               ),
-              const SizedBox(width: AppSpacing.md),
-              // Text
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(widget.title,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.text,
-                            )),
-                        if (widget.badge != null) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary
-                                  .withValues(alpha: 0.15),
-                              borderRadius:
-                                  BorderRadius.circular(AppRadius.sm),
-                            ),
-                            child: Text(
-                              widget.badge!,
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                        ],
+              decoration: BoxDecoration(
+                color: _pressed ? AppColors.surfaceAlt : AppColors.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: _pressed
+                      ? widget.accentColor.withValues(alpha: 0.55)
+                      : widget.accentColor
+                          .withValues(alpha: 0.18 + 0.14 * breathe),
+                  width: 1.5,
+                ),
+                boxShadow: _pressed
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: widget.accentColor
+                              .withValues(alpha: 0.09 + 0.07 * breathe),
+                          blurRadius: 22 + 12 * breathe,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
                       ],
-                    ),
-                    const SizedBox(height: 3),
-                    Text(widget.subtitle,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textMuted,
-                        )),
-                  ],
-                ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Icon(Icons.arrow_forward_ios_rounded,
-                  color: AppColors.textDim, size: 14),
-            ],
-          ),
-        ),
+              child: Row(
+                children: [
+                  // Premium icon container with breathing border
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      color: widget.accentColor.withValues(alpha: 0.09),
+                      border: Border.all(
+                        color: widget.accentColor
+                            .withValues(alpha: 0.22 + 0.12 * breathe),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Icon(
+                      widget.icon,
+                      color: widget.accentColor,
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.text,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: widget.accentColor.withValues(alpha: 0.55),
+                    size: 14,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
+}
+
+// ── Ambient orbs — two slow-drifting radial gradients painted on the background
+
+class _AmbientOrbs extends CustomPainter {
+  final double t; // 0..1 repeating
+
+  const _AmbientOrbs(this.t);
+
+  void _paintOrb(Canvas canvas, Offset center, double radius, Color color) {
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [color, color.withValues(alpha: 0)],
+        ).createShader(Rect.fromCircle(center: center, radius: radius)),
+    );
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final angle = t * 2 * math.pi;
+
+    // Teal orb — drifts gently in the upper-left region
+    final x1 = size.width  * (0.12 + 0.14 * math.sin(angle));
+    final y1 = size.height * (0.18 + 0.09 * math.cos(angle));
+    _paintOrb(canvas, Offset(x1, y1), size.width * 0.58,
+        AppColors.primary.withValues(alpha: 0.07));
+
+    // Amber orb — counter-drifts in the lower-right region
+    final x2 = size.width  * (0.76 + 0.10 * math.cos(angle + 1.6));
+    final y2 = size.height * (0.68 + 0.11 * math.sin(angle + 1.6));
+    _paintOrb(canvas, Offset(x2, y2), size.width * 0.52,
+        AppColors.warning.withValues(alpha: 0.05));
+  }
+
+  @override
+  bool shouldRepaint(_AmbientOrbs old) => old.t != t;
 }
 
 // ── Trial shell — minimal view-only app for trial users ──────────────────────
