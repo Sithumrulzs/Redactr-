@@ -41,7 +41,11 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*"
+      ],
       "js": ["lib/detector.js", "content/file-interceptor.js"],
       "run_at": "document_idle"
     },
