@@ -71,9 +71,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const STATUS_LABEL = {
     idle: "Off",
-    loading: "Downloading/loading model…",
-    ready: "Ready",
-    error: "Failed to load — Tier-1 still active",
+    loading: "Connecting to AI server…",
+    ready: "Active — server-side GLiNER",
+    error: "Server unavailable — Tier-1 still active",
   };
 
   function renderTrialBanner(plan, trialDaysLeft, trialExpired) {

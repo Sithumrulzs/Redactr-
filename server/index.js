@@ -1168,5 +1168,153 @@ app.get("/alertStatus/:alertId", requireAuth, rateLimitMiddleware(120), async (r
   }
 });
 
+// ── Server-side GLiNER NER — Enterprise Tier 2 ───────────────────────────────
+//
+// The model runs here so the Chrome extension contains zero remotely-fetched
+// code (CWS MV3 compliance). The extension sends authenticated text to
+// /nerScan; the server returns entity findings in the same shape the
+// extension's detector.js already understands.
+
+let _gliner = null;
+let _glinerPromise = null;
+
+const GLINER_MODEL_ID  = "onnx-community/gliner_multi-v2.1";
+const GLINER_MODEL_URL = "https://huggingface.co/onnx-community/gliner_multi-v2.1/resolve/main/onnx/model_quantized.onnx";
+const GLINER_THRESHOLD = 0.5;
+const NER_MAX_LABELS   = 15;
+const NER_DEFAULT_LABELS = ["person name", "street address"];
+// Chunking: GLiNER context window ~384 tokens (~300 words)
+const NER_WORDS_PER_CHUNK = 300;
+const NER_OVERLAP_WORDS   = 30;
+
+function _getGliner() {
+  if (_gliner) return Promise.resolve(_gliner);
+  if (_glinerPromise) return _glinerPromise;
+  _glinerPromise = (async () => {
+    const { Gliner } = require("gliner");
+    console.log("[ner] Loading GLiNER model — first request may be slow…");
+    const inst = new Gliner({
+      tokenizerPath: GLINER_MODEL_ID,
+      onnxSettings: {
+        modelPath: GLINER_MODEL_URL,
+        executionProvider: "wasm",
+        multiThread: false,
+        fetchBinary: false,
+      },
+      transformersSettings: { allowLocalModels: true, useBrowserCache: false },
+      maxWidth: 12,
+      modelType: "span-level",
+    });
+    await inst.initialize();
+    _gliner = inst;
+    _glinerPromise = null;
+    console.log("[ner] GLiNER model ready.");
+    return inst;
+  })().catch(err => { _glinerPromise = null; throw err; });
+  return _glinerPromise;
+}
+
+function _nerLabel(label, spanText, start, end) {
+  const lower = label.toLowerCase().trim();
+  if (lower === "person name")    return { type: "PERSON_NAME", match: spanText, start, end, severity: "medium" };
+  if (lower === "street address") return { type: "ADDRESS",     match: spanText, start, end, severity: "medium" };
+  const safe = label.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/, "");
+  return { type: `CUSTOM_${safe}`, match: spanText, start, end, severity: "high" };
+}
+
+function _wordBounds(text) {
+  const bounds = [];
+  const re = /\S+/g;
+  let m;
+  while ((m = re.exec(text)) !== null) bounds.push({ start: m.index, end: m.index + m[0].length });
+  return bounds;
+}
+
+function _chunkText(text) {
+  const words = _wordBounds(text);
+  if (words.length <= NER_WORDS_PER_CHUNK) return [{ text, charOffset: 0 }];
+  const chunks = [];
+  const step = NER_WORDS_PER_CHUNK - NER_OVERLAP_WORDS;
+  for (let i = 0; i < words.length; i += step) {
+    const end = Math.min(i + NER_WORDS_PER_CHUNK, words.length);
+    chunks.push({ text: text.slice(words[i].start, words[end - 1].end), charOffset: words[i].start });
+    if (end >= words.length) break;
+  }
+  return chunks;
+}
+
+/**
+ * POST /nerScan
+ * Enterprise-gated. Runs GLiNER on the supplied text and returns entity
+ * findings in the same shape detector.js's mergeTier2Findings() expects:
+ *   { ok: true, entities: [{ type, match, start, end, severity }] }
+ */
+app.post("/nerScan", requireAuth, rateLimitMiddleware(30), async (req, res) => {
+  try {
+    const callerDoc = await db.collection("users").doc(req.auth.uid).get();
+    if (!callerDoc.exists) return res.status(400).json({ ok: false, error: "Complete company setup first.", entities: [] });
+
+    const companyDoc = await db.collection("companies").doc(callerDoc.data().companyId).get();
+    if (!TIER2_PLANS.has(companyDoc.data()?.plan ?? "")) {
+      return res.status(403).json({ ok: false, error: "AI entity detection requires the Enterprise plan.", entities: [] });
+    }
+
+    const text = String(req.body?.text ?? "").slice(0, 8000);
+    if (!text.trim()) return res.json({ ok: true, entities: [] });
+
+    const customEntities = companyDoc.data()?.customEntities ?? [];
+    const incoming = Array.isArray(req.body?.labels) ? req.body.labels : [];
+    const labels = [...new Set([...NER_DEFAULT_LABELS, ...customEntities, ...incoming])].slice(0, NER_MAX_LABELS);
+
+    const gliner  = await _getGliner();
+    const chunks  = _chunkText(text);
+    const raw = [];
+    for (const chunk of chunks) {
+      const results = await gliner.inference({ texts: [chunk.text], entities: labels, flatNer: true, threshold: GLINER_THRESHOLD });
+      for (const e of (results[0] ?? [])) {
+        raw.push({ ...e, start: e.start + chunk.charOffset, end: e.end + chunk.charOffset });
+      }
+    }
+
+    // Deduplicate overlapping spans — keep higher score
+    const sorted = [...raw].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    const kept = [];
+    for (const e of sorted) {
+      if (!kept.some(k => k.start < e.end && e.start < k.end)) kept.push(e);
+    }
+    const entities = kept
+      .sort((a, b) => a.start - b.start)
+      .map(e => _nerLabel(e.label, e.spanText, e.start, e.end));
+
+    res.json({ ok: true, entities });
+  } catch (err) {
+    console.error("[nerScan] failed:", err.message);
+    // Fail-open: Tier-1 detection is unaffected when NER is unavailable
+    res.status(500).json({ ok: false, error: "NER temporarily unavailable.", entities: [] });
+  }
+});
+
+/**
+ * POST /nerWarmup
+ * Enterprise-gated. Kicks off model loading without waiting for it to finish,
+ * so the first real /nerScan call is not the one that pays the cold-start cost.
+ */
+app.post("/nerWarmup", requireAuth, async (req, res) => {
+  try {
+    const callerDoc = await db.collection("users").doc(req.auth.uid).get();
+    if (!callerDoc.exists) return res.status(400).json({ ok: false, status: "not_member" });
+    const companyDoc = await db.collection("companies").doc(callerDoc.data().companyId).get();
+    if (!TIER2_PLANS.has(companyDoc.data()?.plan ?? "")) {
+      return res.status(403).json({ ok: false, status: "not_entitled" });
+    }
+    const alreadyReady = !!_gliner;
+    if (!alreadyReady) _getGliner().catch(e => console.warn("[ner] warmup load failed:", e.message));
+    res.json({ ok: true, status: alreadyReady ? "ready" : "loading" });
+  } catch (err) {
+    console.error("[nerWarmup] failed:", err.message);
+    res.status(500).json({ ok: false, status: "error" });
+  }
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Redactr API listening on port ${port}`));

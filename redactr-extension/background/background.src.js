@@ -341,15 +341,54 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message?.target === "background" && message.type === "TIER2_SCAN") {
-    // On-device NER removed for CWS MV3 compliance (remote model weights).
-    // Returns empty entities so Tier-1 blocking is unaffected.
-    sendResponse({ ok: true, entities: [] });
+    (async () => {
+      const { tier2Enabled, tier2Allowed, customEntities } = await chrome.storage.local.get({
+        tier2Enabled: false,
+        tier2Allowed: false,
+        customEntities: [],
+      });
+      if (!tier2Enabled || !tier2Allowed) {
+        sendResponse({ ok: false, error: tier2Allowed ? "tier2_disabled" : "tier2_not_entitled" });
+        return;
+      }
+      try {
+        await chrome.storage.local.set({ tier2Status: "loading" });
+        // NER runs server-side — no model code in the extension (CWS MV3 compliant).
+        const data = await callApi("POST", "/nerScan", {
+          text: message.text,
+          labels: customEntities,
+        });
+        await chrome.storage.local.set({ tier2Status: "ready" });
+        sendResponse({ ok: true, entities: data.entities ?? [] });
+      } catch (error) {
+        await chrome.storage.local.set({ tier2Status: "error" });
+        // Fail-open: Tier-1 result is used unchanged.
+        sendResponse({ ok: false, error: String(error), entities: [] });
+      }
+    })();
     return true;
   }
 
   if (message?.type === "TIER2_WARMUP") {
-    // On-device NER removed for CWS MV3 compliance (remote model weights).
-    sendResponse({ ok: true });
+    (async () => {
+      const { tier2Allowed } = await chrome.storage.local.get({ tier2Allowed: false });
+      if (!tier2Allowed) {
+        sendResponse({ ok: false, error: "tier2_not_entitled" });
+        return;
+      }
+      try {
+        await chrome.storage.local.set({ tier2Status: "loading" });
+        const data = await callApi("POST", "/nerWarmup");
+        // "loading" means the server is warming the model — stay in loading state
+        // until the next actual scan confirms ready.
+        const status = data.status === "ready" ? "ready" : "loading";
+        await chrome.storage.local.set({ tier2Status: status });
+        sendResponse({ ok: true });
+      } catch (error) {
+        await chrome.storage.local.set({ tier2Status: "error" });
+        sendResponse({ ok: false, error: String(error) });
+      }
+    })();
     return true;
   }
 });
