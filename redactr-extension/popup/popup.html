@@ -48,7 +48,7 @@
     </div>
     <p class="status" id="status-text">Protection is active on ChatGPT, Claude, and Gemini.</p>
 
-    <div class="tier2-card">
+    <div class="tier2-card" style="display:none" aria-hidden="true">
       <div class="tier2-row">
         <div>
           <div class="tier2-title">AI detection (names, addresses &amp; custom types)</div>
@@ -59,10 +59,6 @@
           <span class="slider"></span>
         </label>
       </div>
-      <p class="tier2-hint">
-        Beta. Runs a small NER model fully on-device to catch names/addresses Tier-1 can't.
-        First use downloads the model once (needs internet); after that it works offline.
-      </p>
     </div>
 
     <div class="tier2-card file-scan-card" id="file-scan-card">

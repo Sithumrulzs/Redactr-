@@ -341,56 +341,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message?.target === "background" && message.type === "TIER2_SCAN") {
-    (async () => {
-      const { tier2Enabled, tier2Allowed, customEntities } = await chrome.storage.local.get({
-        tier2Enabled: false,
-        tier2Allowed: false,
-        customEntities: [],
-      });
-      if (!tier2Enabled || !tier2Allowed) {
-        sendResponse({ ok: false, error: tier2Allowed ? "tier2_disabled" : "tier2_not_entitled" });
-        return;
-      }
-
-      try {
-        await chrome.storage.local.set({ tier2Status: "loading" });
-        await ensureOffscreenDocument();
-        // customEntities are Enterprise-only; the offscreen always prepends DEFAULT_LABELS.
-        const response = await chrome.runtime.sendMessage({
-          target: "offscreen",
-          type: "TIER2_SCAN",
-          text: message.text,
-          labels: customEntities,
-        });
-        await chrome.storage.local.set({ tier2Status: response?.ok ? "ready" : "error" });
-        sendResponse(response);
-      } catch (error) {
-        await chrome.storage.local.set({ tier2Status: "error" });
-        sendResponse({ ok: false, error: String(error) });
-      }
-    })();
+    // On-device NER removed for CWS MV3 compliance (remote model weights).
+    // Returns empty entities so Tier-1 blocking is unaffected.
+    sendResponse({ ok: true, entities: [] });
     return true;
   }
 
   if (message?.type === "TIER2_WARMUP") {
-    (async () => {
-      const { tier2Allowed } = await chrome.storage.local.get({ tier2Allowed: false });
-      if (!tier2Allowed) {
-        sendResponse({ ok: false, error: "tier2_not_entitled" });
-        return;
-      }
-
-      try {
-        await chrome.storage.local.set({ tier2Status: "loading" });
-        await ensureOffscreenDocument();
-        const response = await chrome.runtime.sendMessage({ target: "offscreen", type: "TIER2_WARMUP" });
-        await chrome.storage.local.set({ tier2Status: response?.ok ? "ready" : "error" });
-        sendResponse(response);
-      } catch (error) {
-        await chrome.storage.local.set({ tier2Status: "error" });
-        sendResponse({ ok: false, error: String(error) });
-      }
-    })();
+    // On-device NER removed for CWS MV3 compliance (remote model weights).
+    sendResponse({ ok: true });
     return true;
   }
 });

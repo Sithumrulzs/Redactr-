@@ -14,9 +14,6 @@
     "https://chatgpt.com/*",
     "https://claude.ai/*",
     "https://gemini.google.com/*",
-    "https://huggingface.co/*",
-    "https://cdn-lfs.huggingface.co/*",
-    "https://cdn-lfs-us-1.huggingface.co/*",
     "https://accounts.google.com/*",
     "https://identitytoolkit.googleapis.com/*",
     "https://securetoken.googleapis.com/*",
@@ -28,7 +25,7 @@
     "<all_urls>"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+    "extension_pages": "script-src 'self'; object-src 'self';"
   },
   "background": {
     "service_worker": "background/background.bundle.js",
