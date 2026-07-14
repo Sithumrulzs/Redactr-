@@ -16,7 +16,7 @@
  *     Firestore via the Redactr API's /createAlert route.
  */
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithCredential, signOut as firebaseSignOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithCredential, signOut as firebaseSignOut } from "firebase/auth/web-extension";
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBTg49GkhytsgHECw-_SagfU_TIV57ncck",
