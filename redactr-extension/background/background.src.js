@@ -225,7 +225,7 @@ async function ensureOffscreenDocument() {
   creatingOffscreenDocument = chrome.offscreen.createDocument({
     url: OFFSCREEN_PATH,
     reasons: ["WORKERS"],
-    justification: "Runs the on-device NER model for Tier-2 PII detection.",
+    justification: "Performs local pixel analysis of images in file upload inputs using OffscreenCanvas to detect embedded sensitive content.",
   });
 
   try {
