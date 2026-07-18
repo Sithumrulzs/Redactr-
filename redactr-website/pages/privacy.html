@@ -76,12 +76,14 @@
 
 <div class="policy-wrap">
   <h1>Privacy Policy</h1>
-  <p class="policy-updated">Last updated: 10 July 2026</p>
+  <p class="policy-updated">Last updated: 17 July 2026</p>
 
   <div class="highlight-box">
-    <strong style="color:#14C8A6;">Core principle:</strong> Redactr scans your text and files
-    <strong>locally on your device</strong>. The sensitive data we detect — API keys, credit cards,
-    personal information — is <strong>never uploaded to our servers</strong>.
+    <strong style="color:#14C8A6;">Core principle:</strong> Redactr's Tier-1 detection (keyword
+    and pattern matching) runs <strong>entirely on your device</strong> — your prompts are never
+    sent to our servers. Enterprise plan subscribers who enable AI-powered NER detection have the
+    text they are typing transmitted to Redactr's secure server solely to perform that analysis;
+    no results or raw text are stored after the scan completes.
   </div>
 
   <h2>1. Who we are</h2>
@@ -94,10 +96,19 @@
   <h2>2. What the Chrome extension does</h2>
   <p>
     The Redactr Chrome extension monitors text you type into AI tools (ChatGPT, Claude, Gemini)
-    and — for Enterprise plan subscribers — file upload fields and email compose areas across all
-    websites. When sensitive data is detected, the extension warns you or blocks the action.
-    <strong>All detection happens on your device.</strong> We do not transmit your prompts, file
-    contents, or compose drafts to any server.
+    and — for Enterprise plan subscribers — file upload fields and email compose areas on those
+    same sites. When sensitive data is detected, the extension warns you or blocks the action.
+  </p>
+  <p>
+    <strong>Tier-1 (all plans):</strong> Pattern and keyword matching runs locally inside your
+    browser. No text leaves your device for this tier.
+  </p>
+  <p>
+    <strong>Tier-2 / AI detection (Enterprise only, opt-in):</strong> When you enable the AI
+    detection toggle, the text you are typing is sent over an encrypted HTTPS connection to
+    Redactr's API server to perform Named Entity Recognition (NER) using the GLiNER model.
+    The server returns detected entity types and immediately discards the input text — it is
+    not logged, stored, or used for training.
   </p>
 
   <h2>3. Data we collect</h2>
@@ -111,15 +122,25 @@
       <strong>Google display name</strong> — used for personalisation inside the extension popup.
     </li>
     <li>
-      <strong>Leak-prevention event counts</strong> — a running integer stored locally in your
-      browser (chrome.storage.local) showing how many leaks were prevented. This number is never
-      sent to our servers.
+      <strong>Text submitted for Enterprise AI scanning (Tier-2, opt-in)</strong> — when the AI
+      detection feature is enabled by an Enterprise subscriber, the text being typed is transmitted
+      to Redactr's API server for NER analysis. It is processed in memory and immediately discarded;
+      it is never written to disk or any database.
+    </li>
+    <li>
+      <strong>Blocked-prompt alert metadata</strong> — when the extension blocks a prompt, a
+      lightweight record (finding types, risk score, website domain, timestamp) is sent to your
+      company's alert log in Firestore so the admin can review it. The blocked text itself is
+      never stored.
     </li>
     <li>
       <strong>Blocked-file event metadata</strong> — for Enterprise subscribers, when a file is
       blocked, a lightweight alert record (filename, file type, website domain, timestamp) is
-      written to your company's Firestore alerts collection so the admin can review it. The file
-      contents are never stored.
+      written to your company's Firestore alerts collection. File contents are never stored.
+    </li>
+    <li>
+      <strong>Leak-prevention event count</strong> — a running integer stored locally in your
+      browser (chrome.storage.local). This number is never sent to our servers.
     </li>
     <li>
       <strong>Billing email and company name</strong> — collected at checkout on the website when
@@ -129,11 +150,12 @@
 
   <h2>4. Data we do NOT collect</h2>
   <ul>
-    <li>The text of your prompts or messages to AI tools</li>
+    <li>Tier-1 scanned prompt text (detection is local; text never leaves your device for Tier-1)</li>
     <li>The contents of files you upload or attempt to upload</li>
     <li>The contents of emails you compose</li>
     <li>Browsing history or URLs visited</li>
-    <li>Any sensitive data that triggers a detection (we detect it and block it — we don't store it)</li>
+    <li>Tier-2 scanned text after the NER response is returned (immediately discarded server-side)</li>
+    <li>Any sensitive values that trigger a detection (we detect and block them — we never store them)</li>
   </ul>
 
   <h2>5. How we use your data</h2>
@@ -141,7 +163,8 @@
     <li>To authenticate you and determine your subscription plan</li>
     <li>To allow your company admin to invite and manage team members</li>
     <li>To send transactional emails (trial activation, subscription confirmation)</li>
-    <li>To display blocked-file alerts to your company admin</li>
+    <li>To display blocked-prompt and blocked-file alerts to your company admin</li>
+    <li>To perform AI-powered NER analysis on text you submit while Tier-2 is enabled (Enterprise only)</li>
   </ul>
 
   <h2>6. Third-party services</h2>
@@ -155,6 +178,13 @@
       <strong>Google Sign-In (OAuth 2.0)</strong> — used for authentication. We receive your
       email and display name only.
       <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
+    </li>
+    <li>
+      <strong>Render (render.com)</strong> — hosts Redactr's API server, which performs
+      Enterprise Tier-2 NER analysis. Text submitted for AI scanning is processed on Render's
+      infrastructure and immediately discarded after the response is returned. No text is
+      persisted on Render.
+      <a href="https://render.com/privacy" target="_blank" rel="noopener">Render Privacy Policy</a>.
     </li>
     <li>
       <strong>Resend</strong> — used to send transactional emails. Your email address is passed
@@ -178,13 +208,13 @@
       <strong>identity</strong> — used to initiate Google Sign-In via chrome.identity.launchWebAuthFlow.
     </li>
     <li>
-      <strong>offscreen</strong> — runs AI-based text detection (NER model) and image analysis in
-      a background document without blocking your browser tab.
+      <strong>offscreen</strong> — runs image analysis for Enterprise file scanning in a background
+      document without blocking your browser tab.
     </li>
     <li>
-      <strong>Host permissions — all URLs</strong> — required for Enterprise plan subscribers to
-      detect sensitive data in file upload inputs and email compose fields across any website.
-      The extension reads file content locally; nothing is sent to our servers.
+      <strong>Host permissions — chatgpt.com, claude.ai, gemini.google.com, mail.google.com,
+      outlook.live.com, outlook.office.com, outlook.office365.com</strong> — the extension only
+      runs on these specific sites. It does not have access to any other websites you visit.
     </li>
   </ul>
 
