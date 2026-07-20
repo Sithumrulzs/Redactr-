@@ -1317,4 +1317,15 @@ app.post("/nerWarmup", requireAuth, async (req, res) => {
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Redactr API listening on port ${port}`));
+app.listen(port, () => {
+  console.log(`Redactr API listening on port ${port}`);
+
+  // Keep Render's free tier alive — pings itself every 14 min so the
+  // server never spins down mid-session (free tier idles after 15 min).
+  const KEEP_ALIVE_URL = (process.env.SERVER_URL || "https://redactr-ln5t.onrender.com") + "/";
+  setInterval(() => {
+    fetch(KEEP_ALIVE_URL)
+      .then(() => console.log("[keep-alive] ping ok"))
+      .catch((err) => console.warn("[keep-alive] ping failed:", err.message));
+  }, 14 * 60 * 1000);
+});
