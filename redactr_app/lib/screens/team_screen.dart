@@ -77,8 +77,7 @@ class _TeamScreenState extends State<TeamScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(e.toString().replaceFirst('Exception: ', '')),
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
           backgroundColor: AppColors.danger,
           behavior: SnackBarBehavior.floating,
         ),
@@ -107,7 +106,8 @@ class _TeamScreenState extends State<TeamScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Team',
-                              style: Theme.of(context).textTheme.headlineSmall),
+                              style:
+                                  Theme.of(context).textTheme.headlineSmall),
                           const SizedBox(height: 2),
                           FutureBuilder<String?>(
                             future: _nameFuture,
@@ -184,9 +184,9 @@ class _TeamScreenState extends State<TeamScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.lg),
                       itemCount: 4,
-                      separatorBuilder: (_, _) =>
+                      separatorBuilder: (context, index) =>
                           const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (_, _) =>
+                      itemBuilder: (context, index) =>
                           const SkeletonBox(height: 72, radius: AppRadius.lg),
                     );
                   }
@@ -209,10 +209,10 @@ class _TeamScreenState extends State<TeamScreen> {
                   }
 
                   return ListView.separated(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg),
                     itemCount: members.length,
-                    separatorBuilder: (_, _) =>
+                    separatorBuilder: (_, __) =>
                         const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (_, i) {
                       final member = members[i];
@@ -223,9 +223,8 @@ class _TeamScreenState extends State<TeamScreen> {
                         child: _MemberCard(
                           member: member,
                           canRemove: canRemove,
-                          onRemove: canRemove
-                              ? () => _removeMember(member)
-                              : null,
+                          onRemove:
+                              canRemove ? () => _removeMember(member) : null,
                         ),
                       );
                     },
@@ -257,10 +256,10 @@ class _MemberCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name    = member['displayName'] as String? ??
+    final name = member['displayName'] as String? ??
         member['email'] as String? ?? 'Team member';
-    final email   = member['email'] as String? ?? '';
-    final role    = member['role'] as String? ?? 'employee';
+    final email = member['email'] as String? ?? '';
+    final role = member['role'] as String? ?? 'employee';
     final isAdmin = role == 'admin';
 
     return Container(
@@ -314,7 +313,8 @@ class _MemberCard extends StatelessWidget {
 
           // Role badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: isAdmin
                   ? AppColors.primary.withValues(alpha: 0.12)
@@ -361,7 +361,199 @@ class _MemberCard extends StatelessWidget {
   }
 }
 
-// ── Pending invites ───────────────────────────────────────────────────────────
+// ── Pulsing status dot ────────────────────────────────────────────────────────
+
+class _PulsingDot extends StatefulWidget {
+  final double size;
+  const _PulsingDot({this.size = 8});
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1100))
+      ..repeat(reverse: true);
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) => Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.warning.withValues(alpha: 0.45 + 0.55 * _anim.value),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.warning.withValues(alpha: 0.35 * _anim.value),
+              blurRadius: 5,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Pending invite card ───────────────────────────────────────────────────────
+
+class _PendingInviteCard extends StatelessWidget {
+  final String email;
+  final bool isSharing;
+  final VoidCallback? onShare;
+  const _PendingInviteCard(
+      {required this.email, required this.isSharing, this.onShare});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border:
+            Border.all(color: AppColors.warning.withValues(alpha: 0.28)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.warning.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar + email row
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.warning.withValues(alpha: 0.1),
+                  border: Border.all(
+                      color: AppColors.warning.withValues(alpha: 0.3)),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  email.isNotEmpty ? email[0].toUpperCase() : '?',
+                  style: const TextStyle(
+                      color: AppColors.warning,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      email,
+                      style: const TextStyle(
+                          color: AppColors.text,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        _PulsingDot(size: 6),
+                        const SizedBox(width: 5),
+                        const Text(
+                          'Waiting to sign in',
+                          style: TextStyle(
+                              color: AppColors.textDim, fontSize: 11.5),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: AppSpacing.md),
+
+          // Divider
+          Container(
+              height: 1,
+              color: AppColors.warning.withValues(alpha: 0.1)),
+
+          const SizedBox(height: AppSpacing.md),
+
+          // Share button
+          PressScale(
+            onTap: isSharing ? null : onShare,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              decoration: BoxDecoration(
+                gradient: isSharing
+                    ? null
+                    : const LinearGradient(
+                        colors: [AppColors.primary, AppColors.accent]),
+                color: isSharing ? AppColors.surfaceAlt : null,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (isSharing)
+                    const SizedBox(
+                      width: 15,
+                      height: 15,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 1.8, color: AppColors.primary),
+                    )
+                  else
+                    const Icon(Icons.ios_share_rounded,
+                        color: AppColors.background, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    isSharing ? 'Generating link…' : 'Send extension link',
+                    style: TextStyle(
+                      color: isSharing
+                          ? AppColors.primary
+                          : AppColors.background,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Pending invites section ───────────────────────────────────────────────────
 
 class _PendingInvitesSection extends StatefulWidget {
   final String companyId;
@@ -373,7 +565,6 @@ class _PendingInvitesSection extends StatefulWidget {
 
 class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
   final _service = CompanyService();
-  // tracks which email is currently generating a share link
   String? _sharingEmail;
 
   Future<void> _shareExtension(String email) async {
@@ -391,10 +582,21 @@ class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not generate link. Check your subscription is active.'),
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.error_outline_rounded,
+                  color: Colors.white, size: 18),
+              SizedBox(width: 8),
+              Expanded(
+                  child: Text('Could not generate link. Check your subscription is active.',
+                      style: TextStyle(color: Colors.white))),
+            ],
+          ),
           backgroundColor: AppColors.danger,
           behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md)),
         ),
       );
     } finally {
@@ -414,14 +616,14 @@ class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Section header
               Padding(
                 padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.sm),
+                    AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.md),
                 child: Row(
                   children: [
-                    const Icon(Icons.mail_outline_rounded,
-                        color: AppColors.warning, size: 16),
-                    const SizedBox(width: 6),
+                    _PulsingDot(),
+                    const SizedBox(width: 8),
                     Text(
                       'Pending invites (${invites.length})',
                       style: const TextStyle(
@@ -433,73 +635,30 @@ class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
                   ],
                 ),
               ),
-              SizedBox(
-                height: 60,
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: invites.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
-                  itemBuilder: (_, i) {
-                    final email = invites[i]['email'] as String? ?? '';
-                    final isSharing = _sharingEmail == email;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.schedule_rounded, color: AppColors.warning, size: 14),
-                          const SizedBox(width: 6),
-                          Text(
-                            email,
-                            style: const TextStyle(
-                                color: AppColors.warning, fontSize: 12, fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(width: 8),
-                          // Share extension link button
-                          GestureDetector(
-                            onTap: isSharing ? null : () => _shareExtension(email),
-                            child: Container(
-                              width: 26,
-                              height: 26,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                              ),
-                              alignment: Alignment.center,
-                              child: isSharing
-                                  ? const SizedBox(
-                                      width: 12,
-                                      height: 12,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 1.5, color: AppColors.primary),
-                                    )
-                                  : const Icon(Icons.ios_share_rounded,
-                                      color: AppColors.primary, size: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 6, AppSpacing.lg, 0),
-                child: Text(
-                  'Tap   to send the employee their extension download link',
-                  style: TextStyle(
-                    color: AppColors.textDim,
-                    fontSize: 11,
+
+              // Invite cards
+              ...List.generate(invites.length, (i) {
+                final email = invites[i]['email'] as String? ?? '';
+                final isSharing = _sharingEmail == email;
+                return AnimatedEntrance(
+                  delay: Duration(milliseconds: i * 70),
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      0,
+                      AppSpacing.lg,
+                      i < invites.length - 1 ? AppSpacing.sm : 0,
+                    ),
+                    child: _PendingInviteCard(
+                      email: email,
+                      isSharing: isSharing,
+                      onShare:
+                          isSharing ? null : () => _shareExtension(email),
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
+
               const SizedBox(height: AppSpacing.lg),
             ],
           ),
@@ -508,6 +667,8 @@ class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
     );
   }
 }
+
+// ── Empty team ────────────────────────────────────────────────────────────────
 
 class _EmptyTeam extends StatelessWidget {
   final VoidCallback onInvite;
