@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/company_service.dart';
@@ -16,8 +17,74 @@ class TeamScreen extends StatefulWidget {
 
 class _TeamScreenState extends State<TeamScreen> {
   final _companyService = CompanyService();
+  final _currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
   late final Future<String?> _nameFuture =
       _companyService.getCompanyName(widget.companyId);
+
+  Future<void> _removeMember(Map<String, dynamic> member) async {
+    final name = member['displayName'] as String? ??
+        member['email'] as String? ?? 'this member';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xl)),
+        title: Row(
+          children: [
+            const Icon(Icons.person_remove_rounded,
+                color: AppColors.danger, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text('Remove $name?',
+                  style: const TextStyle(color: AppColors.text)),
+            ),
+          ],
+        ),
+        content: Text(
+          '$name will lose access to the company and their extension will be delinked.',
+          style: const TextStyle(
+              color: AppColors.textMuted, fontSize: 14, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel',
+                style: TextStyle(color: AppColors.textMuted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Remove',
+                style: TextStyle(
+                    color: AppColors.danger, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await _companyService.removeMember(member['uid'] as String);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$name has been removed.'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: AppColors.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +192,8 @@ class _TeamScreenState extends State<TeamScreen> {
                   }
 
                   final members = snapshot.data ?? [];
+                  final isAdmin = members.any(
+                      (m) => m['uid'] == _currentUid && m['role'] == 'admin');
 
                   if (members.isEmpty) {
                     return FutureBuilder<String?>(
@@ -147,9 +216,17 @@ class _TeamScreenState extends State<TeamScreen> {
                         const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (_, i) {
                       final member = members[i];
+                      final canRemove =
+                          isAdmin && member['uid'] != _currentUid;
                       return AnimatedEntrance(
                         delay: Duration(milliseconds: 80 + i * 55),
-                        child: _MemberCard(member: member),
+                        child: _MemberCard(
+                          member: member,
+                          canRemove: canRemove,
+                          onRemove: canRemove
+                              ? () => _removeMember(member)
+                              : null,
+                        ),
                       );
                     },
                   );
@@ -170,7 +247,13 @@ class _TeamScreenState extends State<TeamScreen> {
 
 class _MemberCard extends StatelessWidget {
   final Map<String, dynamic> member;
-  const _MemberCard({required this.member});
+  final bool canRemove;
+  final VoidCallback? onRemove;
+  const _MemberCard({
+    required this.member,
+    this.canRemove = false,
+    this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -252,6 +335,26 @@ class _MemberCard extends StatelessWidget {
               ),
             ),
           ),
+
+          if (canRemove) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onRemove,
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.danger.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                      color: AppColors.danger.withValues(alpha: 0.25)),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(Icons.person_remove_rounded,
+                    color: AppColors.danger, size: 14),
+              ),
+            ),
+          ],
         ],
       ),
     );

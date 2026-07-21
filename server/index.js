@@ -281,6 +281,44 @@ app.post("/inviteEmployee", requireAuth, rateLimitMiddleware(20), async (req, re
 });
 
 /**
+ * Admin-only. Removes a team member by clearing their companyId and role.
+ * Their Auth account is preserved — they just lose company access.
+ */
+app.post("/removeMember", requireAuth, rateLimitMiddleware(20), async (req, res) => {
+  try {
+    const callerUid = req.auth.uid;
+    const targetUid = (req.body?.targetUid ?? "").trim();
+
+    if (!targetUid) {
+      return res.status(400).json({ error: "targetUid is required." });
+    }
+    if (targetUid === callerUid) {
+      return res.status(400).json({ error: "You cannot remove yourself." });
+    }
+
+    const callerDoc = await db.collection("users").doc(callerUid).get();
+    if (!callerDoc.exists || callerDoc.data().role !== "admin") {
+      return res.status(403).json({ error: "Only admins can remove members." });
+    }
+
+    const targetDoc = await db.collection("users").doc(targetUid).get();
+    if (!targetDoc.exists || targetDoc.data().companyId !== callerDoc.data().companyId) {
+      return res.status(404).json({ error: "Member not found in your company." });
+    }
+
+    await db.collection("users").doc(targetUid).update({
+      companyId: admin.firestore.FieldValue.delete(),
+      role: admin.firestore.FieldValue.delete(),
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("removeMember failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
+
+/**
  * Public checkout endpoint — called by redactr-website/js/checkout.js once
  * the PayPal sandbox payment captures. No auth required (the website never
  * signs in); the purchaser is identified by the billing email they typed
