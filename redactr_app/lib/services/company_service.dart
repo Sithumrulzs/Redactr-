@@ -62,8 +62,12 @@ class CompanyService {
   }
 
   Future<String?> getCompanyName(String companyId) async {
-    final doc = await _firestore.collection('companies').doc(companyId).get();
-    return doc.data()?['name'] as String?;
+    try {
+      final data = await _callApi('GET', '/getCompanyName');
+      return data['name'] as String?;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Convenience for UI that wants "Admin · Acme Corp" in one call.

@@ -387,6 +387,20 @@ app.post("/createSubscription", rateLimitMiddleware(5), async (req, res) => {
  * (not just admins) — it's the employees' browsers that actually need the
  * list to scan against.
  */
+app.get("/getCompanyName", requireAuth, async (req, res) => {
+  try {
+    const userDoc = await db.collection("users").doc(req.auth.uid).get();
+    if (!userDoc.exists || !userDoc.data().companyId) {
+      return res.json({ name: null });
+    }
+    const companyDoc = await db.collection("companies").doc(userDoc.data().companyId).get();
+    res.json({ name: companyDoc.data()?.name ?? null });
+  } catch (error) {
+    console.error("getCompanyName failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
+
 app.get("/getEntitlement", requireAuth, async (req, res) => {
   try {
     const callerDoc = await db.collection("users").doc(req.auth.uid).get();
