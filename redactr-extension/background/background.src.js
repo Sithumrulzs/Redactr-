@@ -82,6 +82,15 @@ let creatingOffscreenDocument = null;
 chrome.runtime.onInstalled.addListener(async () => {
   const current = await chrome.storage.local.get(DEFAULT_STATE);
   await chrome.storage.local.set(current);
+  // Keep Render's free tier warm so users never see "Server unavailable".
+  // Render sleeps after 15 min of inactivity; ping every 14 min to prevent that.
+  chrome.alarms.create("keepAlive", { periodInMinutes: 14 });
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "keepAlive") {
+    fetch(`${API_BASE_URL}/ping`).catch(() => {});
+  }
 });
 
 auth.onAuthStateChanged((user) => {

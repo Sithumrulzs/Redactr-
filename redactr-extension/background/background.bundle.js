@@ -6295,6 +6295,13 @@ var creatingOffscreenDocument = null;
 chrome.runtime.onInstalled.addListener(async () => {
   const current = await chrome.storage.local.get(DEFAULT_STATE);
   await chrome.storage.local.set(current);
+  chrome.alarms.create("keepAlive", { periodInMinutes: 14 });
+});
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "keepAlive") {
+    fetch(`${API_BASE_URL}/ping`).catch(() => {
+    });
+  }
 });
 auth.onAuthStateChanged((user) => {
   chrome.storage.local.set({

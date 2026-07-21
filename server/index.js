@@ -52,6 +52,10 @@ app.use(express.json());
 const { randomUUID } = require("crypto");
 const SERVER_URL = process.env.SERVER_URL || "https://redactr-ln5t.onrender.com";
 
+// Public health-check — used by the extension's keep-alive alarm so Render's
+// free tier never goes to sleep mid-session.
+app.get("/ping", (_req, res) => res.json({ ok: true }));
+
 // Simple in-memory rate limiter — resets on each server restart (fine for Render free tier).
 const _rateCounts = new Map();
 function rateLimit(key, maxPerMinute) {
