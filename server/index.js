@@ -39,8 +39,11 @@ const ALLOWED_ORIGINS = [
 ];
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow same-origin requests (no Origin header) and extension background calls.
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    // Allow same-origin requests (no Origin header), listed origins, and the
+    // Chrome extension service worker (which sends chrome-extension://<id>).
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || /^chrome-extension:\/\//.test(origin)) {
+      return cb(null, true);
+    }
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
@@ -265,6 +268,11 @@ app.post("/inviteEmployee", requireAuth, rateLimitMiddleware(20), async (req, re
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
+    // Fire-and-forget — never block the response on email.
+    const companyName = companyDoc.data()?.name ?? "your company";
+    const inviterName = req.auth.name ?? req.auth.email ?? "Your admin";
+    sendInviteEmail(email, companyName, inviterName);
+
     res.json({ ok: true });
   } catch (error) {
     console.error("inviteEmployee failed", error);
@@ -388,6 +396,146 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Internal error." });
   }
 });
+
+/**
+ * Sends an invite email to a newly-invited employee so they know to sign
+ * in with this address. Fire-and-forget — the route responds immediately
+ * and this runs in the background. Silently skips if RESEND_API_KEY is absent.
+ */
+async function sendInviteEmail(toEmail, companyName, inviterName) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log(`[email] Invite email skipped (no RESEND_API_KEY) → ${toEmail}`);
+    return;
+  }
+
+  const from    = process.env.EMAIL_FROM || "Redactr <onboarding@resend.dev>";
+  const CWS_URL = "https://chromewebstore.google.com/detail/redactr/jplbboglhhopcopdgbephgoelaflfelh";
+  const subject = `You've been invited to join ${companyName} on Redactr`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background:#060a11;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#060a11;">
+<tr><td align="center" style="padding:52px 16px 64px;">
+
+  <table width="560" cellpadding="0" cellspacing="0" border="0"
+    style="max-width:560px;width:100%;background:#0c1018;border-radius:24px;
+    border:1px solid rgba(255,255,255,0.06);overflow:hidden;">
+
+    <tr><td style="background:linear-gradient(90deg,#0a7a62,#14c8a6 48%,#5eead4);
+      height:2px;font-size:0;line-height:0;">&nbsp;</td></tr>
+
+    <tr><td style="padding:32px 44px 0;">
+      <table cellpadding="0" cellspacing="0" border="0"><tr>
+        <td style="width:8px;height:22px;background:linear-gradient(180deg,#14c8a6,#0a7a62);
+          border-radius:3px;display:inline-block;vertical-align:middle;"></td>
+        <td style="padding-left:10px;font-size:15px;font-weight:800;color:#ffffff;
+          letter-spacing:-0.02em;vertical-align:middle;">Redactr</td>
+      </tr></table>
+    </td></tr>
+
+    <tr><td style="padding:28px 44px 0;">
+      <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:rgba(20,200,166,0.7);
+        letter-spacing:1.8px;text-transform:uppercase;">Team invitation</p>
+      <h1 style="margin:0 0 14px;font-size:28px;font-weight:800;color:#ffffff;
+        letter-spacing:-0.04em;line-height:1.15;">
+        You've been invited.
+      </h1>
+      <p style="margin:0;font-size:15px;color:rgba(180,200,230,0.55);line-height:1.7;">
+        <strong style="color:rgba(255,255,255,0.8);">${inviterName}</strong> has invited you to join
+        <strong style="color:rgba(255,255,255,0.8);">${companyName}</strong> on Redactr —
+        AI-powered sensitive data protection for your browser.
+      </p>
+    </td></tr>
+
+    <tr><td style="padding:28px 44px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0"
+        style="background:rgba(20,200,166,0.06);border:1px solid rgba(20,200,166,0.18);
+        border-radius:16px;overflow:hidden;">
+        <tr><td style="padding:24px;">
+          <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#14c8a6;
+            letter-spacing:1.2px;text-transform:uppercase;">How to join — 2 steps</p>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+            <tr>
+              <td width="28" valign="top" style="padding-bottom:14px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:#14c8a6;
+                  text-align:center;line-height:22px;font-size:12px;font-weight:800;
+                  color:#060a11;">1</div>
+              </td>
+              <td valign="top" style="padding-bottom:14px;padding-left:10px;">
+                <p style="margin:0 0 4px;font-size:13.5px;font-weight:700;color:rgba(220,235,255,0.9);">
+                  Install the Redactr extension</p>
+                <p style="margin:0;font-size:12.5px;color:rgba(170,190,220,0.55);line-height:1.5;">
+                  One click from the Chrome Web Store.</p>
+              </td>
+            </tr>
+            <tr>
+              <td width="28" valign="top">
+                <div style="width:22px;height:22px;border-radius:50%;background:#14c8a6;
+                  text-align:center;line-height:22px;font-size:12px;font-weight:800;
+                  color:#060a11;">2</div>
+              </td>
+              <td valign="top" style="padding-left:10px;">
+                <p style="margin:0 0 4px;font-size:13.5px;font-weight:700;color:rgba(220,235,255,0.9);">
+                  Sign in with this email address</p>
+                <p style="margin:0;font-size:12.5px;color:rgba(170,190,220,0.55);line-height:1.5;">
+                  Use the Google account for <strong style="color:rgba(200,220,250,0.7);">${toEmail}</strong>.
+                  You'll be automatically linked to ${companyName}.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <div style="margin-top:20px;">
+            <a href="${CWS_URL}" style="display:inline-block;background:#14c8a6;color:#060a11;
+              font-size:13px;font-weight:800;text-decoration:none;
+              padding:12px 26px;border-radius:10px;letter-spacing:0.01em;">
+              Install Redactr →
+            </a>
+          </div>
+        </td></tr>
+      </table>
+    </td></tr>
+
+    <tr><td style="padding:28px 44px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="height:1px;background:rgba(255,255,255,0.05);font-size:0;">&nbsp;</td></tr>
+      </table>
+    </td></tr>
+
+    <tr><td style="padding:20px 44px 36px;">
+      <p style="margin:0;font-size:11px;color:rgba(120,140,170,0.35);line-height:1.7;">
+        You're receiving this because ${inviterName} invited ${toEmail} to Redactr.
+        If you weren't expecting this, you can safely ignore it.
+      </p>
+    </td></tr>
+
+  </table>
+
+</td></tr>
+</table>
+</body>
+</html>`;
+
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: [toEmail], subject, html }),
+    });
+    if (!resp.ok) console.warn("[invite] Email failed:", await resp.json());
+    else console.log(`[invite] Email sent → ${toEmail}`);
+  } catch (e) {
+    console.warn("[invite] Email error:", e.message);
+  }
+}
 
 /**
  * Sends a welcome / confirmation email via Resend (https://resend.com).
