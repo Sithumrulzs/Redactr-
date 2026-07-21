@@ -13,6 +13,7 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
+const nodemailer = require("nodemailer");
 
 let serviceAccount;
 try {
@@ -503,18 +504,18 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
 });
 
 /**
- * Sends an invite email via Brevo (https://brevo.com).
- * Requires BREVO_API_KEY + EMAIL_FROM_ADDRESS env vars — silently skips if absent.
+ * Sends an invite email via Gmail SMTP (nodemailer).
+ * Requires GMAIL_APP_PASSWORD + EMAIL_FROM_ADDRESS env vars — silently skips if absent.
  */
 async function sendInviteEmail(toEmail, companyName, inviterName) {
-  const apiKey = process.env.BREVO_API_KEY;
-  if (!apiKey) {
-    console.log(`[email] Invite email skipped (no BREVO_API_KEY) → ${toEmail}`);
+  const appPassword = process.env.GMAIL_APP_PASSWORD;
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS;
+  if (!appPassword || !fromAddress) {
+    console.log(`[email] Invite email skipped (no GMAIL_APP_PASSWORD/EMAIL_FROM_ADDRESS) → ${toEmail}`);
     return;
   }
 
-  const fromAddress = process.env.EMAIL_FROM_ADDRESS || "onboarding@resend.dev";
-  const from        = process.env.EMAIL_FROM_ADDRESS || "Redactr <onboarding@resend.dev>";
+  const from = `Redactr <${fromAddress}>`;
   const CWS_URL = "https://chromewebstore.google.com/detail/redactr/jplbboglhhopcopdgbephgoelaflfelh";
   const subject = `You've been invited to join ${companyName} on Redactr`;
 
@@ -630,38 +631,32 @@ async function sendInviteEmail(toEmail, companyName, inviterName) {
 </html>`;
 
   try {
-    const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: { "api-key": apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sender: { name: "Redactr", email: fromAddress },
-        to: [{ email: toEmail }],
-        subject,
-        htmlContent: html,
-      }),
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: fromAddress, pass: appPassword },
     });
-    if (!resp.ok) console.warn("[invite] Email failed:", await resp.json());
-    else console.log(`[invite] Email sent → ${toEmail}`);
+    await transporter.sendMail({ from, to: toEmail, subject, html });
+    console.log(`[invite] Email sent → ${toEmail}`);
   } catch (e) {
     console.warn("[invite] Email error:", e.message);
   }
 }
 
 /**
- * Sends a welcome / confirmation email via Resend (https://resend.com).
- * Requires BREVO_API_KEY + EMAIL_FROM_ADDRESS env vars — silently skips if absent.
+ * Sends a welcome / confirmation email via Gmail SMTP.
+ * Requires GMAIL_APP_PASSWORD + EMAIL_FROM_ADDRESS env vars — silently skips if absent.
  *
  * plan: "trial" | "starter" | "professional" | "enterprise"
  */
 async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUrl, plan = "trial") {
-  const apiKey = process.env.BREVO_API_KEY;
-  if (!apiKey) {
-    console.log(`[email] Welcome email skipped (no BREVO_API_KEY) → ${toEmail}`);
+  const appPassword = process.env.GMAIL_APP_PASSWORD;
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS;
+  if (!appPassword || !fromAddress) {
+    console.log(`[email] Welcome email skipped (no GMAIL_APP_PASSWORD/EMAIL_FROM_ADDRESS) → ${toEmail}`);
     return;
   }
 
-  const fromAddress = process.env.EMAIL_FROM_ADDRESS || "onboarding@resend.dev";
-  const from        = fromAddress;
+  const from = `Redactr <${fromAddress}>`;
   const name    = (displayName || toEmail.split("@")[0]).split(" ")[0]; // first name only
   const siteUrl = "https://redactr-swart.vercel.app";
 
@@ -951,17 +946,12 @@ async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUr
 </html>`;
 
   try {
-    const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: { "api-key": apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sender: { name: "Redactr", email: fromAddress },
-        to: [{ email: toEmail }],
-        subject,
-        htmlContent: html,
-      }),
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: fromAddress, pass: appPassword },
     });
-    if (!resp.ok) console.warn("[trial] Email failed:", await resp.json());
+    await transporter.sendMail({ from, to: toEmail, subject, html });
+    console.log(`[trial] Email sent → ${toEmail}`);
   } catch (e) {
     console.warn("[trial] Email error:", e.message);
   }
