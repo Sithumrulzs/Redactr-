@@ -689,7 +689,10 @@ class TrialShell extends StatelessWidget {
 
               // Upgrade button
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () => launchUrl(
+                  Uri.parse('https://redactr-swart.vercel.app/pages/pricing.html'),
+                  mode: LaunchMode.externalApplication,
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.background,
@@ -708,7 +711,10 @@ class TrialShell extends StatelessWidget {
 
               if (!trialExpired) ...[
                 OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () => launchUrl(
+                    Uri.parse('https://chromewebstore.google.com/detail/redactr/jplbboglhhopcopdgbephgoelaflfelh'),
+                    mode: LaunchMode.externalApplication,
+                  ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textDim,
                     side: const BorderSide(color: AppColors.border),
@@ -831,7 +837,10 @@ class _RootShellState extends State<RootShell> {
             .length;
 
         final screens = [
-          DashboardScreen(companyId: widget.companyId),
+          DashboardScreen(
+            companyId: widget.companyId,
+            onSeeAllAlerts: () => setState(() => _index = 1),
+          ),
           AlertsScreen(companyId: widget.companyId),
           InsightsScreen(companyId: widget.companyId),
           TeamScreen(companyId: widget.companyId),

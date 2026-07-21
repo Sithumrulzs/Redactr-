@@ -571,8 +571,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                             const Divider(color: AppColors.border, height: 1),
                             const SizedBox(height: AppSpacing.md),
                             Text(
-                              'Detection runs fully on-device in the Redactr browser extension — '
-                              'prompt text and scan results never leave your team\'s machines.',
+                              'Tier-1 pattern detection runs entirely on-device. '
+                              'Enterprise AI scanning (Tier-2) sends text to Redactr\'s '
+                              'secure server for processing — never stored, discarded immediately.',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],

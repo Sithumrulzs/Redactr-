@@ -19,7 +19,8 @@ const double _kPingScale         = 1.5;
 
 class DashboardScreen extends StatefulWidget {
   final String companyId;
-  const DashboardScreen({super.key, required this.companyId});
+  final VoidCallback? onSeeAllAlerts;
+  const DashboardScreen({super.key, required this.companyId, this.onSeeAllAlerts});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -507,7 +508,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         child: SectionHeader(
                           title: 'Recent activity',
                           trailing: TextButton(
-                            onPressed: () {},
+                            onPressed: widget.onSeeAllAlerts,
                             child: const Text(
                               'See all',
                               style: TextStyle(
