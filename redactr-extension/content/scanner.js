@@ -138,6 +138,13 @@
     const types = [...new Set(result.findings.map((f) => f.type))].join(", ");
     const el = makeBanner("#ef5466");
     const isAdminUser = userRole === "admin";
+
+    // Build the secondary button separately to avoid nested template literals,
+    // which can confuse Chrome's content-script parser.
+    const secondaryBtn = isAdminUser
+      ? "<button data-a=\"override\" style=\"background:#1e2a3a;color:#f59e0b;border:1.5px solid rgba(245,158,11,0.3);border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;\">&#9889; Override &amp; send original (you are the manager)</button>"
+      : "<button data-a=\"approve\" style=\"background:#1e2a3a;color:#94a3b8;border:1.5px solid #2d3f52;border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;\">&#8987; Request manager approval to send original</button>";
+
     el.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <img src="${ICON()}" width="16" height="16" alt="">
@@ -150,19 +157,9 @@
         <button data-a="redact"
           style="background:#14c8a6;color:#0d1117;font-weight:700;border:none;
                  border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;">
-          ✓ Send redacted version
+          &#10003; Send redacted version
         </button>
-        ${isAdminUser ? `
-        <button data-a="override"
-          style="background:#1e2a3a;color:#f59e0b;border:1.5px solid #f59e0b44;
-                 border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;">
-          ⚡ Override &amp; send original (you're the manager)
-        </button>` : `
-        <button data-a="approve"
-          style="background:#1e2a3a;color:#94a3b8;border:1.5px solid #2d3f52;
-                 border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;">
-          ⏳ Request manager approval to send original
-        </button>`}
+        ${secondaryBtn}
         <button data-a="dismiss"
           style="background:none;color:#64748b;border:none;padding:6px;
                  cursor:pointer;font-size:12px;width:100%;">
@@ -170,18 +167,17 @@
         </button>
       </div>
     `;
-    el.querySelector('[data-a="redact"]').addEventListener("click", () => doSendRedacted(inputEl, text, result.findings));
+    el.querySelector("[data-a=\"redact\"]").addEventListener("click", () => doSendRedacted(inputEl, text, result.findings));
     if (isAdminUser) {
-      el.querySelector('[data-a="override"]').addEventListener("click", () => {
+      el.querySelector("[data-a=\"override\"]").addEventListener("click", () => {
         removeBanner();
-        // Admin self-approves — send the original prompt directly.
         setText(inputEl, text);
         triggerSend(inputEl);
       });
     } else {
-      el.querySelector('[data-a="approve"]').addEventListener("click", () => requestManagerApproval(inputEl, text, result));
+      el.querySelector("[data-a=\"approve\"]").addEventListener("click", () => requestManagerApproval(inputEl, text, result));
     }
-    el.querySelector('[data-a="dismiss"]').addEventListener("click", removeBanner);
+    el.querySelector("[data-a=\"dismiss\"]").addEventListener("click", removeBanner);
   }
 
   // ── Banner: AWAITING manager decision ──────────────────────────────────────
