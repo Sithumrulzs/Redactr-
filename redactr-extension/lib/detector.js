@@ -129,23 +129,45 @@
     return sum % 10 === 0;
   }
 
+  // Explicit card formats — always blocked regardless of Luhn, because the
+  // 4-4-4-4 / 4-6-5 grouping is so specific to payment cards that false
+  // positives are negligible compared to the security risk of letting them through.
+  const CARD_FORMAT_PATTERNS = [
+    /\b\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{4}\b/g,   // standard 16-digit (Visa/MC/etc.)
+    /\b\d{4}[ -]\d{6}[ -]\d{5}\b/g,              // Amex 15-digit
+    /\b\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{3}\b/g, // 19-digit (some prepaid/gift)
+  ];
+
   function findCreditCards(text) {
     const findings = [];
-    let match;
+    const seen = new Set(); // deduplicate by start position
+
+    // Pass 1: explicit format — block on sight, no Luhn required.
+    for (const fmtRegex of CARD_FORMAT_PATTERNS) {
+      fmtRegex.lastIndex = 0;
+      let match;
+      while ((match = fmtRegex.exec(text)) !== null) {
+        if (!seen.has(match.index)) {
+          seen.add(match.index);
+          findings.push({ type: "CREDIT_CARD", match: match[0], start: match.index, end: match.index + match[0].length, severity: "high" });
+        }
+      }
+    }
+
+    // Pass 2: loose digit run — require Luhn to keep false-positive rate low for
+    // unseparated sequences (e.g. order IDs, phone extensions, timestamps).
     CREDIT_CARD_CANDIDATE.lastIndex = 0;
+    let match;
     while ((match = CREDIT_CARD_CANDIDATE.exec(text)) !== null) {
+      if (seen.has(match.index)) continue;
       const raw = match[0];
       const digits = raw.replace(/[ -]/g, "");
       if (digits.length >= 13 && digits.length <= 19 && luhnCheck(digits)) {
-        findings.push({
-          type: "CREDIT_CARD",
-          match: raw,
-          start: match.index,
-          end: match.index + raw.length,
-          severity: "high",
-        });
+        seen.add(match.index);
+        findings.push({ type: "CREDIT_CARD", match: raw, start: match.index, end: match.index + raw.length, severity: "high" });
       }
     }
+
     return findings;
   }
 
