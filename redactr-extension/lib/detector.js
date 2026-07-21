@@ -293,8 +293,8 @@
     // Wrap in try/catch: chrome.runtime.sendMessage throws synchronously when
     // the extension is reloaded while this content script is still alive
     // ("Extension context invalidated"). Fall back to Tier-1 result silently.
-    try {
-      return new Promise((resolve) => {
+    return new Promise((resolve) => {
+      try {
         chrome.runtime.sendMessage(
           { target: "background", type: "TIER2_SCAN", text },
           (response) => {
@@ -305,10 +305,14 @@
             resolve(mergeTier2Findings(tier1Result, response.entities));
           }
         );
-      });
-    } catch (_) {
-      return Promise.resolve(tier1Result);
-    }
+      } catch (_) {
+        // sendMessage throws synchronously when the extension is reloaded
+        // while this content script is still alive ("Extension context
+        // invalidated"). Resolve with Tier-1 result so the caller never sees
+        // a rejection and no "Uncaught (in promise)" appears in DevTools.
+        resolve(tier1Result);
+      }
+    });
   }
 
   /**
