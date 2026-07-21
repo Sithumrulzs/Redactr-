@@ -82,14 +82,55 @@ let creatingOffscreenDocument = null;
 chrome.runtime.onInstalled.addListener(async () => {
   const current = await chrome.storage.local.get(DEFAULT_STATE);
   await chrome.storage.local.set(current);
-  // Keep Render's free tier warm so users never see "Server unavailable".
-  // Render sleeps after 15 min of inactivity; ping every 14 min to prevent that.
   chrome.alarms.create("keepAlive", { periodInMinutes: 14 });
 });
+
+// ── Tier-2 warmup with automatic retry / polling ──────────────────────────────
+// _warmupRetries resets on service-worker restart (module-level), which is fine:
+// each wake recreates the alarm and retries from scratch.
+let _warmupRetries = 0;
+const MAX_WARMUP_RETRIES = 10; // ~10 minutes before giving up
+
+async function attemptWarmup() {
+  const { tier2Enabled } = await chrome.storage.local.get({ tier2Enabled: false });
+  if (!tier2Enabled) {
+    chrome.alarms.clear("pollTier2");
+    return;
+  }
+  try {
+    const data = await callApi("POST", "/nerWarmup");
+    // Server returned 200 — user is on an entitled plan (server 403s otherwise).
+    await chrome.storage.local.set({ tier2Allowed: true });
+    _warmupRetries = 0;
+    if (data.status === "ready") {
+      await chrome.storage.local.set({ tier2Status: "ready" });
+      chrome.alarms.clear("pollTier2");
+    } else {
+      // Model is loading server-side — poll again in 1 minute.
+      await chrome.storage.local.set({ tier2Status: "loading" });
+      chrome.alarms.create("pollTier2", { delayInMinutes: 1 });
+    }
+  } catch (error) {
+    _warmupRetries++;
+    console.warn(`Redactr: Tier-2 warmup attempt ${_warmupRetries} failed:`, error.message);
+    if (_warmupRetries >= MAX_WARMUP_RETRIES) {
+      await chrome.storage.local.set({ tier2Status: "error" });
+      chrome.alarms.clear("pollTier2");
+      _warmupRetries = 0;
+    } else {
+      // Render cold-starting or offline — keep "loading" and retry in 1 minute.
+      await chrome.storage.local.set({ tier2Status: "loading" });
+      chrome.alarms.create("pollTier2", { delayInMinutes: 1 });
+    }
+  }
+}
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "keepAlive") {
     fetch(`${API_BASE_URL}/ping`).catch(() => {});
+  }
+  if (alarm.name === "pollTier2") {
+    attemptWarmup();
   }
 });
 
@@ -101,8 +142,10 @@ auth.onAuthStateChanged((user) => {
   if (user) {
     joinCompany();
   } else {
+    chrome.alarms.clear("pollTier2");
     chrome.storage.local.set({
       tier2Allowed: false,
+      tier2Status: "idle",
       plan: null,
       role: null,
       joinError: null,
@@ -158,9 +201,17 @@ async function fetchEntitlement() {
       // File-intercept is exclusive to Enterprise
       fileInterceptAllowed: data.plan === "enterprise",
     });
-    // Clear joinError for trial users — their "no company" state is expected.
     if (data.plan === "trial" || data.plan === "trial_expired") {
       await chrome.storage.local.set({ joinError: null });
+    }
+    // If the user already had Tier-2 toggled on (persisted across service-worker
+    // restarts), resume warmup now that entitlement is confirmed.
+    if (data.tier2Allowed) {
+      const { tier2Enabled } = await chrome.storage.local.get({ tier2Enabled: false });
+      if (tier2Enabled) {
+        _warmupRetries = 0;
+        attemptWarmup();
+      }
     }
   } catch (error) {
     console.warn("Redactr: failed to fetch entitlement", error);
@@ -355,18 +406,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message?.target === "background" && message.type === "TIER2_SCAN") {
     (async () => {
-      const { tier2Enabled, tier2Allowed, customEntities } = await chrome.storage.local.get({
+      const { tier2Enabled, customEntities } = await chrome.storage.local.get({
         tier2Enabled: false,
-        tier2Allowed: false,
         customEntities: [],
       });
-      if (!tier2Enabled || !tier2Allowed) {
-        sendResponse({ ok: false, error: tier2Allowed ? "tier2_disabled" : "tier2_not_entitled" });
+      // tier2Allowed gate removed — server enforces entitlement on /nerScan.
+      // Removing it here means Tier-2 works even when fetchEntitlement failed on cold start.
+      if (!tier2Enabled) {
+        sendResponse({ ok: false, error: "tier2_disabled" });
         return;
       }
       try {
-        await chrome.storage.local.set({ tier2Status: "loading" });
-        // NER runs server-side — no model code in the extension (CWS MV3 compliant).
         const data = await callApi("POST", "/nerScan", {
           text: message.text,
           labels: customEntities,
@@ -374,8 +424,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         await chrome.storage.local.set({ tier2Status: "ready" });
         sendResponse({ ok: true, entities: data.entities ?? [] });
       } catch (error) {
-        await chrome.storage.local.set({ tier2Status: "error" });
-        // Fail-open: Tier-1 result is used unchanged.
+        // Fail-open: Tier-1 result used unchanged if NER fails.
         sendResponse({ ok: false, error: String(error), entities: [] });
       }
     })();
@@ -384,23 +433,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message?.type === "TIER2_WARMUP") {
     (async () => {
-      const { tier2Allowed } = await chrome.storage.local.get({ tier2Allowed: false });
-      if (!tier2Allowed) {
-        sendResponse({ ok: false, error: "tier2_not_entitled" });
-        return;
-      }
-      try {
-        await chrome.storage.local.set({ tier2Status: "loading" });
-        const data = await callApi("POST", "/nerWarmup");
-        // "loading" means the server is warming the model — stay in loading state
-        // until the next actual scan confirms ready.
-        const status = data.status === "ready" ? "ready" : "loading";
-        await chrome.storage.local.set({ tier2Status: status });
-        sendResponse({ ok: true });
-      } catch (error) {
-        await chrome.storage.local.set({ tier2Status: "error" });
-        sendResponse({ ok: false, error: String(error) });
-      }
+      // No tier2Allowed gate — let the server confirm entitlement.
+      // attemptWarmup() sets tier2Allowed: true when server returns 200,
+      // so the popup toggle unlocks even if fetchEntitlement failed on cold start.
+      _warmupRetries = 0;
+      await chrome.storage.local.set({ tier2Status: "loading" });
+      await attemptWarmup();
+      sendResponse({ ok: true });
     })();
     return true;
   }

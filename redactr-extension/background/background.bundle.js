@@ -6297,10 +6297,45 @@ chrome.runtime.onInstalled.addListener(async () => {
   await chrome.storage.local.set(current);
   chrome.alarms.create("keepAlive", { periodInMinutes: 14 });
 });
+var _warmupRetries = 0;
+var MAX_WARMUP_RETRIES = 10;
+async function attemptWarmup() {
+  const { tier2Enabled } = await chrome.storage.local.get({ tier2Enabled: false });
+  if (!tier2Enabled) {
+    chrome.alarms.clear("pollTier2");
+    return;
+  }
+  try {
+    const data = await callApi("POST", "/nerWarmup");
+    await chrome.storage.local.set({ tier2Allowed: true });
+    _warmupRetries = 0;
+    if (data.status === "ready") {
+      await chrome.storage.local.set({ tier2Status: "ready" });
+      chrome.alarms.clear("pollTier2");
+    } else {
+      await chrome.storage.local.set({ tier2Status: "loading" });
+      chrome.alarms.create("pollTier2", { delayInMinutes: 1 });
+    }
+  } catch (error) {
+    _warmupRetries++;
+    console.warn(`Redactr: Tier-2 warmup attempt ${_warmupRetries} failed:`, error.message);
+    if (_warmupRetries >= MAX_WARMUP_RETRIES) {
+      await chrome.storage.local.set({ tier2Status: "error" });
+      chrome.alarms.clear("pollTier2");
+      _warmupRetries = 0;
+    } else {
+      await chrome.storage.local.set({ tier2Status: "loading" });
+      chrome.alarms.create("pollTier2", { delayInMinutes: 1 });
+    }
+  }
+}
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "keepAlive") {
     fetch(`${API_BASE_URL}/ping`).catch(() => {
     });
+  }
+  if (alarm.name === "pollTier2") {
+    attemptWarmup();
   }
 });
 auth.onAuthStateChanged((user) => {
@@ -6310,8 +6345,10 @@ auth.onAuthStateChanged((user) => {
   if (user) {
     joinCompany();
   } else {
+    chrome.alarms.clear("pollTier2");
     chrome.storage.local.set({
       tier2Allowed: false,
+      tier2Status: "idle",
       plan: null,
       role: null,
       joinError: null,
@@ -6350,6 +6387,13 @@ async function fetchEntitlement() {
     });
     if (data.plan === "trial" || data.plan === "trial_expired") {
       await chrome.storage.local.set({ joinError: null });
+    }
+    if (data.tier2Allowed) {
+      const { tier2Enabled } = await chrome.storage.local.get({ tier2Enabled: false });
+      if (tier2Enabled) {
+        _warmupRetries = 0;
+        attemptWarmup();
+      }
     }
   } catch (error) {
     console.warn("Redactr: failed to fetch entitlement", error);
@@ -6504,17 +6548,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message?.target === "background" && message.type === "TIER2_SCAN") {
     (async () => {
-      const { tier2Enabled, tier2Allowed, customEntities } = await chrome.storage.local.get({
+      const { tier2Enabled, customEntities } = await chrome.storage.local.get({
         tier2Enabled: false,
-        tier2Allowed: false,
         customEntities: []
       });
-      if (!tier2Enabled || !tier2Allowed) {
-        sendResponse({ ok: false, error: tier2Allowed ? "tier2_disabled" : "tier2_not_entitled" });
+      if (!tier2Enabled) {
+        sendResponse({ ok: false, error: "tier2_disabled" });
         return;
       }
       try {
-        await chrome.storage.local.set({ tier2Status: "loading" });
         const data = await callApi("POST", "/nerScan", {
           text: message.text,
           labels: customEntities
@@ -6522,7 +6564,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         await chrome.storage.local.set({ tier2Status: "ready" });
         sendResponse({ ok: true, entities: data.entities ?? [] });
       } catch (error) {
-        await chrome.storage.local.set({ tier2Status: "error" });
         sendResponse({ ok: false, error: String(error), entities: [] });
       }
     })();
@@ -6530,21 +6571,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message?.type === "TIER2_WARMUP") {
     (async () => {
-      const { tier2Allowed } = await chrome.storage.local.get({ tier2Allowed: false });
-      if (!tier2Allowed) {
-        sendResponse({ ok: false, error: "tier2_not_entitled" });
-        return;
-      }
-      try {
-        await chrome.storage.local.set({ tier2Status: "loading" });
-        const data = await callApi("POST", "/nerWarmup");
-        const status = data.status === "ready" ? "ready" : "loading";
-        await chrome.storage.local.set({ tier2Status: status });
-        sendResponse({ ok: true });
-      } catch (error) {
-        await chrome.storage.local.set({ tier2Status: "error" });
-        sendResponse({ ok: false, error: String(error) });
-      }
+      _warmupRetries = 0;
+      await chrome.storage.local.set({ tier2Status: "loading" });
+      await attemptWarmup();
+      sendResponse({ ok: true });
     })();
     return true;
   }
