@@ -17,23 +17,29 @@ class _InsightsScreenState extends State<InsightsScreen> {
   final _alertService = AlertService();
 
   static const _typeColors = <String, Color>{
-    'AWS_KEY':     AppColors.danger,
-    'API_KEY':     AppColors.danger,
+    'AWS_KEY': AppColors.danger,
+    'API_KEY': AppColors.danger,
     'CREDIT_CARD': AppColors.warning,
-    'SSN':         AppColors.danger,
-    'EMAIL':       AppColors.info,
-    'IP_ADDRESS':  AppColors.info,
-    'PERSON':      AppColors.primary,
-    'LOCATION':    AppColors.primary,
-    'PHONE':       AppColors.warning,
+    'SSN': AppColors.danger,
+    'EMAIL': AppColors.info,
+    'IP_ADDRESS': AppColors.info,
+    'PERSON': AppColors.primary,
+    'LOCATION': AppColors.primary,
+    'PHONE': AppColors.warning,
   };
 
   Color _colorFor(String type) => _typeColors[type] ?? AppColors.textDim;
 
   List<BarChartGroupData> _last7DaysBars(List<Alert> alerts) {
-    final now  = DateTime.now();
+    final now = DateTime.now();
     final days = List.generate(
-        7, (i) => DateTime(now.year, now.month, now.day).subtract(Duration(days: 6 - i)));
+      7,
+      (i) => DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: 6 - i)),
+    );
     return [
       for (var i = 0; i < days.length; i++)
         BarChartGroupData(
@@ -55,7 +61,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 end: Alignment.topCenter,
               ),
               width: 20,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(6),
+              ),
             ),
           ],
         ),
@@ -99,11 +107,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary));
+                child: CircularProgressIndicator(color: AppColors.primary),
+              );
             }
 
             final alerts = snapshot.data ?? [];
-            final total  = alerts.length;
+            final total = alerts.length;
 
             return CustomScrollView(
               slivers: [
@@ -111,19 +120,29 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      0,
+                    ),
                     child: AnimatedEntrance(
                       delay: const Duration(milliseconds: 60),
                       beginOffset: const Offset(0, -0.04),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Insights',
-                              style: Theme.of(context).textTheme.headlineSmall),
+                          Text(
+                            'Insights',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
                           const SizedBox(height: 2),
-                          const Text('Data from your team\'s activity',
-                              style: TextStyle(
-                                  color: AppColors.textMuted, fontSize: 13)),
+                          const Text(
+                            'Data from your team\'s activity',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -133,7 +152,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 // ── Summary stat row ────────────────────────────────────────
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, 0),
+                    AppSpacing.lg,
+                    AppSpacing.xl,
+                    AppSpacing.lg,
+                    0,
+                  ),
                   sliver: SliverToBoxAdapter(
                     child: AnimatedEntrance(
                       delay: const Duration(milliseconds: 120),
@@ -179,14 +202,21 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               height: 72,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: AppColors.primary.withValues(alpha: 0.10),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.10,
+                                ),
                               ),
-                              child: const Icon(Icons.bar_chart_rounded,
-                                  color: AppColors.primary, size: 36),
+                              child: const Icon(
+                                Icons.bar_chart_rounded,
+                                color: AppColors.primary,
+                                size: 36,
+                              ),
                             ),
                             const SizedBox(height: AppSpacing.lg),
-                            Text('No data yet',
-                                style: Theme.of(context).textTheme.titleMedium),
+                            Text(
+                              'No data yet',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                             const SizedBox(height: AppSpacing.sm),
                             Text(
                               'Charts will appear once the extension starts blocking content.',
@@ -202,7 +232,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   // ── 7-day bar chart ──────────────────────────────────────
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, 0),
+                      AppSpacing.lg,
+                      AppSpacing.xl,
+                      AppSpacing.lg,
+                      0,
+                    ),
                     sliver: SliverToBoxAdapter(
                       child: AnimatedEntrance(
                         delay: const Duration(milliseconds: 200),
@@ -217,9 +251,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               curve: Curves.easeOutCubic,
                               builder: (context, v, _) => BarChart(
                                 BarChartData(
-                                  maxY: (_last7DaysBars(alerts)
+                                  maxY:
+                                      (_last7DaysBars(alerts)
                                               .map((g) => g.barRods.first.toY)
-                                              .fold(0.0, (a, b) => a > b ? a : b) +
+                                              .fold(
+                                                0.0,
+                                                (a, b) => a > b ? a : b,
+                                              ) +
                                           2) *
                                       1,
                                   alignment: BarChartAlignment.spaceAround,
@@ -227,15 +265,23 @@ class _InsightsScreenState extends State<InsightsScreen> {
                                     show: true,
                                     drawVerticalLine: false,
                                     getDrawingHorizontalLine: (_) => FlLine(
-                                      color: AppColors.border.withValues(alpha: 0.4),
+                                      color: AppColors.border.withValues(
+                                        alpha: 0.4,
+                                      ),
                                       strokeWidth: 1,
                                     ),
                                   ),
                                   borderData: FlBorderData(show: false),
                                   titlesData: FlTitlesData(
-                                    topTitles:   const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                    leftTitles:  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                    topTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    rightTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    leftTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
                                     bottomTitles: AxisTitles(
                                       sideTitles: SideTitles(
                                         showTitles: true,
@@ -251,17 +297,21 @@ class _InsightsScreenState extends State<InsightsScreen> {
                                     ),
                                   ),
                                   barGroups: _last7DaysBars(alerts)
-                                      .map((g) => BarChartGroupData(
-                                            x: g.x,
-                                            barRods: g.barRods
-                                                .map((r) => BarChartRodData(
-                                                      toY: r.toY * v,
-                                                      gradient: r.gradient,
-                                                      width: r.width,
-                                                      borderRadius: r.borderRadius,
-                                                    ))
-                                                .toList(),
-                                          ))
+                                      .map(
+                                        (g) => BarChartGroupData(
+                                          x: g.x,
+                                          barRods: g.barRods
+                                              .map(
+                                                (r) => BarChartRodData(
+                                                  toY: r.toY * v,
+                                                  gradient: r.gradient,
+                                                  width: r.width,
+                                                  borderRadius: r.borderRadius,
+                                                ),
+                                              )
+                                              .toList(),
+                                        ),
+                                      )
                                       .toList(),
                                 ),
                               ),
@@ -275,13 +325,18 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   // ── Breakdown pie + legend ───────────────────────────────
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, 0),
+                      AppSpacing.lg,
+                      AppSpacing.xl,
+                      AppSpacing.lg,
+                      0,
+                    ),
                     sliver: SliverToBoxAdapter(
                       child: AnimatedEntrance(
                         delay: const Duration(milliseconds: 300),
                         child: _ChartCard(
                           title: 'By finding type',
-                          subtitle: '${_byFindingType(alerts).length} categories',
+                          subtitle:
+                              '${_byFindingType(alerts).length} categories',
                           child: Column(
                             children: [
                               SizedBox(
@@ -295,7 +350,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
                                       sectionsSpace: 3,
                                       centerSpaceRadius: 40,
                                       sections: [
-                                        for (final e in _byFindingType(alerts).entries)
+                                        for (final e in _byFindingType(
+                                          alerts,
+                                        ).entries)
                                           PieChartSectionData(
                                             value: e.value.toDouble() * v,
                                             color: _colorFor(e.key),
@@ -319,7 +376,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
                                 spacing: AppSpacing.md,
                                 runSpacing: AppSpacing.sm,
                                 children: [
-                                  for (final e in _byFindingType(alerts).entries)
+                                  for (final e in _byFindingType(
+                                    alerts,
+                                  ).entries)
                                     Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -354,7 +413,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   // ── Top employees ────────────────────────────────────────
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.xxl),
+                      AppSpacing.lg,
+                      AppSpacing.xl,
+                      AppSpacing.lg,
+                      AppSpacing.xxl,
+                    ),
                     sliver: SliverToBoxAdapter(
                       child: AnimatedEntrance(
                         delay: const Duration(milliseconds: 400),
@@ -403,7 +466,9 @@ class _SummaryTile extends StatelessWidget {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: AppSpacing.lg),
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.lg,
+        ),
         decoration: AppTheme.cardDecoration(),
         child: Column(
           children: [
@@ -411,7 +476,7 @@ class _SummaryTile extends StatelessWidget {
               tween: IntTween(begin: 0, end: value),
               duration: AppDurations.xslow,
               curve: Curves.easeOutCubic,
-              builder: (_, v, __) => Text(
+              builder: (context, v, _) => Text(
                 '$v',
                 style: TextStyle(
                   color: color,
@@ -506,7 +571,7 @@ class _EmployeeBar extends StatelessWidget {
               tween: Tween(begin: 0, end: count / max),
               duration: AppDurations.xslow,
               curve: Curves.easeOutCubic,
-              builder: (_, v, __) => LinearProgressIndicator(
+              builder: (context, v, _) => LinearProgressIndicator(
                 value: v,
                 minHeight: 6,
                 backgroundColor: AppColors.border,

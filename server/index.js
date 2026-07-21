@@ -210,8 +210,8 @@ app.post("/claimOrJoinCompany", requireAuth, rateLimitMiddleware(10), async (req
     const companyRef = db.collection("companies").doc();
     await companyRef.set({
       name: companyName,
-      plan: "starter",
-      seatLimit: SEAT_LIMITS.starter,
+      plan: "trial",
+      seatLimit: 1,
       status: "active",
       ownerUid: uid,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -381,15 +381,30 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
     const companyDoc = await db.collection("companies").doc(callerDoc.data().companyId).get();
     const plan = companyDoc.data()?.plan ?? "starter";
     const tier2Allowed = TIER2_PLANS.has(plan);
-
     const companyData = companyDoc.data() ?? {};
+
+    // For company trial users, surface remaining trial days from trials/{uid}
+    // so the extension and app can show the correct banner and prompt to upgrade.
+    let trialDaysLeft = 0;
+    let trialExpired = false;
+    if (plan === "trial") {
+      const trialDoc = await db.collection("trials").doc(req.auth.uid).get();
+      if (trialDoc.exists) {
+        const now = Date.now();
+        const trialEnd = trialDoc.data().trialEnd?.toDate?.() ?? new Date(0);
+        const trialActive = trialDoc.data().trialActive && trialEnd > now;
+        trialDaysLeft = trialActive ? Math.max(0, Math.ceil((trialEnd - now) / 86400000)) : 0;
+        trialExpired = !trialActive;
+      }
+    }
+
     res.json({
       plan,
       tier2Allowed,
       customKeywords: tier2Allowed ? companyData.customKeywords ?? [] : [],
       customEntities: tier2Allowed ? companyData.customEntities ?? [] : [],
-      trialDaysLeft: 0,
-      trialExpired: false,
+      trialDaysLeft,
+      trialExpired,
     });
   } catch (error) {
     console.error("getEntitlement failed", error);

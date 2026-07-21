@@ -26,3 +26,5 @@ Thumbs.db
 # Flutter
 **/.flutter-plugins
 **/.flutter-plugins-dependencies
+serviceAccount.json
+server/serviceAccount.json

@@ -176,9 +176,9 @@ class _AlertsScreenState extends State<AlertsScreen>
                         horizontal: AppSpacing.lg,
                       ),
                       itemCount: 5,
-                      separatorBuilder: (_, __) =>
+                      separatorBuilder: (context, _) =>
                           const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (_, __) =>
+                      itemBuilder: (context, _) =>
                           const SkeletonBox(height: 80, radius: AppRadius.lg),
                     );
                   }
@@ -228,7 +228,7 @@ class _AlertsScreenState extends State<AlertsScreen>
                       horizontal: AppSpacing.lg,
                     ),
                     itemCount: alerts.length,
-                    separatorBuilder: (_, __) =>
+                    separatorBuilder: (context, _) =>
                         const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (_, i) => AlertCard(
                       alert: alerts[i],

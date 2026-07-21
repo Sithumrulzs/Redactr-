@@ -386,67 +386,104 @@ class _SettingsScreenState extends State<SettingsScreen>
               sliver: SliverToBoxAdapter(
                 child: AnimatedEntrance(
                   delay: const Duration(milliseconds: 280),
-                  child: Column(
-                    children: [
-                      _SettingsTile(
-                        icon: Icons.people_rounded,
-                        label: 'Manage team',
-                        sub: 'View members & roles',
-                        color: AppColors.primary,
-                        onTap: () => Navigator.of(context).push(slideRoute(
-                            TeamScreen(companyId: widget.companyId))),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _SettingsTile(
-                        icon: Icons.person_add_rounded,
-                        label: 'Invite employee',
-                        sub: _companyName != null
-                            ? 'Invite someone to join $_companyName'
-                            : 'Send an invite by email',
-                        color: AppColors.success,
-                        onTap: () => Navigator.of(context).push(slideRoute(
-                            InviteEmployeeScreen(
-                                companyId: widget.companyId,
-                                companyName: _companyName))),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      FutureBuilder(
-                        future: _entitlementFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.data?.plan != 'enterprise') {
-                            return const SizedBox.shrink();
-                          }
-                          return Column(
-                            children: [
-                              _SettingsTile(
-                                icon: Icons.key_rounded,
-                                label: 'Custom keywords',
-                                sub:
-                                    '${snapshot.data!.customKeywords.length} active',
-                                color: AppColors.info,
-                                onTap: () => Navigator.of(context).push(
-                                    slideRoute(CustomKeywordsScreen(
-                                        initialKeywords:
-                                            snapshot.data!.customKeywords))),
+                  child: FutureBuilder(
+                    future: _entitlementFuture,
+                    builder: (context, snapshot) {
+                      final plan = snapshot.data?.plan ?? '';
+                      final isTrial = plan == 'trial' || plan == 'trial_expired';
+                      final isEnterprise = plan == 'enterprise';
+                      return Column(
+                        children: [
+                          if (isTrial) ...[
+                            // Team management locked on trial plan
+                            Container(
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              decoration: AppTheme.cardDecoration(),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.warning.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: const Icon(Icons.people_rounded,
+                                        color: AppColors.warning, size: 20),
+                                  ),
+                                  const SizedBox(width: AppSpacing.md),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Team management',
+                                            style: Theme.of(context).textTheme.titleSmall),
+                                        Text('Upgrade your plan to invite employees',
+                                            style: Theme.of(context).textTheme.bodySmall),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(Icons.lock_rounded,
+                                      color: AppColors.warning, size: 16),
+                                ],
                               ),
-                              const SizedBox(height: AppSpacing.sm),
-                              _SettingsTile(
-                                icon: Icons.psychology_rounded,
-                                label: 'AI entity types',
-                                sub: snapshot.data!.customEntities.isEmpty
-                                    ? 'Describe sensitive concepts in plain English'
-                                    : '${snapshot.data!.customEntities.length} active',
-                                color: AppColors.info,
-                                onTap: () => Navigator.of(context).push(
-                                    slideRoute(CustomEntitiesScreen(
-                                        initialEntities:
-                                            snapshot.data!.customEntities))),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                          ] else ...[
+                            _SettingsTile(
+                              icon: Icons.people_rounded,
+                              label: 'Manage team',
+                              sub: 'View members & roles',
+                              color: AppColors.primary,
+                              onTap: () => Navigator.of(context).push(slideRoute(
+                                  TeamScreen(companyId: widget.companyId))),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            _SettingsTile(
+                              icon: Icons.person_add_rounded,
+                              label: 'Invite employee',
+                              sub: _companyName != null
+                                  ? 'Invite someone to join $_companyName'
+                                  : 'Send an invite by email',
+                              color: AppColors.success,
+                              onTap: () => Navigator.of(context).push(slideRoute(
+                                  InviteEmployeeScreen(
+                                      companyId: widget.companyId,
+                                      companyName: _companyName))),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                          ],
+                          if (isEnterprise) ...[
+                            _SettingsTile(
+                              icon: Icons.key_rounded,
+                              label: 'Custom keywords',
+                              sub: snapshot.data!.customKeywords.isEmpty
+                                  ? 'No keywords set'
+                                  : '${snapshot.data!.customKeywords.length} active',
+                              color: AppColors.info,
+                              onTap: () => Navigator.of(context).push(
+                                  slideRoute(CustomKeywordsScreen(
+                                      initialKeywords:
+                                          snapshot.data!.customKeywords))),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            _SettingsTile(
+                              icon: Icons.psychology_rounded,
+                              label: 'AI entity types',
+                              sub: snapshot.data!.customEntities.isEmpty
+                                  ? 'Describe sensitive concepts in plain English'
+                                  : '${snapshot.data!.customEntities.length} active',
+                              color: AppColors.info,
+                              onTap: () => Navigator.of(context).push(
+                                  slideRoute(CustomEntitiesScreen(
+                                      initialEntities:
+                                          snapshot.data!.customEntities))),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
