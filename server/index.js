@@ -504,14 +504,33 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
 });
 
 /**
- * Sends an invite email via Gmail SMTP (nodemailer).
- * Requires GMAIL_APP_PASSWORD + EMAIL_FROM_ADDRESS env vars — silently skips if absent.
+ * Creates a nodemailer transport using Gmail API OAuth2 (HTTPS, not SMTP —
+ * works on Render's free tier which blocks outbound SMTP ports).
+ * Requires GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN,
+ * and EMAIL_FROM_ADDRESS env vars.
+ */
+function createGmailTransport() {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      type: "OAuth2",
+      user: process.env.EMAIL_FROM_ADDRESS,
+      clientId: process.env.GMAIL_CLIENT_ID,
+      clientSecret: process.env.GMAIL_CLIENT_SECRET,
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+    },
+  });
+}
+
+/**
+ * Sends an invite email via Gmail API OAuth2.
+ * Requires GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN,
+ * and EMAIL_FROM_ADDRESS env vars — silently skips if absent.
  */
 async function sendInviteEmail(toEmail, companyName, inviterName) {
-  const appPassword = process.env.GMAIL_APP_PASSWORD;
   const fromAddress = process.env.EMAIL_FROM_ADDRESS;
-  if (!appPassword || !fromAddress) {
-    console.log(`[email] Invite email skipped (no GMAIL_APP_PASSWORD/EMAIL_FROM_ADDRESS) → ${toEmail}`);
+  if (!fromAddress || !process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_REFRESH_TOKEN) {
+    console.log(`[email] Invite email skipped (OAuth2 env vars not set) → ${toEmail}`);
     return;
   }
 
@@ -631,11 +650,7 @@ async function sendInviteEmail(toEmail, companyName, inviterName) {
 </html>`;
 
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: fromAddress, pass: appPassword },
-    });
-    await transporter.sendMail({ from, to: toEmail, subject, html });
+    await createGmailTransport().sendMail({ from, to: toEmail, subject, html });
     console.log(`[invite] Email sent → ${toEmail}`);
   } catch (e) {
     console.warn("[invite] Email error:", e.message);
@@ -643,16 +658,16 @@ async function sendInviteEmail(toEmail, companyName, inviterName) {
 }
 
 /**
- * Sends a welcome / confirmation email via Gmail SMTP.
- * Requires GMAIL_APP_PASSWORD + EMAIL_FROM_ADDRESS env vars — silently skips if absent.
+ * Sends a welcome / confirmation email via Gmail API OAuth2.
+ * Requires GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN,
+ * and EMAIL_FROM_ADDRESS env vars — silently skips if absent.
  *
  * plan: "trial" | "starter" | "professional" | "enterprise"
  */
 async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUrl, plan = "trial") {
-  const appPassword = process.env.GMAIL_APP_PASSWORD;
   const fromAddress = process.env.EMAIL_FROM_ADDRESS;
-  if (!appPassword || !fromAddress) {
-    console.log(`[email] Welcome email skipped (no GMAIL_APP_PASSWORD/EMAIL_FROM_ADDRESS) → ${toEmail}`);
+  if (!fromAddress || !process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_REFRESH_TOKEN) {
+    console.log(`[email] Welcome email skipped (OAuth2 env vars not set) → ${toEmail}`);
     return;
   }
 
@@ -946,11 +961,7 @@ async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUr
 </html>`;
 
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: fromAddress, pass: appPassword },
-    });
-    await transporter.sendMail({ from, to: toEmail, subject, html });
+    await createGmailTransport().sendMail({ from, to: toEmail, subject, html });
     console.log(`[trial] Email sent → ${toEmail}`);
   } catch (e) {
     console.warn("[trial] Email error:", e.message);
