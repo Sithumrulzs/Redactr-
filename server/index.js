@@ -166,7 +166,11 @@ app.post("/claimOrJoinCompany", requireAuth, rateLimitMiddleware(10), async (req
 
     const existingUser = await db.collection("users").doc(uid).get();
     if (existingUser.exists) {
-      res.json({ companyId: existingUser.data().companyId, role: existingUser.data().role });
+      const { companyId, role } = existingUser.data();
+      // Refresh custom claims so Firestore security rules can use
+      // request.auth.token.companyId — avoids unreliable nested get() calls.
+      try { await admin.auth().setCustomUserClaims(uid, { companyId, role }); } catch (_) {}
+      res.json({ companyId, role });
       return;
     }
 
@@ -184,6 +188,7 @@ app.post("/claimOrJoinCompany", requireAuth, rateLimitMiddleware(10), async (req
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
       await inviteRef.delete();
+      try { await admin.auth().setCustomUserClaims(uid, { companyId, role }); } catch (_) {}
       res.json({ companyId, role });
       return;
     }
@@ -224,6 +229,7 @@ app.post("/claimOrJoinCompany", requireAuth, rateLimitMiddleware(10), async (req
       companyId: companyRef.id,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+    try { await admin.auth().setCustomUserClaims(uid, { companyId: companyRef.id, role: "admin" }); } catch (_) {}
 
     res.json({ companyId: companyRef.id, role: "admin" });
   } catch (error) {
@@ -310,6 +316,8 @@ app.post("/removeMember", requireAuth, rateLimitMiddleware(20), async (req, res)
       companyId: admin.firestore.FieldValue.delete(),
       role: admin.firestore.FieldValue.delete(),
     });
+    // Clear custom claims so Firestore token-based rules stop granting access
+    try { await admin.auth().setCustomUserClaims(targetUid, {}); } catch (_) {}
 
     res.json({ ok: true });
   } catch (error) {
@@ -452,6 +460,7 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
 
     res.json({
       plan,
+      role: callerDoc.data().role ?? null,
       tier2Allowed,
       customKeywords: tier2Allowed ? companyData.customKeywords ?? [] : [],
       customEntities: tier2Allowed ? companyData.customEntities ?? [] : [],

@@ -29,6 +29,7 @@
   let enabled = true;
   let tier2Enabled = false;
   let customKeywords = [];
+  let userRole = null; // "admin" | "employee" | null
   let banner = null;
   let attachedInput = null;
   let attachedButton = null;
@@ -45,12 +46,14 @@
     enabled = state?.enabled ?? true;
     tier2Enabled = state?.tier2Enabled ?? false;
     customKeywords = state?.customKeywords ?? [];
+    userRole = state?.role ?? null;
   });
 
   chrome.storage.onChanged.addListener((changes) => {
     if (changes.enabled) enabled = changes.enabled.newValue;
     if (changes.tier2Enabled) tier2Enabled = changes.tier2Enabled.newValue;
     if (changes.customKeywords) customKeywords = changes.customKeywords.newValue ?? [];
+    if (changes.role) userRole = changes.role.newValue ?? null;
   });
 
   function getInputElement() {
@@ -134,6 +137,7 @@
   function showBlockedBanner(inputEl, text, result) {
     const types = [...new Set(result.findings.map((f) => f.type))].join(", ");
     const el = makeBanner("#ef5466");
+    const isAdminUser = userRole === "admin";
     el.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <img src="${ICON()}" width="16" height="16" alt="">
@@ -148,11 +152,17 @@
                  border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;">
           ✓ Send redacted version
         </button>
+        ${isAdminUser ? `
+        <button data-a="override"
+          style="background:#1e2a3a;color:#f59e0b;border:1.5px solid #f59e0b44;
+                 border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;">
+          ⚡ Override &amp; send original (you're the manager)
+        </button>` : `
         <button data-a="approve"
           style="background:#1e2a3a;color:#94a3b8;border:1.5px solid #2d3f52;
                  border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;">
           ⏳ Request manager approval to send original
-        </button>
+        </button>`}
         <button data-a="dismiss"
           style="background:none;color:#64748b;border:none;padding:6px;
                  cursor:pointer;font-size:12px;width:100%;">
@@ -161,7 +171,16 @@
       </div>
     `;
     el.querySelector('[data-a="redact"]').addEventListener("click", () => doSendRedacted(inputEl, text, result.findings));
-    el.querySelector('[data-a="approve"]').addEventListener("click", () => requestManagerApproval(inputEl, text, result));
+    if (isAdminUser) {
+      el.querySelector('[data-a="override"]').addEventListener("click", () => {
+        removeBanner();
+        // Admin self-approves — send the original prompt directly.
+        setText(inputEl, text);
+        triggerSend(inputEl);
+      });
+    } else {
+      el.querySelector('[data-a="approve"]').addEventListener("click", () => requestManagerApproval(inputEl, text, result));
+    }
     el.querySelector('[data-a="dismiss"]').addEventListener("click", removeBanner);
   }
 

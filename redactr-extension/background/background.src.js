@@ -64,6 +64,7 @@ const DEFAULT_STATE = {
   authUser: null, // { uid, email, displayName, photoURL } | null
   tier2Allowed: false, // entitlement: only true on the Enterprise plan (see getEntitlement)
   plan: null,
+  role: null, // "admin" | "employee" | null — used by scanner.js to suppress approval button for admins
   joinError: null, // set when signed in but no invite exists for this email yet
   customKeywords: [], // Enterprise-only, admin-managed (see getEntitlement)
   customEntities: [], // Enterprise-only GLiNER labels (see getEntitlement + addCustomEntity)
@@ -94,6 +95,7 @@ auth.onAuthStateChanged((user) => {
     chrome.storage.local.set({
       tier2Allowed: false,
       plan: null,
+      role: null,
       joinError: null,
       leaksPrevented: 0,
       filesBlocked: 0,
@@ -116,7 +118,11 @@ auth.onAuthStateChanged((user) => {
  */
 async function joinCompany() {
   try {
-    await callApi("POST", "/claimOrJoinCompany");
+    const data = await callApi("POST", "/claimOrJoinCompany");
+    if (data.role) await chrome.storage.local.set({ role: data.role });
+    // Force-refresh the ID token so Firestore security rules immediately see
+    // the custom claims (companyId, role) the server just set.
+    if (auth.currentUser) await auth.currentUser.getIdToken(true);
     await chrome.storage.local.set({ joinError: null });
   } catch (error) {
     // Trial users have no company invite — claimOrJoinCompany returns 400,
@@ -137,6 +143,7 @@ async function fetchEntitlement() {
     const data = await callApi("GET", "/getEntitlement");
     await chrome.storage.local.set({
       plan: data.plan,
+      role: data.role ?? null,
       tier2Allowed: data.tier2Allowed,
       customKeywords: data.customKeywords ?? [],
       customEntities: data.customEntities ?? [],

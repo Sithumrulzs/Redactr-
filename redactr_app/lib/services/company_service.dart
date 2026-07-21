@@ -85,11 +85,15 @@ class CompanyService {
   /// Returns { companyId, role } on success so callers can use the result
   /// directly without a Firestore round-trip (avoids client-cache staleness).
   Future<Map<String, dynamic>> claimOrJoinCompany({String? companyName}) async {
-    return await _callApi(
+    final result = await _callApi(
       'POST',
       '/claimOrJoinCompany',
       body: companyName != null ? {'companyName': companyName} : {},
     );
+    // Force-refresh so Firestore security rules immediately see the custom
+    // claims (companyId, role) that the server just stamped on this token.
+    await FirebaseAuth.instance.currentUser?.getIdToken(true);
+    return result;
   }
 
   /// Tier-2 NER is gated to the Enterprise plan, per the pricing copy
