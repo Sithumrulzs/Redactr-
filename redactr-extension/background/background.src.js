@@ -120,9 +120,6 @@ async function joinCompany() {
   try {
     const data = await callApi("POST", "/claimOrJoinCompany");
     if (data.role) await chrome.storage.local.set({ role: data.role });
-    // Force-refresh the ID token so Firestore security rules immediately see
-    // the custom claims (companyId, role) the server just set.
-    if (auth.currentUser) await auth.currentUser.getIdToken(true);
     await chrome.storage.local.set({ joinError: null });
   } catch (error) {
     // Trial users have no company invite — claimOrJoinCompany returns 400,

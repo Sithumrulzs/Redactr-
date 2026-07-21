@@ -6321,7 +6321,6 @@ async function joinCompany() {
   try {
     const data = await callApi("POST", "/claimOrJoinCompany");
     if (data.role) await chrome.storage.local.set({ role: data.role });
-    if (auth.currentUser) await auth.currentUser.getIdToken(true);
     await chrome.storage.local.set({ joinError: null });
   } catch (error) {
     await chrome.storage.local.set({ joinError: String(error.message || error) });
