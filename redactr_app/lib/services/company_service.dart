@@ -42,7 +42,13 @@ class CompanyService {
             .post(uri, headers: headers, body: jsonEncode(body ?? {}))
             .timeout(timeout);
 
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    Map<String, dynamic> data;
+    try {
+      data = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      // Render free tier returns an HTML page while the server cold-starts.
+      throw Exception('Server is waking up — please try again in a few seconds.');
+    }
     if (response.statusCode >= 400) {
       throw Exception(
         data['error'] as String? ?? 'Request failed (${response.statusCode}).',
