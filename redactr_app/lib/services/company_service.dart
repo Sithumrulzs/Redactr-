@@ -137,6 +137,10 @@ class CompanyService {
     await _callApi('POST', '/removeMember', body: {'targetUid': targetUid});
   }
 
+  Future<void> deleteInvite(String email) async {
+    await _callApi('POST', '/deleteInvite', body: {'email': email});
+  }
+
   /// Enterprise + admin-only. Literal phrases, not regex — the matching
   /// server route deliberately rejects arbitrary patterns to avoid a
   /// ReDoS risk running in every employee's browser.

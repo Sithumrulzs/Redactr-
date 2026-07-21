@@ -538,9 +538,16 @@ class _PulsingDotState extends State<_PulsingDot>
 class _PendingInviteCard extends StatelessWidget {
   final String email;
   final bool isSharing;
+  final bool isDeleting;
   final VoidCallback? onShare;
-  const _PendingInviteCard(
-      {required this.email, required this.isSharing, this.onShare});
+  final VoidCallback? onDelete;
+  const _PendingInviteCard({
+    required this.email,
+    required this.isSharing,
+    this.isDeleting = false,
+    this.onShare,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -610,6 +617,38 @@ class _PendingInviteCard extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+
+              // Trash icon
+              GestureDetector(
+                onTap: isDeleting ? null : onDelete,
+                child: isDeleting
+                    ? const SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: Center(
+                          child: SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: AppColors.danger),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: AppColors.danger.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                              color: AppColors.danger.withValues(alpha: 0.25)),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.delete_outline_rounded,
+                            color: AppColors.danger, size: 14),
+                      ),
               ),
             ],
           ),
@@ -686,6 +725,25 @@ class _PendingInvitesSection extends StatefulWidget {
 class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
   final _service = CompanyService();
   String? _sharingEmail;
+  String? _deletingEmail;
+
+  Future<void> _deleteInvite(String email) async {
+    setState(() => _deletingEmail = email);
+    try {
+      await _service.deleteInvite(email);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: AppColors.danger,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _deletingEmail = null);
+    }
+  }
 
   Future<void> _shareExtension(String email) async {
     setState(() => _sharingEmail = email);
@@ -762,6 +820,7 @@ class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
               ...List.generate(invites.length, (i) {
                 final email = invites[i]['email'] as String? ?? '';
                 final isSharing = _sharingEmail == email;
+                final isDeleting = _deletingEmail == email;
                 return AnimatedEntrance(
                   delay: Duration(milliseconds: i * 70),
                   child: Padding(
@@ -774,8 +833,9 @@ class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
                     child: _PendingInviteCard(
                       email: email,
                       isSharing: isSharing,
-                      onShare:
-                          isSharing ? null : () => _shareExtension(email),
+                      isDeleting: isDeleting,
+                      onShare: isSharing ? null : () => _shareExtension(email),
+                      onDelete: isDeleting ? null : () => _deleteInvite(email),
                     ),
                   ),
                 );

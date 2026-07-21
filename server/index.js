@@ -291,6 +291,31 @@ app.post("/inviteEmployee", requireAuth, rateLimitMiddleware(20), async (req, re
 });
 
 /**
+ * Admin-only. Cancels a pending invite by deleting the invites/{email} doc.
+ */
+app.post("/deleteInvite", requireAuth, rateLimitMiddleware(20), async (req, res) => {
+  try {
+    const callerDoc = await db.collection("users").doc(req.auth.uid).get();
+    if (!callerDoc.exists || callerDoc.data().role !== "admin") {
+      return res.status(403).json({ error: "Only admins can delete invites." });
+    }
+    const email = (req.body?.email ?? "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: "email is required." });
+
+    const inviteRef = db.collection("invites").doc(email);
+    const invite = await inviteRef.get();
+    if (!invite.exists || invite.data().companyId !== callerDoc.data().companyId) {
+      return res.status(404).json({ error: "Invite not found." });
+    }
+    await inviteRef.delete();
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("deleteInvite failed", error);
+    res.status(500).json({ error: "Internal error." });
+  }
+});
+
+/**
  * Admin-only. Removes a team member by clearing their companyId and role.
  * Their Auth account is preserved — they just lose company access.
  */
