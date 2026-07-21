@@ -22,6 +22,7 @@ class CompanyService {
     String method,
     String path, {
     Map<String, dynamic>? body,
+    int retryCount = 0,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('Not signed in.');
@@ -46,8 +47,13 @@ class CompanyService {
     try {
       data = jsonDecode(response.body) as Map<String, dynamic>;
     } catch (_) {
-      // Render free tier returns an HTML page while the server cold-starts.
-      throw Exception('Server is waking up — please try again in a few seconds.');
+      // Render returned HTML — server is cold-starting. Retry silently so
+      // the caller's loading state stays visible until the server is ready.
+      if (retryCount < 8) {
+        await Future.delayed(const Duration(seconds: 3));
+        return _callApi(method, path, body: body, retryCount: retryCount + 1);
+      }
+      throw Exception('Server unavailable. Please try again.');
     }
     if (response.statusCode >= 400) {
       throw Exception(
