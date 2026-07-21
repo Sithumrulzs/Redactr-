@@ -236,18 +236,25 @@
     if (typeof chrome === "undefined" || !chrome.runtime?.sendMessage) {
       return Promise.resolve(tier1Result);
     }
-    return new Promise((resolve) => {
-      chrome.runtime.sendMessage(
-        { target: "background", type: "TIER2_SCAN", text },
-        (response) => {
-          if (!response?.ok) {
-            resolve(tier1Result);
-            return;
+    // Wrap in try/catch: chrome.runtime.sendMessage throws synchronously when
+    // the extension is reloaded while this content script is still alive
+    // ("Extension context invalidated"). Fall back to Tier-1 result silently.
+    try {
+      return new Promise((resolve) => {
+        chrome.runtime.sendMessage(
+          { target: "background", type: "TIER2_SCAN", text },
+          (response) => {
+            if (chrome.runtime.lastError || !response?.ok) {
+              resolve(tier1Result);
+              return;
+            }
+            resolve(mergeTier2Findings(tier1Result, response.entities));
           }
-          resolve(mergeTier2Findings(tier1Result, response.entities));
-        }
-      );
-    });
+        );
+      });
+    } catch (_) {
+      return Promise.resolve(tier1Result);
+    }
   }
 
   /**

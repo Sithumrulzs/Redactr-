@@ -26,6 +26,13 @@
     'button[aria-label*="submit" i]',
   ];
 
+  // Wraps chrome.runtime.sendMessage so a stale content script (extension
+  // reloaded while the tab is still open) doesn't throw "Extension context
+  // invalidated" as an unhandled error — it just silently no-ops instead.
+  function sendMsg(msg, cb) {
+    try { chrome.runtime.sendMessage(msg, cb); } catch (_) { if (cb) cb(null); }
+  }
+
   let enabled = true;
   let tier2Enabled = false;
   let customKeywords = [];
@@ -42,7 +49,7 @@
   let pendingOrigText   = null;  // original (un-redacted) text to restore on approve
   let pendingFindings   = null;  // findings array (needed for "Send Redacted" in denied state)
 
-  chrome.runtime.sendMessage({ type: "GET_STATE" }, (state) => {
+  sendMsg({ type: "GET_STATE" }, (state) => {
     enabled = state?.enabled ?? true;
     tier2Enabled = state?.tier2Enabled ?? false;
     customKeywords = state?.customKeywords ?? [];
@@ -322,7 +329,7 @@
         return;
       }
 
-      chrome.runtime.sendMessage({ type: "POLL_ALERT_STATUS", alertId }, (resp) => {
+      sendMsg({ type: "POLL_ALERT_STATUS", alertId }, (resp) => {
         if (!resp?.ok) return; // network error — keep polling
 
         if (resp.status === "approved") {
@@ -382,7 +389,7 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       currentAlertId = null; // clear stale id before the fresh LEAK_BLOCKED callback arrives
-      chrome.runtime.sendMessage(
+      sendMsg(
         { type: "LEAK_BLOCKED", metadata: buildAlertMetadata(tier1Result) },
         (resp) => { currentAlertId = resp?.alertId ?? null; }
       );
@@ -393,7 +400,7 @@
           if (merged.findings.length > tier1Result.findings.length) {
             escalateWarning(inputEl, text, merged);
           }
-        });
+        }).catch(() => {});
       }
       return;
     }
@@ -410,12 +417,12 @@
           return;
         }
         currentAlertId = null;
-        chrome.runtime.sendMessage(
+        sendMsg(
           { type: "LEAK_BLOCKED", metadata: buildAlertMetadata(merged) },
           (resp) => { currentAlertId = resp?.alertId ?? null; }
         );
         showWarning(inputEl, text, merged);
-      });
+      }).catch(() => { resend(inputEl); });
     }
   }
 
