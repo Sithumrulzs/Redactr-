@@ -234,7 +234,13 @@ class _TeamScreenState extends State<TeamScreen> {
             ),
 
             // ── Pending invites section ────────────────────────────────────
-            _PendingInvitesSection(companyId: widget.companyId),
+            FutureBuilder<String?>(
+              future: _nameFuture,
+              builder: (_, snap) => _PendingInvitesSection(
+                companyId: widget.companyId,
+                companyName: snap.data,
+              ),
+            ),
           ],
         ),
       ),
@@ -395,7 +401,7 @@ class _PulsingDotState extends State<_PulsingDot>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) => Container(
+      builder: (context, child) => Container(
         width: widget.size,
         height: widget.size,
         decoration: BoxDecoration(
@@ -557,7 +563,8 @@ class _PendingInviteCard extends StatelessWidget {
 
 class _PendingInvitesSection extends StatefulWidget {
   final String companyId;
-  const _PendingInvitesSection({required this.companyId});
+  final String? companyName;
+  const _PendingInvitesSection({required this.companyId, this.companyName});
 
   @override
   State<_PendingInvitesSection> createState() => _PendingInvitesSectionState();
@@ -572,12 +579,14 @@ class _PendingInvitesSectionState extends State<_PendingInvitesSection> {
     try {
       final url = await _service.generateDownloadLink();
       if (!mounted) return;
+      final company = widget.companyName ?? 'our company';
       await Share.share(
-        'Hi! You\'ve been invited to join our company on Redactr.\n\n'
-        'Download the Chrome extension here:\n$url\n\n'
-        'Install it, open it, and sign in with this Google account ($email) '
-        'to get started automatically.',
-        subject: 'Your Redactr Chrome Extension',
+        'Hi! You\'ve been invited to join $company on Redactr.\n\n'
+        'Get started in 2 steps:\n\n'
+        '1. Install the Chrome extension:\n$url\n\n'
+        '2. Open it and sign in with Google using this email:\n$email\n\n'
+        'You\'ll be automatically linked to $company. That\'s it!',
+        subject: 'You\'re invited to $company on Redactr',
       );
     } catch (_) {
       if (!mounted) return;
