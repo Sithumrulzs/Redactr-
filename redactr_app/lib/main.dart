@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'models/alert.dart';
 import 'screens/alerts_screen.dart';
@@ -20,7 +21,57 @@ import 'services/auth_service.dart';
 import 'services/company_service.dart';
 import 'theme/app_theme.dart';
 
-void main() {
+final FlutterLocalNotificationsPlugin _localNotifications =
+    FlutterLocalNotificationsPlugin();
+
+const AndroidNotificationChannel _alertChannel = AndroidNotificationChannel(
+  'redactr_alerts',
+  'Redactr Alerts',
+  description: 'Notifications for employee data leak detections',
+  importance: Importance.high,
+);
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  // iOS: show notification banner even when app is in the foreground
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true, badge: true, sound: true,
+  );
+
+  // Android: initialise the local notifications plugin + create channel
+  await _localNotifications.initialize(
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    ),
+  );
+  await _localNotifications
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(_alertChannel);
+
+  // Foreground FCM handler — shows a local notification while the app is open
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    final n = message.notification;
+    if (n == null) return;
+    _localNotifications.show(
+      n.hashCode,
+      n.title,
+      n.body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _alertChannel.id,
+          _alertChannel.name,
+          channelDescription: _alertChannel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),
+    );
+  });
+
   runApp(const RedactrApp());
 }
 
@@ -62,7 +113,8 @@ class AuthGate extends StatefulWidget {
 
 class _AuthGateState extends State<AuthGate> {
   bool _showSplash = true;
-  bool _firebaseReady = false;
+  // Firebase is already initialized in main() — start ready.
+  bool _firebaseReady = true;
   Object? _firebaseError;
   bool? _requiresBiometric;
   bool _biometricPassed = false;
@@ -71,16 +123,9 @@ class _AuthGateState extends State<AuthGate> {
   @override
   void initState() {
     super.initState();
-    Firebase.initializeApp()
-        .then((_) {
-          if (mounted) setState(() => _firebaseReady = true);
-          _authService.authStateChanges.first.then((user) {
-            if (mounted) setState(() => _requiresBiometric = user != null);
-          });
-        })
-        .catchError((error) {
-          if (mounted) setState(() => _firebaseError = error);
-        });
+    _authService.authStateChanges.first.then((user) {
+      if (mounted) setState(() => _requiresBiometric = user != null);
+    });
   }
 
   static const _loadingScreen = Scaffold(
