@@ -13,7 +13,8 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const admin = require("firebase-admin");
-const nodemailer = require("nodemailer");
+// nodemailer removed — email now goes through Gmail REST API (HTTPS) so
+// Render's SMTP port block doesn't apply.
 
 let serviceAccount;
 try {
@@ -504,37 +505,75 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
 });
 
 /**
- * Creates a nodemailer transport using Gmail API OAuth2 (HTTPS, not SMTP —
- * works on Render's free tier which blocks outbound SMTP ports).
- * Requires GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN,
- * and EMAIL_FROM_ADDRESS env vars.
+ * Gmail REST API email sending — uses HTTPS (not SMTP) so Render's free-tier
+ * firewall never blocks it. Requires GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET,
+ * GMAIL_REFRESH_TOKEN, and EMAIL_FROM_ADDRESS env vars.
  */
-function createGmailTransport() {
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      type: "OAuth2",
-      user: process.env.EMAIL_FROM_ADDRESS,
-      clientId: process.env.GMAIL_CLIENT_ID,
-      clientSecret: process.env.GMAIL_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-    },
+async function _gmailAccessToken() {
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: process.env.GMAIL_CLIENT_ID,
+      client_secret: process.env.GMAIL_CLIENT_SECRET,
+      refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+      grant_type: "refresh_token",
+    }),
   });
+  const data = await res.json();
+  if (!data.access_token) throw new Error(`Token refresh failed: ${JSON.stringify(data)}`);
+  return data.access_token;
+}
+
+function _buildRawEmail(from, to, subject, html) {
+  const boundary = `b${Date.now()}`;
+  const msg = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: =?UTF-8?B?${Buffer.from(subject).toString("base64")}?=`,
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    "Content-Type: text/plain; charset=UTF-8",
+    "",
+    "Please enable HTML to view this email.",
+    "",
+    `--${boundary}`,
+    "Content-Type: text/html; charset=UTF-8",
+    "",
+    html,
+    "",
+    `--${boundary}--`,
+  ].join("\r\n");
+  return Buffer.from(msg).toString("base64url");
+}
+
+async function sendGmailMessage(toEmail, subject, html) {
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS;
+  if (!fromAddress || !process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_REFRESH_TOKEN) {
+    console.log(`[email] Skipped (OAuth2 env vars not set) → ${toEmail}`);
+    return;
+  }
+  const accessToken = await _gmailAccessToken();
+  const raw = _buildRawEmail(`Redactr <${fromAddress}>`, toEmail, subject, html);
+  const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ raw }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Gmail API ${res.status}: ${err}`);
+  }
 }
 
 /**
- * Sends an invite email via Gmail API OAuth2.
- * Requires GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN,
- * and EMAIL_FROM_ADDRESS env vars — silently skips if absent.
+ * Sends an invite email via Gmail REST API (HTTPS).
  */
 async function sendInviteEmail(toEmail, companyName, inviterName) {
-  const fromAddress = process.env.EMAIL_FROM_ADDRESS;
-  if (!fromAddress || !process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_REFRESH_TOKEN) {
-    console.log(`[email] Invite email skipped (OAuth2 env vars not set) → ${toEmail}`);
-    return;
-  }
 
-  const from = `Redactr <${fromAddress}>`;
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS;
   const CWS_URL = "https://chromewebstore.google.com/detail/redactr/jplbboglhhopcopdgbephgoelaflfelh";
   const subject = `You've been invited to join ${companyName} on Redactr`;
 
@@ -650,7 +689,7 @@ async function sendInviteEmail(toEmail, companyName, inviterName) {
 </html>`;
 
   try {
-    await createGmailTransport().sendMail({ from, to: toEmail, subject, html });
+    await sendGmailMessage(toEmail, subject, html);
     console.log(`[invite] Email sent → ${toEmail}`);
   } catch (e) {
     console.warn("[invite] Email error:", e.message);
@@ -658,20 +697,10 @@ async function sendInviteEmail(toEmail, companyName, inviterName) {
 }
 
 /**
- * Sends a welcome / confirmation email via Gmail API OAuth2.
- * Requires GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN,
- * and EMAIL_FROM_ADDRESS env vars — silently skips if absent.
- *
+ * Sends a welcome / confirmation email via Gmail REST API (HTTPS).
  * plan: "trial" | "starter" | "professional" | "enterprise"
  */
 async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUrl, plan = "trial") {
-  const fromAddress = process.env.EMAIL_FROM_ADDRESS;
-  if (!fromAddress || !process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_REFRESH_TOKEN) {
-    console.log(`[email] Welcome email skipped (OAuth2 env vars not set) → ${toEmail}`);
-    return;
-  }
-
-  const from = `Redactr <${fromAddress}>`;
   const name    = (displayName || toEmail.split("@")[0]).split(" ")[0]; // first name only
   const siteUrl = "https://redactr-swart.vercel.app";
 
@@ -961,7 +990,7 @@ async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUr
 </html>`;
 
   try {
-    await createGmailTransport().sendMail({ from, to: toEmail, subject, html });
+    await sendGmailMessage(toEmail, subject, html);
     console.log(`[trial] Email sent → ${toEmail}`);
   } catch (e) {
     console.warn("[trial] Email error:", e.message);
