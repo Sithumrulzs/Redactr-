@@ -11,7 +11,7 @@
 }
 
 body {
-  width: 260px;
+  width: 300px;
   margin: 0;
   font-family: "Segoe UI", Arial, sans-serif;
   background: var(--brand-bg);
@@ -115,6 +115,16 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.tier2-row > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.tier2-row .toggle {
+  flex-shrink: 0;
 }
 
 .tier2-title {
