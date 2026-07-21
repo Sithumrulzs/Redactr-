@@ -263,8 +263,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          user?.displayName?.split(' ').first ??
-                                              _orgName,
+                                          () {
+                                            final first = user?.displayName?.split(' ').first;
+                                            if (first != null && _orgName.isNotEmpty) {
+                                              return '$first ($_orgName)';
+                                            }
+                                            return first ?? _orgName;
+                                          }(),
                                           style: Theme.of(
                                             context,
                                           ).textTheme.headlineSmall,
