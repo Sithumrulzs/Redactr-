@@ -11,10 +11,9 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Primary: use Firebase custom claims set by the server on every
-    // claimOrJoinCompany call — no nested Firestore read needed.
-    // Fallback: nested get() on users/{uid} for tokens minted before claims
-    // were introduced (covers users who haven't called claimOrJoinCompany yet).
+    // Token-claim fast path (stamped by server on every claimOrJoinCompany
+    // call) with nested-get fallback for tokens minted before claims existed.
+    // Short-circuit: if the claim matches, myUser() is never called.
     function companyMatch(companyId) {
       return request.auth.token.companyId == companyId
           || myUser().companyId == companyId;
@@ -28,7 +27,7 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if signedIn() && (
         request.auth.uid == uid ||
-        (isAdmin() && resource.data.companyId == request.auth.token.companyId)
+        (isAdmin() && companyMatch(resource.data.companyId))
       );
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken']);
@@ -37,7 +36,7 @@ service cloud.firestore {
 
     match /invites/{email} {
       allow read: if signedIn() && isAdmin()
-          && resource.data.companyId == request.auth.token.companyId;
+          && companyMatch(resource.data.companyId);
       allow write: if false;
     }
 
