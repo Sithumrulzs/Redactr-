@@ -41,7 +41,7 @@
     <div class="section-label">The Full Workflow</div>
     <h1>How <span class="text-primary">Redactr</span> Works</h1>
     <p style="max-width:560px;margin:20px auto 0;font-size:1.1rem;">
-      Five steps. Sub-millisecond detection. Zero data leaves the device. Here's exactly what happens when an employee types a sensitive prompt.
+      Five steps. Sub-millisecond pattern detection, fully on-device. Enterprise AI scanning uses Redactr's secure server — never stored, discarded immediately. Here's exactly what happens when an employee types a sensitive prompt.
     </p>
   </div>
 </section>
@@ -83,7 +83,7 @@
             The <code>content/scanner.js</code> file, injected into the chatbot page, passes the text to the detection engine <code>lib/detector.js</code> on every keystroke (debounced for performance).
           </p>
           <p style="margin-top:12px;">
-            The detector runs six pattern checks simultaneously — all on-device using regular expressions and the Luhn checksum for card validation. Nothing is sent to a server.
+            The detector runs pattern checks simultaneously — all on-device using regular expressions and the Luhn checksum for card validation. On Enterprise plans, an additional AI pass is sent to Redactr's secure server for name and address detection; it is never stored.
           </p>
           <div class="hiw-code-demo" style="margin-top:20px;">
             <div class="code-label"># Detection engine output (JSON)</div>
@@ -212,7 +212,7 @@
       <div class="card reveal">
         <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
         <h3>Chrome &amp; Edge Extension</h3>
-        <p>Manifest V3. Content script injected into ChatGPT, Claude, Gemini. Detection runs entirely in-browser — only blocked-prompt metadata, never the matched text, ever leaves the device.</p>
+        <p>Manifest V3. Content script injected into ChatGPT, Claude, Gemini. Pattern detection runs entirely in-browser. On Enterprise plans, text is also sent to Redactr's secure server for AI entity detection — never stored, discarded immediately.</p>
       </div>
       <div class="card reveal">
         <div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
@@ -252,7 +252,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <div>© 2025 Redactr. All rights reserved.</div>
+      <div>© 2026 Redactr. All rights reserved.</div>
     </div>
   </div>
 </footer>
