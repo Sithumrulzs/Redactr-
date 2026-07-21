@@ -9,26 +9,44 @@
   "use strict";
 
   const PATTERNS = [
-    { type: "AWS_KEY", severity: "high", weight: 40, regex: /AKIA[0-9A-Z]{16}/g },
-    { type: "API_KEY", severity: "high", weight: 40, regex: /sk-[A-Za-z0-9]{20,}/g },
-    {
-      type: "EMAIL",
-      severity: "low",
-      weight: 5,
-      regex: /[\w.+-]+@[\w-]+\.[\w.-]+/g,
-    },
-    {
-      type: "PHONE",
-      severity: "medium",
-      weight: 15,
-      regex: /(\+?\d{1,2}[ -]?)?\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4}\b/g,
-    },
-    {
-      type: "IP_ADDRESS",
-      severity: "medium",
-      weight: 10,
-      regex: /\b(?:\d{1,3}\.){3}\d{1,3}\b/g,
-    },
+    // ── API / secret keys ──────────────────────────────────────────────────
+    { type: "AWS_KEY", severity: "high", weight: 40,
+      regex: /AKIA[0-9A-Z]{16}/g },
+
+    // OpenAI (sk-…), GitHub PAT (ghp_/github_pat_), Stripe (sk_live_/sk_test_),
+    // Slack bot (xoxb-), SendGrid (SG.…)
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,82}|sk_(?:live|test)_[0-9a-zA-Z]{24}|xoxb-\d{11}-\d{11}-[0-9a-zA-Z]{24}|SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}/g },
+
+    // PEM private-key headers (RSA, EC, OPENSSH, generic)
+    { type: "PRIVATE_KEY", severity: "high", weight: 50,
+      regex: /-----BEGIN (?:[A-Z]+ )?PRIVATE KEY-----/g },
+
+    // ── Identity numbers ───────────────────────────────────────────────────
+    // US Social Security Number: 123-45-6789 or 123 45 6789
+    { type: "SSN", severity: "high", weight: 40,
+      regex: /\b\d{3}[-\s]\d{2}[-\s]\d{4}\b/g },
+
+    // UK National Insurance Number: AB 12 34 56 C (or no spaces, case-insensitive)
+    { type: "NI_NUMBER", severity: "high", weight: 35,
+      regex: /\b[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z][ ]?\d{2}[ ]?\d{2}[ ]?\d{2}[ ]?[A-D]\b/gi },
+
+    // ── Banking ────────────────────────────────────────────────────────────
+    // IBAN: CC## then 2–7 groups of 4 alphanumeric (spaces optional), optional short tail
+    // Matches GB29 NWBK 6016 1331 9268 19 and DE89370400440532013000 etc.
+    { type: "IBAN", severity: "high", weight: 35,
+      regex: /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{4}){2,6}(?:[ ]?[A-Z0-9]{1,4})?\b/g },
+
+    // ── Contact / network ──────────────────────────────────────────────────
+    { type: "EMAIL", severity: "low", weight: 5,
+      regex: /[\w.+-]+@[\w-]+\.[\w.-]+/g },
+
+    // Phone numbers: +1 800-555-1234, 077 123 4567, (212) 555-0100
+    { type: "PHONE", severity: "medium", weight: 15,
+      regex: /(\+?\d{1,2}[ -]?)?\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4}\b/g },
+
+    { type: "IP_ADDRESS", severity: "medium", weight: 10,
+      regex: /\b(?:\d{1,3}\.){3}\d{1,3}\b/g },
   ];
 
   const CREDIT_CARD_CANDIDATE = /\b(?:\d[ -]?){13,19}\b/g;
@@ -40,15 +58,19 @@
   const WEIGHTS = {
     AWS_KEY: 40,
     API_KEY: 40,
+    PRIVATE_KEY: 50,
     CREDIT_CARD: 35,
+    SSN: 40,
+    IBAN: 35,
+    NI_NUMBER: 35,
     EMAIL: 5,
     PHONE: 15,
     IP_ADDRESS: 10,
-    PERSON: 20,       // BERT fallback — preserved for backward compat
-    LOCATION: 20,     // BERT fallback — preserved for backward compat
+    PERSON: 20,
+    LOCATION: 20,
     CUSTOM_KEYWORD: 30,
-    PERSON_NAME: 15,  // GLiNER "person name" label
-    ADDRESS: 15,      // GLiNER "street address" label
+    PERSON_NAME: 15,
+    ADDRESS: 15,
   };
 
   // Manager-defined GLiNER entities (CUSTOM_<LABEL>) are not in the static
