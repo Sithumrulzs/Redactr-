@@ -10,13 +10,66 @@
 
   const PATTERNS = [
     // ── API / secret keys ──────────────────────────────────────────────────
+
+    // AWS Access Key ID
     { type: "AWS_KEY", severity: "high", weight: 40,
       regex: /AKIA[0-9A-Z]{16}/g },
 
-    // OpenAI (sk-…), GitHub PAT (ghp_/github_pat_), Stripe (sk_live_/sk_test_),
-    // Slack bot (xoxb-), SendGrid (SG.…)
+    // OpenAI: legacy sk-XXX, project-scoped sk-proj-XXX, service sk-svcacct-XXX
     { type: "API_KEY", severity: "high", weight: 40,
-      regex: /sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,82}|sk_(?:live|test)_[0-9a-zA-Z]{24}|xoxb-\d{11}-\d{11}-[0-9a-zA-Z]{24}|SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}/g },
+      regex: /sk-(?:proj-|svcacct-)[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{20,}/g },
+
+    // Anthropic Claude API key
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /sk-ant-[A-Za-z0-9_-]{20,}/g },
+
+    // GitHub: classic PAT (ghp_), fine-grained (github_pat_), Actions (ghs_), OAuth (gho_)
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,82}/g },
+
+    // Stripe: secret (sk_), publishable (pk_), restricted (rk_), webhook (whsec_)
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /(?:sk|pk|rk)_(?:live|test)_[0-9a-zA-Z]{24,}|whsec_[A-Za-z0-9]{32,}/g },
+
+    // Slack: bot/user/app tokens and incoming webhook URLs
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /xox[bpsoar]-[0-9A-Za-z_-]{10,}|https:\/\/hooks\.slack\.com\/services\/T[A-Za-z0-9_]+\/B[A-Za-z0-9_]+\/[A-Za-z0-9_]+/g },
+
+    // SendGrid
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}/g },
+
+    // Google / Firebase browser or server API key
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /AIza[0-9A-Za-z_-]{35}/g },
+
+    // HuggingFace user access token
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /hf_[a-zA-Z0-9]{34,}/g },
+
+    // npm automation / publish token
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /npm_[A-Za-z0-9]{36}/g },
+
+    // GitLab Personal / Project / Group Access Token
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /glpat-[A-Za-z0-9_-]{20}/g },
+
+    // Twilio Account SID
+    { type: "API_KEY", severity: "medium", weight: 35,
+      regex: /\bAC[a-f0-9]{32}\b/g },
+
+    // Notion integration secret
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /secret_[A-Za-z0-9]{43}/g },
+
+    // Shopify Admin API / Storefront / Custom access tokens
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /shp(?:at|ss|ca|pa)_[a-fA-F0-9]{32}/g },
+
+    // JWT (three base64url segments — catches bearer tokens, Firebase JWTs, etc.)
+    { type: "API_KEY", severity: "medium", weight: 30,
+      regex: /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g },
 
     // PEM private-key headers (RSA, EC, OPENSSH, generic)
     { type: "PRIVATE_KEY", severity: "high", weight: 50,
@@ -49,7 +102,7 @@
       regex: /\b(?:\d{1,3}\.){3}\d{1,3}\b/g },
   ];
 
-  const CREDIT_CARD_CANDIDATE = /\b(?:\d[ -]?){13,19}\b/g;
+  const CREDIT_CARD_CANDIDATE = /\b(?:\d[ \-.\/]?){13,19}\b/g;
 
   // Weight per finding type, used for both Tier-1 regex findings and Tier-2
   // NER findings merged in by scanTier2() — see mergeTier2Findings().
@@ -133,9 +186,10 @@
   // 4-4-4-4 / 4-6-5 grouping is so specific to payment cards that false
   // positives are negligible compared to the security risk of letting them through.
   const CARD_FORMAT_PATTERNS = [
-    /\b\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{4}\b/g,   // standard 16-digit (Visa/MC/etc.)
-    /\b\d{4}[ -]\d{6}[ -]\d{5}\b/g,              // Amex 15-digit
-    /\b\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{4}[ -]\d{3}\b/g, // 19-digit (some prepaid/gift)
+    /\b\d{4}[ \-.]\d{4}[ \-.]\d{4}[ \-.]\d{4}\b/g,          // standard 16-digit (Visa/MC/etc.)
+    /\b\d{4}[ \-.]\d{6}[ \-.]\d{5}\b/g,                      // Amex 15-digit
+    /\b\d{4}[ \-.]\d{4}[ \-.]\d{4}[ \-.]\d{4}[ \-.]\d{3}\b/g, // 19-digit (some prepaid/gift)
+    /\b3[47]\d{13}\b/g,                                        // Amex 15-digit no separator
   ];
 
   function findCreditCards(text) {
@@ -161,7 +215,7 @@
     while ((match = CREDIT_CARD_CANDIDATE.exec(text)) !== null) {
       if (seen.has(match.index)) continue;
       const raw = match[0];
-      const digits = raw.replace(/[ -]/g, "");
+      const digits = raw.replace(/[ \-.\/]/g, "");
       if (digits.length >= 13 && digits.length <= 19 && luhnCheck(digits)) {
         seen.add(match.index);
         findings.push({ type: "CREDIT_CARD", match: raw, start: match.index, end: match.index + raw.length, severity: "high" });
