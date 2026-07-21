@@ -139,45 +139,57 @@
     const el = makeBanner("#ef5466");
     const isAdminUser = userRole === "admin";
 
-    // Build the secondary button separately to avoid nested template literals,
-    // which can confuse Chrome's content-script parser.
-    const secondaryBtn = isAdminUser
-      ? "<button data-a=\"override\" style=\"background:#1e2a3a;color:#f59e0b;border:1.5px solid rgba(245,158,11,0.3);border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;\">&#9889; Override &amp; send original (you are the manager)</button>"
-      : "<button data-a=\"approve\" style=\"background:#1e2a3a;color:#94a3b8;border:1.5px solid #2d3f52;border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;\">&#8987; Request manager approval to send original</button>";
+    // Use pure DOM APIs — no template literals or innerHTML interpolation — so
+    // there is zero chance of a parser error killing the whole IIFE.
+    const headerDiv = document.createElement("div");
+    headerDiv.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:8px;";
+    const img = document.createElement("img");
+    img.src = ICON(); img.width = 16; img.height = 16; img.alt = "";
+    const heading = document.createElement("strong");
+    heading.style.cssText = "color:#ef5466;font-size:13px;";
+    heading.textContent = "Prompt blocked by Redactr";
+    headerDiv.appendChild(img);
+    headerDiv.appendChild(heading);
 
-    el.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <img src="${ICON()}" width="16" height="16" alt="">
-        <strong style="color:#ef5466;font-size:13px;">Prompt blocked by Redactr</strong>
-      </div>
-      <p style="margin:0 0 12px;color:#94a3b8;line-height:1.5;">
-        Risk <b style="color:#e2e8f0">${result.score}/100</b> &middot; Detected: <b style="color:#e2e8f0">${types}</b>
-      </p>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button data-a="redact"
-          style="background:#14c8a6;color:#0d1117;font-weight:700;border:none;
-                 border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;">
-          &#10003; Send redacted version
-        </button>
-        ${secondaryBtn}
-        <button data-a="dismiss"
-          style="background:none;color:#64748b;border:none;padding:6px;
-                 cursor:pointer;font-size:12px;width:100%;">
-          Dismiss
-        </button>
-      </div>
-    `;
-    el.querySelector("[data-a=\"redact\"]").addEventListener("click", () => doSendRedacted(inputEl, text, result.findings));
+    const p = document.createElement("p");
+    p.style.cssText = "margin:0 0 12px;color:#94a3b8;line-height:1.5;";
+    p.innerHTML = "Risk <b style='color:#e2e8f0'>" + result.score + "/100</b> &middot; Detected: <b style='color:#e2e8f0'>" + types + "</b>";
+
+    const buttonsDiv = document.createElement("div");
+    buttonsDiv.style.cssText = "display:flex;flex-direction:column;gap:8px;";
+
+    const redactBtn = document.createElement("button");
+    redactBtn.setAttribute("data-a", "redact");
+    redactBtn.style.cssText = "background:#14c8a6;color:#0d1117;font-weight:700;border:none;border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;";
+    redactBtn.textContent = "✓ Send redacted version";
+    redactBtn.addEventListener("click", () => doSendRedacted(inputEl, text, result.findings));
+
+    const secondaryBtn = document.createElement("button");
     if (isAdminUser) {
-      el.querySelector("[data-a=\"override\"]").addEventListener("click", () => {
-        removeBanner();
-        setText(inputEl, text);
-        triggerSend(inputEl);
-      });
+      secondaryBtn.setAttribute("data-a", "override");
+      secondaryBtn.style.cssText = "background:#1e2a3a;color:#f59e0b;border:1.5px solid rgba(245,158,11,0.3);border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;";
+      secondaryBtn.textContent = "⚡ Override & send original (you are the manager)";
+      secondaryBtn.addEventListener("click", () => { removeBanner(); setText(inputEl, text); triggerSend(inputEl); });
     } else {
-      el.querySelector("[data-a=\"approve\"]").addEventListener("click", () => requestManagerApproval(inputEl, text, result));
+      secondaryBtn.setAttribute("data-a", "approve");
+      secondaryBtn.style.cssText = "background:#1e2a3a;color:#94a3b8;border:1.5px solid #2d3f52;border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;width:100%;";
+      secondaryBtn.textContent = "⏳ Request manager approval to send original";
+      secondaryBtn.addEventListener("click", () => requestManagerApproval(inputEl, text, result));
     }
-    el.querySelector("[data-a=\"dismiss\"]").addEventListener("click", removeBanner);
+
+    const dismissBtn = document.createElement("button");
+    dismissBtn.setAttribute("data-a", "dismiss");
+    dismissBtn.style.cssText = "background:none;color:#64748b;border:none;padding:6px;cursor:pointer;font-size:12px;width:100%;";
+    dismissBtn.textContent = "Dismiss";
+    dismissBtn.addEventListener("click", removeBanner);
+
+    buttonsDiv.appendChild(redactBtn);
+    buttonsDiv.appendChild(secondaryBtn);
+    buttonsDiv.appendChild(dismissBtn);
+
+    el.appendChild(headerDiv);
+    el.appendChild(p);
+    el.appendChild(buttonsDiv);
   }
 
   // ── Banner: AWAITING manager decision ──────────────────────────────────────
