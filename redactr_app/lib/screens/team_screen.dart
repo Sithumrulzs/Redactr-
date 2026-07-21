@@ -266,61 +266,70 @@ class _MemberCard extends StatelessWidget {
         member['email'] as String? ?? 'Team member';
     final email = member['email'] as String? ?? '';
     final role = member['role'] as String? ?? 'employee';
+    final photoURL = member['photoURL'] as String?;
     final isAdmin = role == 'admin';
+    final leaksPrevented = (member['leaksPrevented'] as num?)?.toInt() ?? 0;
+    final filesBlocked = (member['filesBlocked'] as num?)?.toInt() ?? 0;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: AppTheme.cardDecoration(),
       child: Row(
         children: [
-          // Avatar
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isAdmin
-                  ? AppColors.primary.withValues(alpha: 0.15)
-                  : AppColors.surfaceAlt,
-              border: Border.all(
-                color: isAdmin
-                    ? AppColors.primary.withValues(alpha: 0.4)
-                    : AppColors.border,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: TextStyle(
-                color: isAdmin ? AppColors.primary : AppColors.textMuted,
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              ),
-            ),
+          // Avatar — Google photo when available, letter fallback
+          _MemberAvatar(
+            photoURL: photoURL,
+            name: name,
+            isAdmin: isAdmin,
+            size: 46,
           ),
 
           const SizedBox(width: AppSpacing.md),
 
-          // Info
+          // Name + email + stat chips
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: Theme.of(context).textTheme.titleSmall),
+                Text(name,
+                    style: Theme.of(context).textTheme.titleSmall,
+                    overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 2),
                 Text(
                   email,
                   style: Theme.of(context).textTheme.bodySmall,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (leaksPrevented > 0 || filesBlocked > 0) ...[
+                  const SizedBox(height: 7),
+                  Row(
+                    children: [
+                      if (leaksPrevented > 0)
+                        _StatChip(
+                          icon: Icons.shield_rounded,
+                          label: '$leaksPrevented blocked',
+                          color: AppColors.danger,
+                        ),
+                      if (leaksPrevented > 0 && filesBlocked > 0)
+                        const SizedBox(width: 6),
+                      if (filesBlocked > 0)
+                        _StatChip(
+                          icon: Icons.insert_drive_file_rounded,
+                          label: '$filesBlocked files',
+                          color: AppColors.warning,
+                        ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
 
+          const SizedBox(width: AppSpacing.sm),
+
           // Role badge
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: isAdmin
                   ? AppColors.primary.withValues(alpha: 0.12)
@@ -361,6 +370,110 @@ class _MemberCard extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Member avatar (Google photo + letter fallback) ────────────────────────────
+
+class _MemberAvatar extends StatelessWidget {
+  final String? photoURL;
+  final String name;
+  final bool isAdmin;
+  final double size;
+  const _MemberAvatar({
+    required this.photoURL,
+    required this.name,
+    required this.isAdmin,
+    this.size = 44,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isAdmin
+            ? AppColors.primary.withValues(alpha: 0.15)
+            : AppColors.surfaceAlt,
+        border: Border.all(
+          color: isAdmin
+              ? AppColors.primary.withValues(alpha: 0.4)
+              : AppColors.border,
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : '?',
+        style: TextStyle(
+          color: isAdmin ? AppColors.primary : AppColors.textMuted,
+          fontWeight: FontWeight.w700,
+          fontSize: size * 0.35,
+        ),
+      ),
+    );
+
+    if (photoURL == null || photoURL!.isEmpty) return fallback;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isAdmin
+              ? AppColors.primary.withValues(alpha: 0.4)
+              : AppColors.border,
+          width: 1.5,
+        ),
+      ),
+      child: ClipOval(
+        child: Image.network(
+          photoURL!,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => fallback,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Per-member stat chip ──────────────────────────────────────────────────────
+
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  const _StatChip({required this.icon, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: color.withValues(alpha: 0.8)),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color.withValues(alpha: 0.9),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );

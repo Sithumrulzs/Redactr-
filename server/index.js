@@ -478,18 +478,18 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
 });
 
 /**
- * Sends an invite email to a newly-invited employee so they know to sign
- * in with this address. Fire-and-forget — the route responds immediately
- * and this runs in the background. Silently skips if RESEND_API_KEY is absent.
+ * Sends an invite email via Brevo (https://brevo.com).
+ * Requires BREVO_API_KEY + EMAIL_FROM_ADDRESS env vars — silently skips if absent.
  */
 async function sendInviteEmail(toEmail, companyName, inviterName) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
-    console.log(`[email] Invite email skipped (no RESEND_API_KEY) → ${toEmail}`);
+    console.log(`[email] Invite email skipped (no BREVO_API_KEY) → ${toEmail}`);
     return;
   }
 
-  const from    = process.env.EMAIL_FROM || "Redactr <onboarding@resend.dev>";
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS || "onboarding@resend.dev";
+  const from        = process.env.EMAIL_FROM_ADDRESS || "Redactr <onboarding@resend.dev>";
   const CWS_URL = "https://chromewebstore.google.com/detail/redactr/jplbboglhhopcopdgbephgoelaflfelh";
   const subject = `You've been invited to join ${companyName} on Redactr`;
 
@@ -605,10 +605,15 @@ async function sendInviteEmail(toEmail, companyName, inviterName) {
 </html>`;
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [toEmail], subject, html }),
+      headers: { "api-key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: { name: "Redactr", email: fromAddress },
+        to: [{ email: toEmail }],
+        subject,
+        htmlContent: html,
+      }),
     });
     if (!resp.ok) console.warn("[invite] Email failed:", await resp.json());
     else console.log(`[invite] Email sent → ${toEmail}`);
@@ -619,19 +624,19 @@ async function sendInviteEmail(toEmail, companyName, inviterName) {
 
 /**
  * Sends a welcome / confirmation email via Resend (https://resend.com).
- * Requires RESEND_API_KEY env var — silently skips if absent so the
- * route still works without email configured.
+ * Requires BREVO_API_KEY + EMAIL_FROM_ADDRESS env vars — silently skips if absent.
  *
  * plan: "trial" | "starter" | "professional" | "enterprise"
  */
 async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUrl, plan = "trial") {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) {
-    console.log(`[email] Welcome email skipped (no RESEND_API_KEY) → ${toEmail}`);
+    console.log(`[email] Welcome email skipped (no BREVO_API_KEY) → ${toEmail}`);
     return;
   }
 
-  const from    = process.env.EMAIL_FROM || "Redactr <onboarding@resend.dev>";
+  const fromAddress = process.env.EMAIL_FROM_ADDRESS || "onboarding@resend.dev";
+  const from        = fromAddress;
   const name    = (displayName || toEmail.split("@")[0]).split(" ")[0]; // first name only
   const siteUrl = "https://redactr-swart.vercel.app";
 
@@ -921,10 +926,15 @@ async function sendTrialWelcomeEmail(toEmail, displayName, trialEnd, _downloadUr
 </html>`;
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [toEmail], subject, html }),
+      headers: { "api-key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: { name: "Redactr", email: fromAddress },
+        to: [{ email: toEmail }],
+        subject,
+        htmlContent: html,
+      }),
     });
     if (!resp.ok) console.warn("[trial] Email failed:", await resp.json());
   } catch (e) {
@@ -1218,6 +1228,12 @@ app.post("/createAlert", requireAuth, rateLimitMiddleware(60), async (req, res) 
     });
 
     await notifyAdmins(companyId, employeeName, whatWasBlocked);
+
+    // Increment per-member stats on their user doc so TeamScreen can show them.
+    const statsField = tier === 3 ? "filesBlocked" : "leaksPrevented";
+    db.collection("users").doc(req.auth.uid)
+      .update({ [statsField]: admin.firestore.FieldValue.increment(1) })
+      .catch(() => {}); // fire-and-forget — never fail the alert create
 
     res.json({ alertId: alertRef.id });
   } catch (error) {
