@@ -6249,22 +6249,27 @@ var auth = getAuth(app);
 async function callApi(method, path, body, _retry = 0) {
   if (!auth.currentUser) throw new Error("Not signed in.");
   const idToken = await auth.currentUser.getIdToken();
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${idToken}`,
-      "Content-Type": "application/json"
-    },
-    body: body ? JSON.stringify(body) : void 0
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25e3);
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json"
+      },
+      body: body ? JSON.stringify(body) : void 0
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
   let data;
   try {
     data = await response.json();
   } catch (_) {
-    if (_retry < 5) {
-      await new Promise((r) => setTimeout(r, 3e3));
-      return callApi(method, path, body, _retry + 1);
-    }
+    if (_retry < 4) return callApi(method, path, body, _retry + 1);
     throw new Error("Server unavailable \u2014 please try again in a moment.");
   }
   if (!response.ok) {
@@ -6559,6 +6564,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message?.type === "SIGN_OUT") {
     signOutOfGoogle().then(() => sendResponse({ ok: true })).catch((error) => sendResponse({ ok: false, error: String(error) }));
+    return true;
+  }
+  if (message?.type === "RETRY_JOIN") {
+    (async () => {
+      try {
+        await joinCompany();
+        sendResponse({ ok: true });
+      } catch (error) {
+        sendResponse({ ok: false, error: String(error) });
+      }
+    })();
     return true;
   }
   if (message?.target === "background" && message.type === "TIER2_PROGRESS") {

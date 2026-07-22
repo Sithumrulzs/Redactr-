@@ -12,7 +12,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const authNameEl = document.getElementById("auth-name");
   const authEmailEl = document.getElementById("auth-email");
   const authAvatarEl = document.getElementById("auth-avatar");
+  const joinErrorWrapEl = document.getElementById("join-error-wrap");
   const joinErrorEl = document.getElementById("join-error");
+  const retryJoinBtn = document.getElementById("retry-join-button");
   const planBadgeEl = document.getElementById("plan-badge");
   const trialBannerEl = document.getElementById("trial-banner");
   const trialTextEl = document.getElementById("trial-text");
@@ -46,10 +48,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function renderJoinError(joinError) {
     const message = joinError
-      ? "No company found for this email — ask your admin to invite you, then sign out and back in."
+      ? "No company found for this email. Ask your admin to invite you, then tap Retry."
       : "";
     joinErrorEl.textContent = message;
-    joinErrorEl.classList.toggle("hidden", !message);
+    joinErrorWrapEl.classList.toggle("hidden", !message);
   }
 
   signInButton.addEventListener("click", async () => {
@@ -79,6 +81,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     fileInterceptAllowed = false;
     fileScanToggleEl.checked = false;
     renderFileScanStatus(false, false, 0);
+  });
+
+  retryJoinBtn.addEventListener("click", async () => {
+    retryJoinBtn.disabled = true;
+    retryJoinBtn.textContent = "Retrying…";
+    await chrome.runtime.sendMessage({ type: "RETRY_JOIN" });
+    retryJoinBtn.disabled = false;
+    retryJoinBtn.textContent = "Retry";
   });
 
   const STATUS_LABEL = {
@@ -214,7 +224,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
     if (changes.authUser) {
-      renderAuth(changes.authUser.newValue, changes.joinError ? changes.joinError.newValue : null);
+      renderAuth(changes.authUser.newValue, changes.joinError?.newValue ?? null);
     } else if (changes.joinError) {
       renderJoinError(changes.joinError.newValue);
     }

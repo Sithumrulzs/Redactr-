@@ -164,7 +164,7 @@ app.get("/", (req, res) => res.send("Redactr API is running."));
 app.post("/claimOrJoinCompany", requireAuth, rateLimitMiddleware(10), async (req, res) => {
   try {
     const uid = req.auth.uid;
-    const email = req.auth.email;
+    const email = (req.auth.email ?? "").trim().toLowerCase();
     if (!email) {
       res.status(400).json({ error: "Account has no email." });
       return;

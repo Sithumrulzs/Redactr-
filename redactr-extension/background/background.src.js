@@ -38,28 +38,38 @@ const app = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 
 /** Calls a route on the Express API with a Firebase ID token attached.
- *  Retries silently on Render cold-start HTML responses (non-JSON body). */
+ *  Each attempt has a 25 s AbortController timeout so a Render cold-start
+ *  never hangs the service worker indefinitely. Retries immediately (no
+ *  sleep — sleep/setTimeout doesn't keep MV3 service workers alive) when
+ *  the server returns HTML instead of JSON. */
 async function callApi(method, path, body, _retry = 0) {
   if (!auth.currentUser) throw new Error("Not signed in.");
   const idToken = await auth.currentUser.getIdToken();
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${idToken}`,
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25_000);
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   let data;
   try {
     data = await response.json();
   } catch (_) {
-    // Render returned HTML (cold-starting) — wait and retry up to 5×.
-    if (_retry < 5) {
-      await new Promise(r => setTimeout(r, 3000));
-      return callApi(method, path, body, _retry + 1);
-    }
+    // Render returned HTML (cold-starting) — retry immediately, no sleep.
+    if (_retry < 4) return callApi(method, path, body, _retry + 1);
     throw new Error("Server unavailable — please try again in a moment.");
   }
 
@@ -416,6 +426,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     signOutOfGoogle()
       .then(() => sendResponse({ ok: true }))
       .catch((error) => sendResponse({ ok: false, error: String(error) }));
+    return true;
+  }
+
+  if (message?.type === "RETRY_JOIN") {
+    (async () => {
+      try {
+        await joinCompany();
+        sendResponse({ ok: true });
+      } catch (error) {
+        sendResponse({ ok: false, error: String(error) });
+      }
+    })();
     return true;
   }
 

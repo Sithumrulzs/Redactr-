@@ -205,13 +205,36 @@ input:checked + .slider::before {
 }
 
 .join-error {
-  color: var(--brand-amber);
-  font-size: 0.7rem;
-  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
   margin: 10px 0 0;
   padding: 8px;
   background: rgba(244, 183, 64, 0.1);
   border-radius: 6px;
+}
+
+.join-error-msg {
+  color: var(--brand-amber);
+  font-size: 0.7rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.btn-retry {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid var(--brand-amber);
+  color: var(--brand-amber);
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-retry:hover {
+  background: rgba(244, 183, 64, 0.15);
 }
 
 .auth-row {
