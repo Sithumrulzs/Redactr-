@@ -575,8 +575,9 @@ async function sendGmailMessage(toEmail, subject, html) {
 async function sendInviteEmail(toEmail, companyName, inviterName) {
 
   const fromAddress = process.env.EMAIL_FROM_ADDRESS;
-  const CWS_URL = "https://chromewebstore.google.com/detail/redactr/jplbboglhhopcopdgbephgoelaflfelh";
-  const subject = `You've been invited to join ${companyName} on Redactr`;
+  const CWS_URL  = "https://chromewebstore.google.com/detail/redactr/jplbboglhhopcopdgbephgoelaflfelh";
+  const LOGO_URL = "https://redactr-swart.vercel.app/assets/Logo.png";
+  const subject  = `You've been invited to join ${companyName} on Redactr`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -584,100 +585,138 @@ async function sendInviteEmail(toEmail, companyName, inviterName) {
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>${subject}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap');
+  body,table,td,p,a,li { font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif !important; }
+  h1 { font-family:'Sora','Manrope',Arial,sans-serif !important; }
+</style>
 </head>
-<body style="margin:0;padding:0;background:#060a11;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#070c18;font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
 
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#060a11;">
-<tr><td align="center" style="padding:52px 16px 64px;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#070c18;">
+<tr><td align="center" style="padding:48px 16px 64px;">
 
   <table width="560" cellpadding="0" cellspacing="0" border="0"
-    style="max-width:560px;width:100%;background:#0c1018;border-radius:24px;
-    border:1px solid rgba(255,255,255,0.06);overflow:hidden;">
+    style="max-width:560px;width:100%;background:#0d1526;border-radius:24px;
+    border:1px solid rgba(20,200,166,0.14);overflow:hidden;">
 
+    <!-- Top accent bar -->
     <tr><td style="background:linear-gradient(90deg,#0a7a62,#14c8a6 48%,#5eead4);
-      height:2px;font-size:0;line-height:0;">&nbsp;</td></tr>
+      height:3px;font-size:0;line-height:0;">&nbsp;</td></tr>
 
+    <!-- Logo -->
     <tr><td style="padding:32px 44px 0;">
-      <table cellpadding="0" cellspacing="0" border="0"><tr>
-        <td style="width:8px;height:22px;background:linear-gradient(180deg,#14c8a6,#0a7a62);
-          border-radius:3px;display:inline-block;vertical-align:middle;"></td>
-        <td style="padding-left:10px;font-size:15px;font-weight:800;color:#ffffff;
-          letter-spacing:-0.02em;vertical-align:middle;">Redactr</td>
-      </tr></table>
+      <img src="${LOGO_URL}" alt="Redactr" height="34" border="0"
+        style="display:block;height:34px;max-height:34px;border:0;outline:0;text-decoration:none;"
+        onerror="this.style.display='none';document.getElementById('rdx-logo-text').style.display='inline-block';" />
+      <!-- Fallback text logo if image fails to load -->
+      <table id="rdx-logo-text" cellpadding="0" cellspacing="0" border="0"
+        style="display:none;border-collapse:collapse;">
+        <tr>
+          <td style="width:7px;height:24px;background:linear-gradient(180deg,#14c8a6,#0a7a62);
+            border-radius:3px;vertical-align:middle;"></td>
+          <td style="padding-left:9px;font-size:16px;font-weight:800;color:#ffffff;
+            letter-spacing:-0.03em;vertical-align:middle;font-family:'Sora','Manrope',Arial,sans-serif;">Redactr</td>
+        </tr>
+      </table>
     </td></tr>
 
+    <!-- Heading block -->
     <tr><td style="padding:28px 44px 0;">
-      <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:rgba(20,200,166,0.7);
-        letter-spacing:1.8px;text-transform:uppercase;">Team invitation</p>
-      <h1 style="margin:0 0 14px;font-size:28px;font-weight:800;color:#ffffff;
-        letter-spacing:-0.04em;line-height:1.15;">
+      <p style="margin:0 0 8px;font-size:11px;font-weight:700;color:#14c8a6;
+        letter-spacing:2px;text-transform:uppercase;font-family:'Manrope',Arial,sans-serif;">
+        Team invitation</p>
+      <h1 style="margin:0 0 16px;font-size:30px;font-weight:800;color:#f7fafd;
+        letter-spacing:-0.04em;line-height:1.15;font-family:'Sora','Manrope',Arial,sans-serif;">
         You've been invited.
       </h1>
-      <p style="margin:0;font-size:15px;color:rgba(180,200,230,0.55);line-height:1.7;">
-        <strong style="color:rgba(255,255,255,0.8);">${inviterName}</strong> has invited you to join
-        <strong style="color:rgba(255,255,255,0.8);">${companyName}</strong> on Redactr —
+      <p style="margin:0;font-size:15px;color:#9da8b8;line-height:1.75;font-weight:500;">
+        <span style="color:#f7fafd;font-weight:700;">${inviterName}</span> has invited you to join
+        <span style="color:#f7fafd;font-weight:700;">${companyName}</span> on Redactr —
         AI-powered sensitive data protection for your browser.
       </p>
     </td></tr>
 
+    <!-- Steps card -->
     <tr><td style="padding:28px 44px 0;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0"
         style="background:rgba(20,200,166,0.06);border:1px solid rgba(20,200,166,0.18);
         border-radius:16px;overflow:hidden;">
-        <tr><td style="padding:24px;">
-          <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#14c8a6;
-            letter-spacing:1.2px;text-transform:uppercase;">How to join — 2 steps</p>
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+        <tr><td style="padding:26px 28px;">
+
+          <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#14c8a6;
+            letter-spacing:1.5px;text-transform:uppercase;font-family:'Manrope',Arial,sans-serif;">
+            How to join — 2 steps</p>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;">
+            <!-- Step 1 -->
             <tr>
-              <td width="28" valign="top" style="padding-bottom:14px;">
-                <div style="width:22px;height:22px;border-radius:50%;background:#14c8a6;
-                  text-align:center;line-height:22px;font-size:12px;font-weight:800;
-                  color:#060a11;">1</div>
+              <td width="30" valign="top" style="padding-bottom:16px;">
+                <table cellpadding="0" cellspacing="0" border="0">
+                  <tr><td style="width:24px;height:24px;border-radius:50%;background:#14c8a6;
+                    text-align:center;font-size:12px;font-weight:800;color:#070c18;
+                    line-height:24px;font-family:'Manrope',Arial,sans-serif;">1</td></tr>
+                </table>
               </td>
-              <td valign="top" style="padding-bottom:14px;padding-left:10px;">
-                <p style="margin:0 0 4px;font-size:13.5px;font-weight:700;color:rgba(220,235,255,0.9);">
-                  Install the Redactr extension</p>
-                <p style="margin:0;font-size:12.5px;color:rgba(170,190,220,0.55);line-height:1.5;">
-                  One click from the Chrome Web Store.</p>
+              <td valign="top" style="padding-bottom:16px;padding-left:12px;">
+                <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#f7fafd;
+                  font-family:'Manrope',Arial,sans-serif;">Install the Redactr extension</p>
+                <p style="margin:0;font-size:13px;color:#9da8b8;line-height:1.55;font-weight:500;
+                  font-family:'Manrope',Arial,sans-serif;">One click from the Chrome Web Store.</p>
               </td>
             </tr>
+            <!-- Step 2 -->
             <tr>
-              <td width="28" valign="top">
-                <div style="width:22px;height:22px;border-radius:50%;background:#14c8a6;
-                  text-align:center;line-height:22px;font-size:12px;font-weight:800;
-                  color:#060a11;">2</div>
+              <td width="30" valign="top">
+                <table cellpadding="0" cellspacing="0" border="0">
+                  <tr><td style="width:24px;height:24px;border-radius:50%;background:#14c8a6;
+                    text-align:center;font-size:12px;font-weight:800;color:#070c18;
+                    line-height:24px;font-family:'Manrope',Arial,sans-serif;">2</td></tr>
+                </table>
               </td>
-              <td valign="top" style="padding-left:10px;">
-                <p style="margin:0 0 4px;font-size:13.5px;font-weight:700;color:rgba(220,235,255,0.9);">
-                  Sign in with this email address</p>
-                <p style="margin:0;font-size:12.5px;color:rgba(170,190,220,0.55);line-height:1.5;">
-                  Use the Google account for <strong style="color:rgba(200,220,250,0.7);">${toEmail}</strong>.
+              <td valign="top" style="padding-left:12px;">
+                <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#f7fafd;
+                  font-family:'Manrope',Arial,sans-serif;">Sign in with this email address</p>
+                <p style="margin:0;font-size:13px;color:#9da8b8;line-height:1.55;font-weight:500;
+                  font-family:'Manrope',Arial,sans-serif;">
+                  Use the Google account for
+                  <a href="mailto:${toEmail}" style="color:#14c8a6;text-decoration:none;font-weight:700;">
+                    ${toEmail}</a>.
                   You'll be automatically linked to ${companyName}.
                 </p>
               </td>
             </tr>
           </table>
 
-          <div style="margin-top:20px;">
-            <a href="${CWS_URL}" style="display:inline-block;background:#14c8a6;color:#060a11;
-              font-size:13px;font-weight:800;text-decoration:none;
-              padding:12px 26px;border-radius:10px;letter-spacing:0.01em;">
-              Install Redactr →
+          <!-- CTA button -->
+          <div style="margin-top:24px;">
+            <a href="${CWS_URL}"
+              style="display:inline-block;background:#14c8a6;color:#070c18;
+                font-size:14px;font-weight:800;text-decoration:none;
+                padding:13px 28px;border-radius:10px;letter-spacing:0.02em;
+                font-family:'Manrope',Arial,sans-serif;">
+              Install Redactr &rarr;
             </a>
           </div>
+
         </td></tr>
       </table>
     </td></tr>
 
+    <!-- Divider -->
     <tr><td style="padding:28px 44px 0;">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr><td style="height:1px;background:rgba(255,255,255,0.05);font-size:0;">&nbsp;</td></tr>
       </table>
     </td></tr>
 
-    <tr><td style="padding:20px 44px 36px;">
-      <p style="margin:0;font-size:11px;color:rgba(120,140,170,0.35);line-height:1.7;">
-        You're receiving this because ${inviterName} invited ${toEmail} to Redactr.
+    <!-- Footer -->
+    <tr><td style="padding:18px 44px 36px;">
+      <p style="margin:0;font-size:11px;color:rgba(157,168,184,0.4);line-height:1.8;font-weight:400;
+        font-family:'Manrope',Arial,sans-serif;">
+        You're receiving this because
+        <span style="color:rgba(157,168,184,0.6);">${inviterName}</span>
+        invited <span style="color:rgba(157,168,184,0.6);">${toEmail}</span> to Redactr.
         If you weren't expecting this, you can safely ignore it.
       </p>
     </td></tr>
