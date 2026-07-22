@@ -340,6 +340,25 @@ input:checked + .slider::before {
   color: var(--brand-red);
 }
 
+/* ── Plan / company badge shown after successful company join ────────── */
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(20, 200, 166, 0.1);
+  border: 1px solid rgba(20, 200, 166, 0.25);
+  color: var(--brand-accent);
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  margin-top: 10px;
+  letter-spacing: 0.02em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── Enterprise file scanning card ──────────────────────────────────── */
 .file-scan-card {
   border-color: rgba(20, 200, 166, 0.2);

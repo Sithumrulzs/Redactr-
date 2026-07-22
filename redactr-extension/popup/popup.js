@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const authEmailEl = document.getElementById("auth-email");
   const authAvatarEl = document.getElementById("auth-avatar");
   const joinErrorEl = document.getElementById("join-error");
+  const planBadgeEl = document.getElementById("plan-badge");
   const trialBannerEl = document.getElementById("trial-banner");
   const trialTextEl = document.getElementById("trial-text");
   // File scanning
@@ -20,6 +21,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const fileScanStatusEl   = document.getElementById("file-scan-status");
   const filesBlockedRowEl  = document.getElementById("files-blocked-row");
   const filesBlockedValEl  = document.getElementById("files-blocked-value");
+
+  function renderPlanBadge(plan, companyName) {
+    if (!plan || plan === "trial" || plan === "trial_expired" || !companyName) {
+      planBadgeEl.classList.add("hidden");
+      return;
+    }
+    const label = { starter: "Starter", professional: "Professional", enterprise: "Enterprise" }[plan] ?? plan;
+    planBadgeEl.textContent = `${companyName} · ${label}`;
+    planBadgeEl.classList.remove("hidden");
+  }
 
   function renderAuth(authUser, joinError) {
     signedOutEl.classList.toggle("hidden", !!authUser);
@@ -59,6 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   signOutButton.addEventListener("click", async () => {
     await chrome.runtime.sendMessage({ type: "SIGN_OUT" });
     renderAuth(null, null);
+    renderPlanBadge(null, null);
     renderTrialBanner(null, 0, false);
     tier2Allowed = false;
     tier2ToggleEl.checked = false;
@@ -134,6 +146,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     tier2Allowed: false,
     joinError: null,
     plan: null,
+    companyName: null,
     trialDaysLeft: 0,
     trialExpired: false,
     fileInterceptEnabled: false,
@@ -142,6 +155,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   renderAuth(state.authUser, state.joinError);
+  renderPlanBadge(state.plan, state.companyName);
   renderTrialBanner(state.plan, state.trialDaysLeft, state.trialExpired);
   counterEl.textContent = state.leaksPrevented;
   toggleEl.checked = state.enabled;
@@ -204,14 +218,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else if (changes.joinError) {
       renderJoinError(changes.joinError.newValue);
     }
-    if (changes.plan || changes.trialDaysLeft || changes.trialExpired) {
+    if (changes.plan || changes.trialDaysLeft || changes.trialExpired || changes.companyName) {
       const currentState = {};
       if (changes.plan) currentState.plan = changes.plan.newValue;
+      if (changes.companyName) currentState.companyName = changes.companyName.newValue;
       if (changes.trialDaysLeft) currentState.trialDaysLeft = changes.trialDaysLeft.newValue;
       if (changes.trialExpired) currentState.trialExpired = changes.trialExpired.newValue;
-      chrome.storage.local.get({ plan: null, trialDaysLeft: 0, trialExpired: false }, (s) => {
+      chrome.storage.local.get({ plan: null, companyName: null, trialDaysLeft: 0, trialExpired: false }, (s) => {
+        const plan = currentState.plan ?? s.plan;
+        const companyName = currentState.companyName ?? s.companyName;
+        renderPlanBadge(plan, companyName);
         renderTrialBanner(
-          currentState.plan ?? s.plan,
+          plan,
           currentState.trialDaysLeft ?? s.trialDaysLeft,
           currentState.trialExpired ?? s.trialExpired
         );

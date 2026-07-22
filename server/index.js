@@ -492,6 +492,7 @@ app.get("/getEntitlement", requireAuth, async (req, res) => {
     res.json({
       plan,
       role: callerDoc.data().role ?? null,
+      companyName: companyDoc.data()?.name ?? null,
       tier2Allowed,
       customKeywords: tier2Allowed ? companyData.customKeywords ?? [] : [],
       customEntities: tier2Allowed ? companyData.customEntities ?? [] : [],

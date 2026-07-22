@@ -65,6 +65,7 @@ const DEFAULT_STATE = {
   tier2Allowed: false, // entitlement: only true on the Enterprise plan (see getEntitlement)
   plan: null,
   role: null, // "admin" | "employee" | null — used by scanner.js to suppress approval button for admins
+  companyName: null, // set after successful company join — shown in popup plan badge
   joinError: null, // set when signed in but no invite exists for this email yet
   customKeywords: [], // Enterprise-only, admin-managed (see getEntitlement)
   customEntities: [], // Enterprise-only GLiNER labels (see getEntitlement + addCustomEntity)
@@ -148,6 +149,7 @@ auth.onAuthStateChanged((user) => {
       tier2Status: "idle",
       plan: null,
       role: null,
+      companyName: null,
       joinError: null,
       leaksPrevented: 0,
       filesBlocked: 0,
@@ -193,6 +195,7 @@ async function fetchEntitlement() {
     await chrome.storage.local.set({
       plan: data.plan,
       role: data.role ?? null,
+      companyName: data.companyName ?? null,
       tier2Allowed: data.tier2Allowed,
       customKeywords: data.customKeywords ?? [],
       customEntities: data.customEntities ?? [],
