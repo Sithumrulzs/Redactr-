@@ -77,11 +77,25 @@
 
   function setText(el, text) {
     if (el.tagName === "TEXTAREA") {
-      el.value = text;
+      // Native setter bypasses React's synthetic value tracking so the
+      // framework sees the new value when the send button fires.
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype, "value"
+      ).set;
+      nativeSetter.call(el, text);
       el.dispatchEvent(new Event("input", { bubbles: true }));
     } else {
-      el.innerText = text;
-      el.dispatchEvent(new InputEvent("input", { bubbles: true }));
+      // execCommand updates contenteditable state synchronously inside the
+      // editor's own event pipeline (React, ProseMirror, Quill, etc.),
+      // so the framework reads the updated value on the very next click.
+      el.focus();
+      try {
+        document.execCommand("selectAll", false, null);
+        document.execCommand("insertText", false, text);
+      } catch (_) {
+        el.innerText = text;
+        el.dispatchEvent(new InputEvent("input", { bubbles: true }));
+      }
     }
   }
 
@@ -176,7 +190,9 @@
     const { redacted } = RedactrDetector.redact(text, findings);
     setText(inputEl, redacted);
     removeBanner();
-    triggerSend(inputEl);
+    // 50 ms lets the editor framework finish reconciling the new text
+    // before the send button fires — prevents submitting stale state.
+    setTimeout(() => triggerSend(inputEl), 50);
   }
 
   // ── Banner: BLOCKED ──────────────────────────────────────────────────────────
@@ -233,7 +249,7 @@
       overrideBtn.addEventListener("click", () => {
         removeBanner();
         setText(inputEl, text);
-        triggerSend(inputEl);
+        setTimeout(() => triggerSend(inputEl), 50);
       });
       buttonsDiv.appendChild(overrideBtn);
     } else {
@@ -431,7 +447,7 @@
           playApprovalAnimation(() => {
             if (inputEl && originalText) {
               setText(inputEl, originalText);
-              triggerSend(inputEl);
+              setTimeout(() => triggerSend(inputEl), 50);
             }
           });
 
