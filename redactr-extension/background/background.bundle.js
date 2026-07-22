@@ -6246,7 +6246,7 @@ var GOOGLE_OAUTH_CLIENT_ID = "116258256150-bk6aec5oadquj8hioc1qac1092nbar50.apps
 var API_BASE_URL = "https://redactr-ln5t.onrender.com";
 var app = initializeApp(FIREBASE_CONFIG);
 var auth = getAuth(app);
-async function callApi(method, path, body) {
+async function callApi(method, path, body, _retry = 0) {
   if (!auth.currentUser) throw new Error("Not signed in.");
   const idToken = await auth.currentUser.getIdToken();
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -6257,7 +6257,16 @@ async function callApi(method, path, body) {
     },
     body: body ? JSON.stringify(body) : void 0
   });
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch (_) {
+    if (_retry < 5) {
+      await new Promise((r) => setTimeout(r, 3e3));
+      return callApi(method, path, body, _retry + 1);
+    }
+    throw new Error("Server unavailable \u2014 please try again in a moment.");
+  }
   if (!response.ok) {
     throw new Error(data.error || `Request failed (${response.status})`);
   }
@@ -6430,7 +6439,7 @@ async function signInWithGoogle() {
 async function signOutOfGoogle() {
   await signOut(auth);
 }
-async function syncAlert({ findingTypes, riskScore, site, tier, source, overridden }) {
+async function syncAlert({ findingTypes, riskScore, site, tier, source, overridden }, _isRetry = false) {
   if (!auth.currentUser) return null;
   try {
     const data = await callApi("POST", "/createAlert", {
@@ -6443,7 +6452,14 @@ async function syncAlert({ findingTypes, riskScore, site, tier, source, overridd
     });
     return data?.alertId ?? null;
   } catch (error) {
-    console.warn("Redactr: failed to sync alert to backend", error);
+    if (!_isRetry && error.message?.includes("company setup")) {
+      try {
+        await joinCompany();
+      } catch (_) {
+      }
+      return syncAlert({ findingTypes, riskScore, site, tier, source, overridden }, true);
+    }
+    console.warn("Redactr: failed to sync alert to backend", error.message);
     return null;
   }
 }

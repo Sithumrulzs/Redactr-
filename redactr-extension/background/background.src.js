@@ -37,8 +37,9 @@ const API_BASE_URL = "https://redactr-ln5t.onrender.com";
 const app = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 
-/** Calls a route on the Express API with a Firebase ID token attached. */
-async function callApi(method, path, body) {
+/** Calls a route on the Express API with a Firebase ID token attached.
+ *  Retries silently on Render cold-start HTML responses (non-JSON body). */
+async function callApi(method, path, body, _retry = 0) {
   if (!auth.currentUser) throw new Error("Not signed in.");
   const idToken = await auth.currentUser.getIdToken();
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -49,7 +50,19 @@ async function callApi(method, path, body) {
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  const data = await response.json();
+
+  let data;
+  try {
+    data = await response.json();
+  } catch (_) {
+    // Render returned HTML (cold-starting) — wait and retry up to 5×.
+    if (_retry < 5) {
+      await new Promise(r => setTimeout(r, 3000));
+      return callApi(method, path, body, _retry + 1);
+    }
+    throw new Error("Server unavailable — please try again in a moment.");
+  }
+
   if (!response.ok) {
     throw new Error(data.error || `Request failed (${response.status})`);
   }
@@ -265,7 +278,7 @@ async function signOutOfGoogle() {
  * script can poll /alertStatus/:alertId for the manager's decision.
  * Returns null when not signed in or the call fails (fail-open).
  */
-async function syncAlert({ findingTypes, riskScore, site, tier, source, overridden }) {
+async function syncAlert({ findingTypes, riskScore, site, tier, source, overridden }, _isRetry = false) {
   if (!auth.currentUser) return null;
   try {
     const data = await callApi("POST", "/createAlert", {
@@ -275,7 +288,12 @@ async function syncAlert({ findingTypes, riskScore, site, tier, source, overridd
     });
     return data?.alertId ?? null;
   } catch (error) {
-    console.warn("Redactr: failed to sync alert to backend", error);
+    // If the server says the user isn't set up yet, attempt join then retry once.
+    if (!_isRetry && error.message?.includes("company setup")) {
+      try { await joinCompany(); } catch (_) {}
+      return syncAlert({ findingTypes, riskScore, site, tier, source, overridden }, true);
+    }
+    console.warn("Redactr: failed to sync alert to backend", error.message);
     return null;
   }
 }
