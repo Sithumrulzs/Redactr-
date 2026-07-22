@@ -198,6 +198,27 @@
     { type: "API_KEY", severity: "medium", weight: 30,
       regex: /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g },
 
+    // ── Sri Lanka ─────────────────────────────────────────────────────────
+
+    // NIC old format: 9 digits + V or X suffix
+    // Encodes: birth-year(2) + day-of-year(3) + serial(4) + series(V/X)
+    // Also used as the old business registration number format.
+    { type: "SL_NIC", severity: "high", weight: 45,
+      regex: /\b\d{9}[VXvx]\b/g },
+
+    // NIC new format (12-digit) is validated separately in findSLNewNIC()
+    // because the day-of-year field must be structurally correct (not just 12 digits).
+
+    // Driving License — province-code prefix + 6–7 digit serial.
+    // Modern smart-card DLs (issued 2016+) reuse the NIC as identifier;
+    // these patterns target older paper licenses and province-prefixed numbers.
+    { type: "SL_DL", severity: "high", weight: 40,
+      regex: /\b(?:NW|NC|SB|WP|CP|SP|EP|NP|UP|UV)[- ]?\d{6,7}\b/g },
+
+    // Passport — letter-series (N is the dominant series; A/B/C/E also issued) + 7 digits
+    { type: "SL_PASSPORT", severity: "high", weight: 45,
+      regex: /\b[NABCE]\d{7}\b/g },
+
     // ── Identity numbers ───────────────────────────────────────────────────
     // US Social Security Number: 123-45-6789 or 123 45 6789
     { type: "SSN", severity: "high", weight: 40,
@@ -240,6 +261,9 @@
     SSN: 40,
     IBAN: 35,
     NI_NUMBER: 35,
+    SL_NIC: 45,
+    SL_DL: 40,
+    SL_PASSPORT: 45,
     EMAIL: 5,
     PHONE: 15,
     IP_ADDRESS: 10,
@@ -350,6 +374,35 @@
   }
 
   /**
+   * Sri Lankan NIC new format (12 digits): 4-digit birth year (1900–2099)
+   * + 3-digit day-of-year (001–366 male, 501–866 female) + 5-digit serial+check.
+   *
+   * The structural day-of-year constraint cuts false positives dramatically
+   * compared to a plain 12-digit regex — similar to how Luhn filters credit cards.
+   */
+  function findSLNewNIC(text) {
+    const findings = [];
+    // Capture groups: (year)(dayOfYear)(serial+check)
+    const regex = /\b((?:19|20)\d{2})(\d{3})(\d{5})\b/g;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      const day = parseInt(match[2], 10);
+      const maleDay   = day >= 1   && day <= 366; // 001–366
+      const femaleDay = day >= 501 && day <= 866; // 501–866 (day + 500 convention)
+      if (maleDay || femaleDay) {
+        findings.push({
+          type: "SL_NIC",
+          match: match[0],
+          start: match.index,
+          end: match.index + match[0].length,
+          severity: "high",
+        });
+      }
+    }
+    return findings;
+  }
+
+  /**
    * Scan text and return Tier-1 findings plus an aggregate 0-100 risk score.
    * @param {string} text
    * @param {string[]} [customKeywords] - Enterprise-only literal phrases (see getEntitlement)
@@ -373,6 +426,7 @@
     }
 
     findings.push(...findCreditCards(text));
+    findings.push(...findSLNewNIC(text));
     findings.push(...findCustomKeywords(text, customKeywords));
     findings.sort((a, b) => a.start - b.start);
 
