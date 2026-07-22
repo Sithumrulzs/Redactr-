@@ -9,71 +9,194 @@
   "use strict";
 
   const PATTERNS = [
-    // ── API / secret keys ──────────────────────────────────────────────────
+    // ── AWS ────────────────────────────────────────────────────────────────
 
     // AWS Access Key ID
     { type: "AWS_KEY", severity: "high", weight: 40,
-      regex: /AKIA[0-9A-Z]{16}/g },
+      regex: /\bAKIA[0-9A-Z]{16}\b/g },
 
-    // OpenAI: legacy sk-XXX, project-scoped sk-proj-XXX, service sk-svcacct-XXX
+    // AWS temporary session token (STS) — starts with ASIA, much longer
+    { type: "AWS_KEY", severity: "high", weight: 40,
+      regex: /\bASIA[0-9A-Z]{16}\b/g },
+
+    // AWS Secret Access Key (40-char alphanumeric+/+) — only reliable with key-name context
+    { type: "AWS_KEY", severity: "high", weight: 40,
+      regex: /(?:aws_secret_access_key|AWS_SECRET_ACCESS_KEY|secret_access_key|SecretAccessKey)\s*[=:]\s*["']?([A-Za-z0-9/+]{40})["']?/g },
+
+    // ── OpenAI ────────────────────────────────────────────────────────────
+
+    // Legacy sk-XXX, project-scoped sk-proj-XXX, service sk-svcacct-XXX
     { type: "API_KEY", severity: "high", weight: 40,
       regex: /sk-(?:proj-|svcacct-)[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{20,}/g },
 
-    // Anthropic Claude API key
-    { type: "API_KEY", severity: "high", weight: 40,
-      regex: /sk-ant-[A-Za-z0-9_-]{20,}/g },
+    // OpenAI organisation ID
+    { type: "API_KEY", severity: "medium", weight: 30,
+      regex: /\borg-[A-Za-z0-9]{24}\b/g },
 
-    // GitHub: classic PAT (ghp_), fine-grained (github_pat_), Actions (ghs_), OAuth (gho_)
+    // ── Anthropic ─────────────────────────────────────────────────────────
     { type: "API_KEY", severity: "high", weight: 40,
-      regex: /gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,82}/g },
+      regex: /sk-ant-(?:api03-)?[A-Za-z0-9_-]{20,}/g },
 
-    // Stripe: secret (sk_), publishable (pk_), restricted (rk_), webhook (whsec_)
-    { type: "API_KEY", severity: "high", weight: 40,
-      regex: /(?:sk|pk|rk)_(?:live|test)_[0-9a-zA-Z]{24,}|whsec_[A-Za-z0-9]{32,}/g },
+    // ── Google / GCP / Firebase ───────────────────────────────────────────
 
-    // Slack: bot/user/app tokens and incoming webhook URLs
-    { type: "API_KEY", severity: "high", weight: 40,
-      regex: /xox[bpsoar]-[0-9A-Za-z_-]{10,}|https:\/\/hooks\.slack\.com\/services\/T[A-Za-z0-9_]+\/B[A-Za-z0-9_]+\/[A-Za-z0-9_]+/g },
-
-    // SendGrid
-    { type: "API_KEY", severity: "high", weight: 40,
-      regex: /SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}/g },
-
-    // Google / Firebase browser or server API key
+    // Google browser / server API key
     { type: "API_KEY", severity: "high", weight: 40,
       regex: /AIza[0-9A-Za-z_-]{35}/g },
 
-    // HuggingFace user access token
+    // Google OAuth client secret embedded in JSON
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /"client_secret"\s*:\s*"GOCSPX-[A-Za-z0-9_-]{28}"/g },
+
+    // Firebase service-account JSON block (private_key + client_email together)
+    { type: "PRIVATE_KEY", severity: "high", weight: 50,
+      regex: /"private_key"\s*:\s*"-----BEGIN [A-Z]+ PRIVATE KEY-----/g },
+
+    // ── GitHub ────────────────────────────────────────────────────────────
+    // Classic PAT (ghp_), OAuth app (gho_), Actions (ghs_), Refresh (ghr_), User (ghu_), fine-grained
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,82}/g },
+
+    // ── Stripe ────────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /(?:sk|pk|rk)_(?:live|test)_[0-9a-zA-Z]{24,}|whsec_[A-Za-z0-9]{32,}/g },
+
+    // ── Slack ─────────────────────────────────────────────────────────────
+    // Bot/user/app/socket tokens + incoming webhook URL
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /xox[bpsoar]-[0-9A-Za-z_-]{10,}|https:\/\/hooks\.slack\.com\/services\/T[A-Za-z0-9_]+\/B[A-Za-z0-9_]+\/[A-Za-z0-9_]+/g },
+
+    // ── SendGrid ──────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}/g },
+
+    // ── HuggingFace ───────────────────────────────────────────────────────
     { type: "API_KEY", severity: "high", weight: 40,
       regex: /hf_[a-zA-Z0-9]{34,}/g },
 
-    // npm automation / publish token
+    // ── npm ───────────────────────────────────────────────────────────────
     { type: "API_KEY", severity: "high", weight: 40,
       regex: /npm_[A-Za-z0-9]{36}/g },
 
-    // GitLab Personal / Project / Group Access Token
+    // ── GitLab ────────────────────────────────────────────────────────────
     { type: "API_KEY", severity: "high", weight: 40,
       regex: /glpat-[A-Za-z0-9_-]{20}/g },
 
-    // Twilio Account SID
+    // ── Twilio ────────────────────────────────────────────────────────────
+    // Account SID (AC...) and Auth Token in variable context
     { type: "API_KEY", severity: "medium", weight: 35,
       regex: /\bAC[a-f0-9]{32}\b/g },
 
-    // Notion integration secret
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /(?:auth_?token|TWILIO_AUTH_TOKEN)\s*[=:]\s*["']?[a-f0-9]{32}["']?/g },
+
+    // ── Notion ────────────────────────────────────────────────────────────
     { type: "API_KEY", severity: "high", weight: 40,
       regex: /secret_[A-Za-z0-9]{43}/g },
 
-    // Shopify Admin API / Storefront / Custom access tokens
+    // ── Shopify ───────────────────────────────────────────────────────────
     { type: "API_KEY", severity: "high", weight: 40,
       regex: /shp(?:at|ss|ca|pa)_[a-fA-F0-9]{32}/g },
 
-    // JWT (three base64url segments — catches bearer tokens, Firebase JWTs, etc.)
-    { type: "API_KEY", severity: "medium", weight: 30,
-      regex: /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g },
+    // ── Groq ──────────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /gsk_[A-Za-z0-9]{52}/g },
 
-    // PEM private-key headers (RSA, EC, OPENSSH, generic)
+    // ── Replicate ─────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /r8_[A-Za-z0-9]{40}/g },
+
+    // ── Cohere ────────────────────────────────────────────────────────────
+    // Key format: CO- prefix or raw alphanumeric when named in context
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /\bCO-[a-zA-Z0-9_-]{36,48}\b/g },
+
+    // ── Mistral AI ────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /\bmistral-[A-Za-z0-9]{32,}\b/g },
+
+    // ── Discord ───────────────────────────────────────────────────────────
+    // Bot token: base64(user_id).base64(timestamp).hmac  — three fixed-length segments
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /[A-Za-z0-9_-]{23,28}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,38}/g },
+
+    // ── Telegram ──────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /\b\d{8,10}:[A-Za-z0-9_-]{35}\b/g },
+
+    // ── New Relic ─────────────────────────────────────────────────────────
+    // User API key (NRAK), Admin (NRAA), Browser (NRJS), Insights Insert (NRII)
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /NR(?:AK|AA|JS|II)-[A-Za-z0-9]{20,40}/g },
+
+    // ── Square ────────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /sq0(?:atp|atb|csp|ath)-[A-Za-z0-9_-]{22,43}/g },
+
+    // ── Databricks ────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /dapi[a-f0-9]{32}/g },
+
+    // ── DigitalOcean ──────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /dop_v1_[a-f0-9]{64}/g },
+
+    // ── Mailchimp ─────────────────────────────────────────────────────────
+    // 32 hex chars + datacenter suffix e.g. abc123...-us12
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /[0-9a-f]{32}-us\d{1,2}\b/g },
+
+    // ── Mailgun ───────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /key-[0-9a-f]{32}/g },
+
+    // ── Braintree ─────────────────────────────────────────────────────────
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /access_token\$(?:production|sandbox)\$[a-z0-9]{16}\$[a-f0-9]{32}/g },
+
+    // ── Mapbox ────────────────────────────────────────────────────────────
+    // Secret tokens start with sk.eyJ (public pk.eyJ caught by JWT rule below)
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /sk\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{6,}/g },
+
+    // ── Cloudinary ────────────────────────────────────────────────────────
+    { type: "CONNECTION_STRING", severity: "high", weight: 45,
+      regex: /cloudinary:\/\/[0-9]+:[A-Za-z0-9_-]{27}@[a-z0-9]+/g },
+
+    // ── Azure ─────────────────────────────────────────────────────────────
+    // Storage account connection string
+    { type: "AZURE_SECRET", severity: "high", weight: 45,
+      regex: /DefaultEndpointsProtocol=https;AccountName=[^;\s]+;AccountKey=[^;\s]+/g },
+
+    // Service Bus / Event Hubs connection string
+    { type: "AZURE_SECRET", severity: "high", weight: 45,
+      regex: /Endpoint=sb:\/\/[^;\s]+;SharedAccessKeyName=[^;\s]+;SharedAccessKey=[^;\s]+/g },
+
+    // ── Database / service connection strings with embedded credentials ────
+    // MongoDB Atlas  (mongodb+srv://user:pass@cluster...)
+    { type: "CONNECTION_STRING", severity: "high", weight: 45,
+      regex: /mongodb(?:\+srv)?:\/\/[^:@\s]{1,128}:[^@\s]{4,}@[a-zA-Z0-9][^\s]*/g },
+
+    // PostgreSQL, MySQL, Redis, AMQP, CockroachDB, SQL Server
+    { type: "CONNECTION_STRING", severity: "high", weight: 45,
+      regex: /(?:postgres(?:ql)?|mysql(?:2)?|redis|amqps?|cockroachdb|sqlserver|mssql):\/\/[^:@\s]{1,128}:[^@\s]{4,}@[a-zA-Z0-9][^\s]*/g },
+
+    // HTTPS URLs with long embedded tokens (e.g. git clone https://user:ghp_TOKEN@github.com)
+    { type: "API_KEY", severity: "high", weight: 40,
+      regex: /https?:\/\/[^:@\s]{1,64}:[^@\s]{20,}@[a-zA-Z0-9][^\s]*/g },
+
+    // ── Private keys & certificates ───────────────────────────────────────
+    // PEM private-key block header (RSA, EC, OPENSSH, PKCS8, generic)
     { type: "PRIVATE_KEY", severity: "high", weight: 50,
       regex: /-----BEGIN (?:[A-Z]+ )?PRIVATE KEY-----/g },
+
+    // PEM certificate (sometimes contains embedded keys or is itself sensitive)
+    { type: "PRIVATE_KEY", severity: "medium", weight: 35,
+      regex: /-----BEGIN CERTIFICATE-----/g },
+
+    // JWT (three base64url segments — catches bearer tokens, Firebase JWTs, etc.)
+    // Listed after Mapbox sk.eyJ so Mapbox secret tokens get the higher-weight rule.
+    { type: "API_KEY", severity: "medium", weight: 30,
+      regex: /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g },
 
     // ── Identity numbers ───────────────────────────────────────────────────
     // US Social Security Number: 123-45-6789 or 123 45 6789
@@ -86,7 +209,6 @@
 
     // ── Banking ────────────────────────────────────────────────────────────
     // IBAN: CC## then 2–7 groups of 4 alphanumeric (spaces optional), optional short tail
-    // Matches GB29 NWBK 6016 1331 9268 19 and DE89370400440532013000 etc.
     { type: "IBAN", severity: "high", weight: 35,
       regex: /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{4}){2,6}(?:[ ]?[A-Z0-9]{1,4})?\b/g },
 
@@ -112,6 +234,8 @@
     AWS_KEY: 40,
     API_KEY: 40,
     PRIVATE_KEY: 50,
+    CONNECTION_STRING: 45,
+    AZURE_SECRET: 45,
     CREDIT_CARD: 35,
     SSN: 40,
     IBAN: 35,
